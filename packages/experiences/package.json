@@ -1,0 +1,21 @@
+{
+  "name": "@algolia/experiences",
+  "version": "0.0.0",
+  "description": "Algolia Experiences loader script",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "tsc --build --watch",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@experiences/typescript-config": "*",
+    "typescript": "5.9.2"
+  }
+}
