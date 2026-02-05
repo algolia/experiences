@@ -12,11 +12,11 @@ Add the loader script to your HTML with your Algolia credentials and experience 
 
 ### Parameters
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `appId` | Yes | Your Algolia Application ID |
-| `apiKey` | Yes | Your Algolia API Key |
-| `experienceId` | Yes | The ID of the experience to load |
+| Parameter      | Required | Description                      |
+| -------------- | -------- | -------------------------------- |
+| `appId`        | Yes      | Your Algolia Application ID      |
+| `apiKey`       | Yes      | Your Algolia API Key             |
+| `experienceId` | Yes      | The ID of the experience to load |
 
 ## How it works
 
