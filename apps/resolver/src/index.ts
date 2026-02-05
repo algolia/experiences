@@ -5,8 +5,21 @@ interface Env {
   EXPERIENCES_BUNDLE_VERSIONS: KVNamespace;
 }
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers':
+    'X-Algolia-Application-Id, X-Algolia-API-Key, Content-Type',
+  'Access-Control-Max-Age': '86400',
+};
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    // Handle CORS preflight
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: CORS_HEADERS });
+    }
+
     const url = new URL(request.url);
     const path = url.pathname;
 
@@ -72,7 +85,7 @@ export default {
 function response(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
   });
 }
 
@@ -90,5 +103,5 @@ async function validateAcl(
 }
 
 function getBundleURL(bundleVersion: string) {
-  return `https://cdn.jsdelivr.net/npm/@algolia/experiences@${bundleVersion}/dist/experiences.umd.js`;
+  return `https://cdn.jsdelivr.net/npm/@algolia/runtime@${bundleVersion}/dist/experiences.umd.js`;
 }
