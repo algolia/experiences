@@ -1,9 +1,7 @@
-import { type KVNamespace } from '@cloudflare/workers-types';
-import { algoliasearch, type Acl, type Algoliasearch } from 'algoliasearch';
+import { algoliasearch } from 'algoliasearch';
 
-interface Env {
-  EXPERIENCES_BUNDLE_VERSIONS: KVNamespace;
-}
+import type { ExecutionContext } from '@cloudflare/workers-types';
+import type { Acl, Algoliasearch } from 'algoliasearch';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -14,7 +12,11 @@ const CORS_HEADERS = {
 };
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(
+    request: Request,
+    env: Env,
+    _ctx: ExecutionContext
+  ): Promise<Response> {
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
