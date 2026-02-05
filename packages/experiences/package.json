@@ -4,7 +4,7 @@
   "description": "Algolia Experiences loader script",
   "license": "MIT",
   "type": "module",
-  "main": "dist/loader.js",
+  "main": "dist/experiences.js",
   "files": [
     "dist"
   ],

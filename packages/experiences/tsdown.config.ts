@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsdown';
 
 export default defineConfig({
-  entry: { loader: 'src/index.ts' },
+  entry: { experiences: 'src/index.ts' },
   format: ['umd'],
   outDir: 'dist',
   globalName: 'AlgoliaExperiences',
