@@ -4,14 +4,13 @@
   "description": "Algolia Experiences loader script",
   "license": "MIT",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/loader.js",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc --build",
-    "dev": "tsc --build --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "check-types": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest"
@@ -20,6 +19,7 @@
     "@experiences/typescript-config": "*",
     "jsdom": "26.0.0",
     "msw": "2.7.3",
+    "tsdown": "0.9.3",
     "typescript": "5.9.2",
     "vitest": "3.0.5"
   }
