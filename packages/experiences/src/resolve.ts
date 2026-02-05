@@ -15,6 +15,7 @@ export async function resolve(
   const { appId, apiKey, experienceId } = config;
 
   let response: Response;
+
   try {
     response = await fetch(`${RESOLVER_URL}/${encodeURIComponent(experienceId)}`, {
       headers: {
