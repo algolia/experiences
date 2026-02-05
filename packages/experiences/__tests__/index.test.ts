@@ -149,4 +149,50 @@ describe('loader', () => {
       })
     );
   });
+
+  it('logs error when network fails', async () => {
+    script.src =
+      '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+
+    server.use(
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => HttpResponse.error())
+    );
+
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await (
+      await import('../src/index')
+    ).default;
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('Network error: failed to reach resolver'),
+      })
+    );
+  });
+
+  it('logs error when resolver returns invalid JSON', async () => {
+    script.src =
+      '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+
+    server.use(
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
+        new HttpResponse('not json', {
+          headers: { 'Content-Type': 'text/html' },
+        })
+      )
+    );
+
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await (
+      await import('../src/index')
+    ).default;
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('Resolver returned invalid JSON'),
+      })
+    );
+  });
 });
