@@ -123,4 +123,30 @@ describe('loader', () => {
       })
     );
   });
+
+  it('logs error when bundle fails to load', async () => {
+    script.src =
+      '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+
+    server.use(
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
+        HttpResponse.json({ bundleUrl: BUNDLE_URL })
+      )
+    );
+
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await (
+      await import('../src/index')
+    ).default;
+
+    const injectedScript = document.head.querySelector('script');
+    injectedScript?.onerror?.(new Event('error'));
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining(`Failed to load bundle: ${BUNDLE_URL}`),
+      })
+    );
+  });
 });
