@@ -5,6 +5,10 @@ export type ResolverResponse = {
   bundleUrl: string;
 };
 
+/**
+ * Calls the Algolia Experiences resolver to get the runtime bundle URL.
+ * Authenticates using Algolia headers (X-Algolia-Application-Id, X-Algolia-API-Key).
+ */
 export async function resolve(
   config: LoaderConfiguration
 ): Promise<ResolverResponse> {
@@ -31,6 +35,7 @@ export async function resolve(
   }
 
   let data: ResolverResponse;
+
   try {
     data = (await response.json()) as ResolverResponse;
   } catch {

@@ -4,13 +4,17 @@ export type LoaderConfiguration = {
   experienceId: string;
 };
 
+/**
+ * Extracts configuration from the current script's URL parameters.
+ * Requires the script to be loaded synchronously (no async/defer).
+ */
 export function getConfig(): LoaderConfiguration {
   const script = document.currentScript as HTMLScriptElement | null;
 
   if (!script) {
     throw new Error(
       '[@algolia/experiences] Could not find the current script element. ' +
-        'Make sure the script is loaded synchronously.'
+      'Make sure the script is loaded synchronously.'
     );
   }
 
