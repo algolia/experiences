@@ -15,7 +15,7 @@ vi.mock('algoliasearch', () => ({
 }));
 
 describe('experienceId', () => {
-  const baseHeaders = {
+  const CREDENTIALS_HEADERS = {
     'X-Algolia-Application-Id': 'TEST_APP_ID',
     'X-Algolia-API-Key': 'test-api-key',
   };
@@ -26,12 +26,9 @@ describe('experienceId', () => {
 
   // Common tests
   it('returns 204 with CORS headers for OPTIONS preflight', async () => {
-    const request = new Request('http://localhost/exp123', {
+    const response = await createTestRequest('/exp123', {
       method: 'OPTIONS',
     });
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(request, env, ctx);
-    await waitOnExecutionContext(ctx);
 
     expect(response.status).toBe(204);
     expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
@@ -44,13 +41,10 @@ describe('experienceId', () => {
   });
 
   it('returns 404 for invalid path', async () => {
-    const request = new Request('http://localhost/foo/bar', {
+    const response = await createTestRequest('/foo/bar', {
       method: 'GET',
-      headers: baseHeaders,
+      headers: CREDENTIALS_HEADERS,
     });
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(request, env, ctx);
-    await waitOnExecutionContext(ctx);
 
     expect(response.status).toBe(404);
     const body = await response.json();
@@ -60,13 +54,10 @@ describe('experienceId', () => {
   it('returns 405 for unsupported method', async () => {
     mockGetApiKey.mockResolvedValue({ acl: ['search', 'editSettings'] });
 
-    const request = new Request('http://localhost/exp123', {
+    const response = await createTestRequest('/exp123', {
       method: 'PUT',
-      headers: baseHeaders,
+      headers: CREDENTIALS_HEADERS,
     });
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(request, env, ctx);
-    await waitOnExecutionContext(ctx);
 
     expect(response.status).toBe(405);
     const body = await response.json();
@@ -74,12 +65,9 @@ describe('experienceId', () => {
   });
 
   it('returns 400 when credentials are missing', async () => {
-    const request = new Request('http://localhost/exp123', {
+    const response = await createTestRequest('/exp123', {
       method: 'GET',
     });
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(request, env, ctx);
-    await waitOnExecutionContext(ctx);
 
     expect(response.status).toBe(400);
     const body = await response.json();
@@ -90,13 +78,10 @@ describe('experienceId', () => {
     it('returns 403 when getApiKey throws (invalid credentials)', async () => {
       mockGetApiKey.mockRejectedValue(new Error('Invalid API key'));
 
-      const request = new Request('http://localhost/exp123', {
+      const response = await createTestRequest('/exp123', {
         method: 'GET',
-        headers: baseHeaders,
+        headers: CREDENTIALS_HEADERS,
       });
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -106,13 +91,10 @@ describe('experienceId', () => {
     it('returns 403 when API key lacks search ACL', async () => {
       mockGetApiKey.mockResolvedValue({ acl: ['browse'] });
 
-      const request = new Request('http://localhost/exp123', {
+      const response = await createTestRequest('/exp123', {
         method: 'GET',
-        headers: baseHeaders,
+        headers: CREDENTIALS_HEADERS,
       });
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -122,13 +104,10 @@ describe('experienceId', () => {
     it('returns 404 when experience is not found in KV', async () => {
       mockGetApiKey.mockResolvedValue({ acl: ['search'] });
 
-      const request = new Request('http://localhost/nonexistent', {
+      const response = await createTestRequest('/nonexistent', {
         method: 'GET',
-        headers: baseHeaders,
+        headers: CREDENTIALS_HEADERS,
       });
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
 
       expect(response.status).toBe(404);
       const body = await response.json();
@@ -139,13 +118,10 @@ describe('experienceId', () => {
       mockGetApiKey.mockResolvedValue({ acl: ['search'] });
       await env.EXPERIENCES_BUNDLE_VERSIONS.put('TEST_APP_ID:exp123', '2.0.0');
 
-      const request = new Request('http://localhost/exp123', {
+      const response = await createTestRequest('/exp123', {
         method: 'GET',
-        headers: baseHeaders,
+        headers: CREDENTIALS_HEADERS,
       });
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -159,13 +135,10 @@ describe('experienceId', () => {
       mockGetApiKey.mockResolvedValue({ acl: ['search'] });
       await env.EXPERIENCES_BUNDLE_VERSIONS.put('TEST_APP_ID:exp123', '1.0.0');
 
-      const request = new Request('http://localhost/exp123', {
+      const response = await createTestRequest('/exp123', {
         method: 'GET',
-        headers: baseHeaders,
+        headers: CREDENTIALS_HEADERS,
       });
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
 
       expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
       expect(response.headers.get('Access-Control-Allow-Methods')).toContain(
@@ -178,17 +151,14 @@ describe('experienceId', () => {
     it('returns 403 when getApiKey throws (invalid credentials)', async () => {
       mockGetApiKey.mockRejectedValue(new Error('Invalid API key'));
 
-      const request = new Request('http://localhost/exp123', {
+      const response = await createTestRequest('/exp123', {
         method: 'POST',
         headers: {
-          ...baseHeaders,
+          ...CREDENTIALS_HEADERS,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ bundleVersion: '1.0.0' }),
       });
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -198,17 +168,14 @@ describe('experienceId', () => {
     it('returns 403 when API key lacks editSettings ACL', async () => {
       mockGetApiKey.mockResolvedValue({ acl: ['search'] });
 
-      const request = new Request('http://localhost/exp123', {
+      const response = await createTestRequest('/exp123', {
         method: 'POST',
         headers: {
-          ...baseHeaders,
+          ...CREDENTIALS_HEADERS,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ bundleVersion: '1.0.0' }),
       });
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -218,17 +185,14 @@ describe('experienceId', () => {
     it('returns 400 when bundleVersion is missing', async () => {
       mockGetApiKey.mockResolvedValue({ acl: ['editSettings'] });
 
-      const request = new Request('http://localhost/exp123', {
+      const response = await createTestRequest('/exp123', {
         method: 'POST',
         headers: {
-          ...baseHeaders,
+          ...CREDENTIALS_HEADERS,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({}),
       });
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -238,17 +202,14 @@ describe('experienceId', () => {
     it('returns 400 when body is invalid JSON', async () => {
       mockGetApiKey.mockResolvedValue({ acl: ['editSettings'] });
 
-      const request = new Request('http://localhost/exp123', {
+      const response = await createTestRequest('/exp123', {
         method: 'POST',
         headers: {
-          ...baseHeaders,
+          ...CREDENTIALS_HEADERS,
           'Content-Type': 'application/json',
         },
         body: 'not valid json',
       });
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -258,17 +219,14 @@ describe('experienceId', () => {
     it('returns 200 and updates KV on valid request', async () => {
       mockGetApiKey.mockResolvedValue({ acl: ['editSettings'] });
 
-      const request = new Request('http://localhost/exp123', {
+      const response = await createTestRequest('/exp123', {
         method: 'POST',
         headers: {
-          ...baseHeaders,
+          ...CREDENTIALS_HEADERS,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ bundleVersion: '3.0.0' }),
       });
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -281,3 +239,14 @@ describe('experienceId', () => {
     });
   });
 });
+
+async function createTestRequest(
+  path: string,
+  init?: RequestInit
+): Promise<Response> {
+  const request = new Request(`http://localhost${path}`, init);
+  const ctx = createExecutionContext();
+  const response = await worker.fetch(request, env, ctx);
+  await waitOnExecutionContext(ctx);
+  return response;
+}
