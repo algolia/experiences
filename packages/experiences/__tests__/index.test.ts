@@ -99,6 +99,41 @@ describe('loader', () => {
     );
   });
 
+  it('logs error when apiKey is missing', async () => {
+    script.src =
+      '../src/index.ts?appId=YOUR_APP_ID&experienceId=YOUR_EXPERIENCE_ID';
+
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await (
+      await import('../src/index')
+    ).default;
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('Missing required parameter: apiKey'),
+      })
+    );
+  });
+
+  it('logs error when experienceId is missing', async () => {
+    script.src = '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY';
+
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await (
+      await import('../src/index')
+    ).default;
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining(
+          'Missing required parameter: experienceId'
+        ),
+      })
+    );
+  });
+
   it('logs error when resolver fails', async () => {
     script.src =
       '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
@@ -195,4 +230,5 @@ describe('loader', () => {
       })
     );
   });
+
 });
