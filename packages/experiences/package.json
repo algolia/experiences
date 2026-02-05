@@ -12,10 +12,15 @@
   "scripts": {
     "build": "tsc --build",
     "dev": "tsc --build --watch",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@experiences/typescript-config": "*",
-    "typescript": "5.9.2"
+    "jsdom": "26.0.0",
+    "msw": "2.7.3",
+    "typescript": "5.9.2",
+    "vitest": "3.0.5"
   }
 }
