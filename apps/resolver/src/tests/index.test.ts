@@ -14,7 +14,7 @@ vi.mock('algoliasearch', () => ({
   })),
 }));
 
-describe('experienceId', () => {
+describe('/{experienceId}', () => {
   const CREDENTIALS_HEADERS = {
     'X-Algolia-Application-Id': 'TEST_APP_ID',
     'X-Algolia-API-Key': 'test-api-key',
