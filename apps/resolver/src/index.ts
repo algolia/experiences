@@ -70,12 +70,18 @@ export default {
         return response({ message: 'Forbidden' }, 403);
       }
 
-      const body = (await request.json()) as { bundleVersion: string };
-      if (!body.bundleVersion) {
+      let bundleVersion: string;
+      try {
+        const body = (await request.json()) as { bundleVersion?: string };
+        if (!body.bundleVersion) {
+          throw new Error();
+        }
+        bundleVersion = body.bundleVersion;
+      } catch {
         return response({ message: 'Missing bundleVersion.' }, 400);
       }
 
-      await env.EXPERIENCES_BUNDLE_VERSIONS.put(kvKey, body.bundleVersion);
+      await env.EXPERIENCES_BUNDLE_VERSIONS.put(kvKey, bundleVersion);
 
       return response({ experienceId });
     }

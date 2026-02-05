@@ -235,6 +235,26 @@ describe('experienceId', () => {
       expect(body.message).toBe('Missing bundleVersion.');
     });
 
+    it('returns 400 when body is invalid JSON', async () => {
+      mockGetApiKey.mockResolvedValue({ acl: ['editSettings'] });
+
+      const request = new Request('http://localhost/exp123', {
+        method: 'POST',
+        headers: {
+          ...baseHeaders,
+          'Content-Type': 'application/json',
+        },
+        body: 'not valid json',
+      });
+      const ctx = createExecutionContext();
+      const response = await worker.fetch(request, env, ctx);
+      await waitOnExecutionContext(ctx);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body.message).toBe('Missing bundleVersion.');
+    });
+
     it('returns 200 and updates KV on valid request', async () => {
       mockGetApiKey.mockResolvedValue({ acl: ['editSettings'] });
 
