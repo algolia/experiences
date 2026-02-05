@@ -39,11 +39,5 @@ export async function resolve(
     );
   }
 
-  if (!data.bundleUrl) {
-    throw new Error(
-      '[@algolia/experiences] Resolver response missing bundleUrl'
-    );
-  }
-
   return data;
 }
