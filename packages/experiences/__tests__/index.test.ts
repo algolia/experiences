@@ -42,6 +42,7 @@ describe('loader', () => {
     document.head
       .querySelectorAll('script')
       .forEach((script) => script.remove());
+    delete window.AlgoliaExperiences;
   });
 
   it('injects the runtime script returned by the resolver', async () => {
@@ -231,4 +232,26 @@ describe('loader', () => {
     );
   });
 
+  it('calls AlgoliaExperiences.run when bundle loads', async () => {
+    script.src =
+      '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+
+    server.use(
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
+        HttpResponse.json({ bundleUrl: BUNDLE_URL })
+      )
+    );
+
+    const runSpy = vi.fn();
+    window.AlgoliaExperiences = { run: runSpy };
+
+    await (
+      await import('../src/index')
+    ).default;
+
+    const injectedScript = document.head.querySelector('script');
+    injectedScript?.onload?.(new Event('load'));
+
+    expect(runSpy).toHaveBeenCalled();
+  });
 });
