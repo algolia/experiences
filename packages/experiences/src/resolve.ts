@@ -12,7 +12,7 @@ export async function resolve(
 
   let response: Response;
   try {
-    response = await fetch(`${RESOLVER_URL}/${experienceId}`, {
+    response = await fetch(`${RESOLVER_URL}/${encodeURIComponent(experienceId)}`, {
       headers: {
         'X-Algolia-Application-Id': appId,
         'X-Algolia-API-Key': apiKey,
