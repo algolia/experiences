@@ -1,0 +1,7 @@
+name = "experiences-bundle-resolver"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "EXPERIENCES_BUNDLE_VERSIONS"
+id = "2b87a7c33c1b4d8ba1aa7e1e2343438a"
