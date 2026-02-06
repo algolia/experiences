@@ -8,6 +8,10 @@ on:
       - 'apps/resolver/**'
   workflow_dispatch:
 
+concurrency:
+  group: deploy-resolver
+  cancel-in-progress: false
+
 jobs:
   ci:
     name: CI
