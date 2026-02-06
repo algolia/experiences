@@ -2,7 +2,7 @@ import {
   createDocumentationMessageGenerator,
   getAppIdAndApiKey,
 } from 'instantsearch.js/es/lib/utils';
-import { buildExperienceRequest } from './middleware';
+import { getExperience } from './get-experience';
 import chat from 'instantsearch.js/es/widgets/chat/chat';
 
 import { renderTemplate, renderTool } from './renderer';
@@ -32,7 +32,6 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
     $$supportedWidgets: {
       'ais.chat': {
         widget: chat,
-        // eslint-disable-next-line no-restricted-syntax
         async transformParams(params, { env, instantSearchInstance }) {
           const {
             itemTemplate,
@@ -49,7 +48,7 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
           const tools = (
             await Promise.all(
               Object.entries(toolRenderings).map(([toolName, experienceId]) => {
-                return buildExperienceRequest({
+                return getExperience({
                   appId,
                   apiKey,
                   env,

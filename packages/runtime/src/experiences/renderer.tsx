@@ -4,8 +4,8 @@ import { getPropertyByPath } from 'instantsearch.js/es/lib/utils';
 import { Tool } from 'instantsearch.js/es/widgets/chat/chat';
 
 import type { BaseHit, TemplateParams } from 'instantsearch.js/es/types';
-import type { ExperienceApiResponse } from './types';
 import type { ComponentChildren } from 'preact';
+import type { ExperienceApiResponse } from './types';
 
 type StaticString = { type: 'string'; value: string };
 type Attribute = { type: 'attribute'; path: string[] };

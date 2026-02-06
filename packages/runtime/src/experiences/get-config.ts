@@ -1,8 +1,10 @@
+import type { Environment } from './types';
+
 export type RuntimeConfiguration = {
   appId: string;
   apiKey: string;
   experienceId: string;
-  env?: 'prod' | 'beta';
+  env?: Environment;
 };
 
 // Capture currentScript at load time (not available after script execution)

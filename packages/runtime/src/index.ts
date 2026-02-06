@@ -1,16 +1,30 @@
 import { liteClient as algoliasearch } from 'algoliasearch/lite';
 import instantsearch, { type InstantSearch } from 'instantsearch.js';
 
-import { createExperienceMiddleware } from './experiences/middleware';
-import experience from './experiences/widget';
-import { getConfig } from './get-config';
+import {
+  createExperienceMiddleware,
+  experience,
+  getConfig,
+  getExperience,
+} from './experiences';
 
 export { createExperienceMiddleware, experience };
 
 let search: InstantSearch | null = null;
 
-export function run() {
-  const { appId, apiKey, experienceId, env } = getConfig();
+export async function run() {
+  const { appId, apiKey, experienceId, env = 'prod' } = getConfig();
+
+  const experienceConfig = await getExperience({
+    appId,
+    apiKey,
+    env,
+    experienceId,
+  });
+
+  const indexName = experienceConfig.blocks
+    .map((block) => block.parameters.indexName)
+    .find((name): name is string => typeof name === 'string');
 
   if (search) {
     search.dispose();
@@ -19,11 +33,11 @@ export function run() {
   const searchClient = algoliasearch(appId, apiKey);
 
   search = instantsearch({
-    indexName: 'instant_search',
+    indexName,
     searchClient,
   });
 
-  search.use(createExperienceMiddleware({ env }));
+  search.use(createExperienceMiddleware({ env, config: experienceConfig }));
   search.addWidgets([experience({ id: experienceId })]);
 
   search.start();

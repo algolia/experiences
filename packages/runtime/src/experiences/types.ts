@@ -5,10 +5,13 @@ import type {
 } from 'instantsearch.js/es/types';
 import type { ChatWidget } from 'instantsearch.js/es/widgets/chat/chat';
 
+export type Environment = 'prod' | 'beta';
+
 type ExperienceApiBlockParameters = {
   container: string;
   cssVariables: Record<string, string>;
-} & Record<'container' | 'cssVariables' | (string & {}), unknown>;
+  indexName?: string;
+} & Record<'container' | 'cssVariables' | 'indexName' | (string & {}), unknown>;
 
 export type ExperienceApiResponse = {
   blocks: Array<{
@@ -29,7 +32,7 @@ type SupportedWidget<
   transformParams: (
     params: TApiParameters,
     options: {
-      env: 'beta' | 'prod';
+      env: Environment;
       instantSearchInstance: InstantSearch;
     }
   ) => Promise<TWidgetParameters>;
