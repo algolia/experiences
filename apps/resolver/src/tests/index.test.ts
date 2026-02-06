@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  env,
-  createExecutionContext,
-  waitOnExecutionContext,
-} from 'cloudflare:test';
-import worker from '../index';
+import { env, SELF } from 'cloudflare:test';
 
-// Mock algoliasearch module
+type ResponseBody = {
+  message?: string;
+  experienceId?: string;
+  bundleUrl?: string;
+};
+
 const mockGetApiKey = vi.fn();
 vi.mock('algoliasearch', () => ({
   algoliasearch: vi.fn(() => ({
@@ -47,7 +47,7 @@ describe('/{experienceId}', () => {
     });
 
     expect(response.status).toBe(404);
-    const body = await response.json();
+    const body = await response.json<ResponseBody>();
     expect(body.message).toBe('Not found.');
   });
 
@@ -60,7 +60,7 @@ describe('/{experienceId}', () => {
     });
 
     expect(response.status).toBe(405);
-    const body = await response.json();
+    const body = await response.json<ResponseBody>();
     expect(body.message).toBe('Method not allowed.');
   });
 
@@ -70,7 +70,7 @@ describe('/{experienceId}', () => {
     });
 
     expect(response.status).toBe(400);
-    const body = await response.json();
+    const body = await response.json<ResponseBody>();
     expect(body.message).toBe('Missing credentials.');
   });
 
@@ -84,7 +84,7 @@ describe('/{experienceId}', () => {
       });
 
       expect(response.status).toBe(403);
-      const body = await response.json();
+      const body = await response.json<ResponseBody>();
       expect(body.message).toBe('Forbidden');
     });
 
@@ -97,7 +97,7 @@ describe('/{experienceId}', () => {
       });
 
       expect(response.status).toBe(403);
-      const body = await response.json();
+      const body = await response.json<ResponseBody>();
       expect(body.message).toBe('Forbidden');
     });
 
@@ -110,7 +110,7 @@ describe('/{experienceId}', () => {
       });
 
       expect(response.status).toBe(404);
-      const body = await response.json();
+      const body = await response.json<ResponseBody>();
       expect(body.message).toContain('Experience not found');
     });
 
@@ -124,7 +124,7 @@ describe('/{experienceId}', () => {
       });
 
       expect(response.status).toBe(200);
-      const body = await response.json();
+      const body = await response.json<ResponseBody>();
       expect(body.experienceId).toBe('exp123');
       expect(body.bundleUrl).toBe(
         'https://cdn.jsdelivr.net/npm/@algolia/runtime@2.0.0/dist/experiences.umd.js'
@@ -161,7 +161,7 @@ describe('/{experienceId}', () => {
       });
 
       expect(response.status).toBe(403);
-      const body = await response.json();
+      const body = await response.json<ResponseBody>();
       expect(body.message).toBe('Forbidden');
     });
 
@@ -178,7 +178,7 @@ describe('/{experienceId}', () => {
       });
 
       expect(response.status).toBe(403);
-      const body = await response.json();
+      const body = await response.json<ResponseBody>();
       expect(body.message).toBe('Forbidden');
     });
 
@@ -195,7 +195,7 @@ describe('/{experienceId}', () => {
       });
 
       expect(response.status).toBe(400);
-      const body = await response.json();
+      const body = await response.json<ResponseBody>();
       expect(body.message).toBe('Missing bundleVersion.');
     });
 
@@ -212,7 +212,7 @@ describe('/{experienceId}', () => {
       });
 
       expect(response.status).toBe(400);
-      const body = await response.json();
+      const body = await response.json<ResponseBody>();
       expect(body.message).toBe('Missing bundleVersion.');
     });
 
@@ -229,7 +229,7 @@ describe('/{experienceId}', () => {
       });
 
       expect(response.status).toBe(200);
-      const body = await response.json();
+      const body = await response.json<ResponseBody>();
       expect(body.experienceId).toBe('exp123');
 
       // Verify KV was updated
@@ -240,13 +240,9 @@ describe('/{experienceId}', () => {
   });
 });
 
-async function createTestRequest(
+function createTestRequest(
   path: string,
   init?: RequestInit
 ): Promise<Response> {
-  const request = new Request(`http://localhost${path}`, init);
-  const ctx = createExecutionContext();
-  const response = await worker.fetch(request, env, ctx);
-  await waitOnExecutionContext(ctx);
-  return response;
+  return SELF.fetch(`http://localhost${path}`, init);
 }

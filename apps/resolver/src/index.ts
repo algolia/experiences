@@ -1,6 +1,5 @@
 import { algoliasearch } from 'algoliasearch';
 
-import type { ExecutionContext } from '@cloudflare/workers-types';
 import type { Acl, Algoliasearch } from 'algoliasearch';
 
 const CORS_HEADERS = {
@@ -12,11 +11,7 @@ const CORS_HEADERS = {
 };
 
 export default {
-  async fetch(
-    request: Request,
-    env: Env,
-    _ctx: ExecutionContext
-  ): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS_HEADERS });

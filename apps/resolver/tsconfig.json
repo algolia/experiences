@@ -2,7 +2,7 @@
   "extends": "@experiences/typescript-config/base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "types": ["@cloudflare/vitest-pool-workers"]
+    "types": ["@cloudflare/vitest-pool-workers", "@cloudflare/workers-types"]
   },
   "include": ["src", "env.d.ts"]
 }
