@@ -1,0 +1,44 @@
+name: Canary Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm run build --workspace=@algolia/experiences
+
+      - name: Delete existing canary release
+        run: gh release delete canary --yes || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete existing canary tag
+        run: git push origin :refs/tags/canary || true
+
+      - name: Create canary release
+        run: |
+          gh release create canary \
+            packages/experiences/dist/experiences.js \
+            --prerelease \
+            --title "Canary" \
+            --notes "Latest build from main ($(git rev-parse --short HEAD))
+
+          **This is a testing release. Do not use in production.**
+
+          Built from commit: ${{ github.sha }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
