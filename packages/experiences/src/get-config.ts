@@ -20,29 +20,21 @@ export function getConfig(): LoaderConfiguration {
 
   const params = new URL(script.src).searchParams;
 
-  const appId = params.get('appId');
-  const apiKey = params.get('apiKey');
-  const experienceId = params.get('experienceId');
-
-  if (!appId) {
-    throw new Error('[@algolia/experiences] Missing required parameter: appId');
-  }
-
-  if (!apiKey) {
-    throw new Error(
-      '[@algolia/experiences] Missing required parameter: apiKey'
-    );
-  }
-
-  if (!experienceId) {
-    throw new Error(
-      '[@algolia/experiences] Missing required parameter: experienceId'
-    );
-  }
-
-  return {
-    appId,
-    apiKey,
-    experienceId,
+  const config = {
+    appId: params.get('appId'),
+    apiKey: params.get('apiKey'),
+    experienceId: params.get('experienceId'),
   };
+
+  const missingParams = Object.entries(config)
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+
+  if (missingParams.length > 0) {
+    throw new Error(
+      `[@algolia/experiences] Missing required parameter(s): ${missingParams.join(', ')}`
+    );
+  }
+
+  return config as LoaderConfiguration;
 }

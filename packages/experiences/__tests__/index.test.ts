@@ -95,7 +95,9 @@ describe('loader', () => {
 
     expect(errorSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: expect.stringContaining('Missing required parameter: appId'),
+        message: expect.stringContaining(
+          'Missing required parameter(s): appId'
+        ),
       })
     );
   });
@@ -112,7 +114,9 @@ describe('loader', () => {
 
     expect(errorSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: expect.stringContaining('Missing required parameter: apiKey'),
+        message: expect.stringContaining(
+          'Missing required parameter(s): apiKey'
+        ),
       })
     );
   });
@@ -129,7 +133,7 @@ describe('loader', () => {
     expect(errorSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.stringContaining(
-          'Missing required parameter: experienceId'
+          'Missing required parameter(s): experienceId'
         ),
       })
     );
