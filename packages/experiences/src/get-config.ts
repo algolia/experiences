@@ -14,7 +14,7 @@ export function getConfig(): LoaderConfiguration {
   if (!script) {
     throw new Error(
       '[@algolia/experiences] Could not find the current script element. ' +
-      'Make sure the script is loaded synchronously.'
+        'Make sure the script is loaded synchronously.'
     );
   }
 

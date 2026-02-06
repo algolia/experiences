@@ -17,12 +17,15 @@ export async function resolve(
   let response: Response;
 
   try {
-    response = await fetch(`${RESOLVER_URL}/${encodeURIComponent(experienceId)}`, {
-      headers: {
-        'X-Algolia-Application-Id': appId,
-        'X-Algolia-API-Key': apiKey,
-      },
-    });
+    response = await fetch(
+      `${RESOLVER_URL}/${encodeURIComponent(experienceId)}`,
+      {
+        headers: {
+          'X-Algolia-Application-Id': appId,
+          'X-Algolia-API-Key': apiKey,
+        },
+      }
+    );
   } catch {
     throw new Error(
       '[@algolia/experiences] Network error: failed to reach resolver'
@@ -40,9 +43,7 @@ export async function resolve(
   try {
     data = (await response.json()) as ResolverResponse;
   } catch {
-    throw new Error(
-      '[@algolia/experiences] Resolver returned invalid JSON'
-    );
+    throw new Error('[@algolia/experiences] Resolver returned invalid JSON');
   }
 
   return data;

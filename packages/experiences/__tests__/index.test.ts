@@ -181,7 +181,9 @@ describe('loader', () => {
 
     expect(errorSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: expect.stringContaining(`Failed to load bundle: ${BUNDLE_URL}`),
+        message: expect.stringContaining(
+          `Failed to load bundle: ${BUNDLE_URL}`
+        ),
       })
     );
   });
@@ -202,7 +204,9 @@ describe('loader', () => {
 
     expect(errorSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: expect.stringContaining('Network error: failed to reach resolver'),
+        message: expect.stringContaining(
+          'Network error: failed to reach resolver'
+        ),
       })
     );
   });
@@ -212,10 +216,12 @@ describe('loader', () => {
       '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     server.use(
-      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
-        new HttpResponse('not json', {
-          headers: { 'Content-Type': 'text/html' },
-        })
+      http.get(
+        `${RESOLVER_URL}/YOUR_EXPERIENCE_ID`,
+        () =>
+          new HttpResponse('not json', {
+            headers: { 'Content-Type': 'text/html' },
+          })
       )
     );
 
