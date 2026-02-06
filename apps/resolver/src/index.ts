@@ -1,9 +1,6 @@
-import { type KVNamespace } from '@cloudflare/workers-types';
-import { algoliasearch, type Acl, type Algoliasearch } from 'algoliasearch';
+import { algoliasearch } from 'algoliasearch';
 
-interface Env {
-  EXPERIENCES_BUNDLE_VERSIONS: KVNamespace;
-}
+import type { Acl, Algoliasearch } from 'algoliasearch';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -68,12 +65,18 @@ export default {
         return response({ message: 'Forbidden' }, 403);
       }
 
-      const body = (await request.json()) as { bundleVersion: string };
-      if (!body.bundleVersion) {
+      let bundleVersion: string;
+      try {
+        const body = (await request.json()) as { bundleVersion?: string };
+        if (!body.bundleVersion) {
+          throw new Error();
+        }
+        bundleVersion = body.bundleVersion;
+      } catch {
         return response({ message: 'Missing bundleVersion.' }, 400);
       }
 
-      await env.EXPERIENCES_BUNDLE_VERSIONS.put(kvKey, body.bundleVersion);
+      await env.EXPERIENCES_BUNDLE_VERSIONS.put(kvKey, bundleVersion);
 
       return response({ experienceId });
     }
@@ -95,6 +98,7 @@ async function validateAcl(
   requiredAcl: Acl
 ): Promise<boolean> {
   try {
+    // TODO: Cache API key ACLs to reduce requests to Algolia
     const { acl } = await client.getApiKey({ key: apiKey });
     return acl.includes(requiredAcl);
   } catch {
