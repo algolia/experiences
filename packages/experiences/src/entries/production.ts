@@ -1,6 +1,7 @@
 /**
  * Production entry point.
- * Loads configuration from URL parameters and fetches runtime config from the API.
+ * Reads credentials from URL parameters and calls run() without config override.
+ * The runtime bundle fetches its configuration from the API.
  */
 import { getConfig, load } from '../core';
 

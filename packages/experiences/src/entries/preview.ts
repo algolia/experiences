@@ -22,7 +22,7 @@ function getPreviewConfig(): LoaderConfiguration {
   let runtimeConfig: Record<string, unknown>;
 
   try {
-    runtimeConfig = JSON.parse(atob(runtimeConfigParam));
+    runtimeConfig = JSON.parse(decodeURIComponent(atob(runtimeConfigParam)));
   } catch {
     throw new Error(
       '[@algolia/experiences] Invalid algolia_experiences_config: must be base64-encoded JSON'

@@ -52,7 +52,9 @@ describe('preview loader', () => {
 
   it('passes runtime config from page URL to AlgoliaExperiences.run', async () => {
     const runtimeConfig = { foo: 'bar', baz: 123 };
-    const encodedConfig = btoa(JSON.stringify(runtimeConfig));
+    const encodedConfig = btoa(
+      encodeURIComponent(JSON.stringify(runtimeConfig))
+    );
 
     // Script URL has appId, apiKey, experienceId
     script.src =
@@ -109,6 +111,39 @@ describe('preview loader', () => {
     injectedScript?.onload?.(new Event('load'));
 
     expect(runSpy).toHaveBeenCalledWith(undefined);
+  });
+
+  it('handles Unicode characters in runtime config', async () => {
+    const runtimeConfig = { title: 'Café ☕', emoji: '🎉' };
+    const encodedConfig = btoa(
+      encodeURIComponent(JSON.stringify(runtimeConfig))
+    );
+
+    script.src =
+      '../src/entries/preview.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+
+    Object.defineProperty(window, 'location', {
+      value: { search: `?algolia_experiences_config=${encodedConfig}` },
+      configurable: true,
+    });
+
+    server.use(
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
+        HttpResponse.json({ bundleUrl: BUNDLE_URL })
+      )
+    );
+
+    const runSpy = vi.fn();
+    window.AlgoliaExperiences = { run: runSpy };
+
+    await (
+      await import('../src/entries/preview')
+    ).default;
+
+    const injectedScript = document.head.querySelector('script');
+    injectedScript?.onload?.(new Event('load'));
+
+    expect(runSpy).toHaveBeenCalledWith(runtimeConfig);
   });
 
   it('logs error when algolia_experiences_config is invalid', async () => {

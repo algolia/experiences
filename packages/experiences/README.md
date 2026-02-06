@@ -21,13 +21,13 @@ Add the loader script to your HTML with your Algolia credentials and experience 
 
 ### Preview
 
-Use the preview bundle on staging environments or the Algolia Dashboard for live editing:
+Use the preview bundle on staging environments for live editing:
 
 ```html
 <script src="https://github.com/algolia/experiences/releases/download/canary/experiences.preview.js?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID"></script>
 ```
 
-The preview bundle reads `algolia_experiences_config` from the **page URL** (not the script URL). This allows the Dashboard to add the parameter to the iframe URL, or users to share preview links:
+The preview bundle reads `algolia_experiences_config` from the page URL. This allows to add the parameter to the iframe URL, or users to share preview links:
 
 ```
 https://example.org/page?algolia_experiences_config=BASE64_CONFIG
@@ -36,8 +36,8 @@ https://example.org/page?algolia_experiences_config=BASE64_CONFIG
 The loader decodes the base64 JSON and passes it to `AlgoliaExperiences.run(config)`.
 
 ```js
-const config = { theme: 'dark', columns: 4 };
-const encoded = btoa(JSON.stringify(config));
+const config = { title: 'Café ☕', theme: 'dark' };
+const encoded = btoa(encodeURIComponent(JSON.stringify(config)));
 // https://example.org/page?algolia_experiences_config=${encoded}
 ```
 
@@ -78,10 +78,16 @@ Canary releases are pre-production builds for testing. To create one:
 2. Click "Run workflow"
 3. Select the `main` branch and click "Run workflow"
 
-This builds the package and uploads it to a GitHub release tagged `canary`. The script is available at:
+This builds the package and uploads it to a GitHub release tagged `canary`. The scripts are available at:
 
 ```
 https://github.com/algolia/experiences/releases/download/canary/experiences.js
+https://github.com/algolia/experiences/releases/download/canary/experiences.preview.js
 ```
 
 Each run overwrites the previous canary release.
+
+## Security
+
+- **Use the production bundle on public sites.** The preview bundle accepts configuration from the page URL, which could allow malicious links to manipulate displayed content.
+- **Use a search-only API key** with minimal permissions. The API key is visible in the page source.
