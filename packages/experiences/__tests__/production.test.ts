@@ -268,7 +268,9 @@ describe('production loader', () => {
 
   it('does not pass runtime config in production', async () => {
     const runtimeConfig = { foo: 'bar' };
-    const encodedConfig = btoa(JSON.stringify(runtimeConfig));
+    const encodedConfig = btoa(
+      encodeURIComponent(JSON.stringify(runtimeConfig))
+    );
     script.src = `../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID&algolia_experiences_config=${encodedConfig}`;
 
     server.use(

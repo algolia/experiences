@@ -146,12 +146,39 @@ describe('preview loader', () => {
     expect(runSpy).toHaveBeenCalledWith(runtimeConfig);
   });
 
-  it('logs error when algolia_experiences_config is invalid', async () => {
+  it('logs error when algolia_experiences_config is invalid base64', async () => {
     script.src =
       '../src/entries/preview.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     Object.defineProperty(window, 'location', {
       value: { search: '?algolia_experiences_config=not-valid-base64' },
+      configurable: true,
+    });
+
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await (
+      await import('../src/entries/preview')
+    ).default;
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining(
+          'Invalid algolia_experiences_config: must be base64-encoded JSON'
+        ),
+      })
+    );
+  });
+
+  it('logs error when algolia_experiences_config is valid base64 but invalid JSON', async () => {
+    script.src =
+      '../src/entries/preview.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+
+    // Valid base64 but not valid JSON
+    Object.defineProperty(window, 'location', {
+      value: {
+        search: `?algolia_experiences_config=${btoa(encodeURIComponent('{ invalid json }'))}`,
+      },
       configurable: true,
     });
 
