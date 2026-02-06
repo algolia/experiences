@@ -32,7 +32,7 @@ The loader is lightweight and always fetches the latest compatible runtime versi
 
 Canary releases are pre-production builds for testing. To create one:
 
-1. Go to [Actions → Canary Release](../../actions/workflows/canary-release.yml)
+1. Go to [Actions → Canary Release](https://github.com/algolia/experiences/actions/workflows/canary-release.yml)
 2. Click "Run workflow"
 3. Select the `main` branch and click "Run workflow"
 
