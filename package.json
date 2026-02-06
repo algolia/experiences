@@ -5,8 +5,8 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "oxlint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,md}\"",
+    "format": "prettier --write \"**/*.{ts,tsx,md,html}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,md,html}\"",
     "check-types": "turbo run check-types",
     "test": "turbo run test",
     "prepare": "husky"
@@ -16,7 +16,7 @@
       "oxlint",
       "prettier --write"
     ],
-    "*.md": [
+    "*.{md,html}": [
       "prettier --write"
     ]
   },
