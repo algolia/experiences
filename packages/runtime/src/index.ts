@@ -6,21 +6,19 @@ import {
   experience,
   getConfig,
   getExperience,
+  type ExperienceApiResponse,
 } from './experiences';
 
 export { createExperienceMiddleware, experience };
 
 let search: InstantSearch | null = null;
 
-export async function run() {
+export async function run(runtimeConfig?: ExperienceApiResponse) {
   const { appId, apiKey, experienceId, env = 'prod' } = getConfig();
 
-  const experienceConfig = await getExperience({
-    appId,
-    apiKey,
-    env,
-    experienceId,
-  });
+  const experienceConfig =
+    runtimeConfig ??
+    (await getExperience({ appId, apiKey, env, experienceId }));
 
   const indexName = experienceConfig.blocks
     .map((block) => block.parameters.indexName)

@@ -13,7 +13,6 @@ import type { InstantSearch } from 'instantsearch.js/es/types';
 import type { TemplateChild } from './renderer';
 import type { ExperienceWidgetParams } from './types';
 
-import 'instantsearch.css/components/autocomplete.css';
 import 'instantsearch.css/components/chat.css';
 
 const withUsage = createDocumentationMessageGenerator({ name: 'experience' });
