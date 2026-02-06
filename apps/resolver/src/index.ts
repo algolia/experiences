@@ -98,6 +98,7 @@ async function validateAcl(
   requiredAcl: Acl
 ): Promise<boolean> {
   try {
+    // TODO: Cache API key ACLs to reduce requests to Algolia
     const { acl } = await client.getApiKey({ key: apiKey });
     return acl.includes(requiredAcl);
   } catch {
