@@ -10,11 +10,7 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
-    "test": {
-      "dependsOn": ["^build"],
-      "inputs": ["src/**", "vitest.config.ts"],
-      "outputs": []
-    },
+    "test": {},
     "dev": {
       "cache": false,
       "persistent": true
