@@ -23,7 +23,7 @@ afterEach(() => {
 afterAll(() => server.close());
 
 const BUNDLE_URL =
-  'https://cdn.jsdelivr.net/npm/@algolia/runtime@x.y.z/dist/experiences.umd.js';
+  'https://github.com/algolia/experiences/releases/download/canary/runtime.js';
 
 describe('loader', () => {
   let script: HTMLScriptElement;
