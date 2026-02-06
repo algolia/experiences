@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Algolia Experiences - Live Editing Example</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      code {
+        background: #f4f4f4;
+        padding: 0.2em 0.4em;
+        border-radius: 3px;
+      }
+
+      pre {
+        background: #f4f4f4;
+        padding: 1rem;
+        border-radius: 6px;
+        overflow-x: auto;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 150px;
+        font-family: monospace;
+        font-size: 14px;
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      button {
+        background: #5468ff;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      button:hover {
+        background: #3c4fe0;
+      }
+
+      .config-editor {
+        margin: 1rem 0;
+      }
+
+      .encoded-output {
+        word-break: break-all;
+        font-size: 12px;
+      }
+
+      .current-config {
+        background: #e8f4e8;
+        padding: 1rem;
+        border-radius: 6px;
+        margin: 1rem 0;
+      }
+
+      .error {
+        color: #d32f2f;
+        margin-top: 0.5rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Algolia Experiences - Live Editing Example</h1>
+    <p>
+      This example demonstrates how to use the preview bundle for live editing.
+      The config is read from the page URL, allowing the Dashboard to pass
+      configuration via iframe URL or users to share preview links.
+    </p>
+
+    <h2>Current Config</h2>
+    <div class="current-config">
+      <strong>From URL:</strong>
+      <pre id="current-config">No config in URL</pre>
+    </div>
+
+    <h2>Edit Config</h2>
+    <div class="config-editor">
+      <textarea id="config-input">
+{
+  "theme": "dark",
+  "columns": 4,
+  "title": "Featured Products"
+}</textarea
+      >
+      <div id="error" class="error"></div>
+      <br /><br />
+      <button onclick="applyConfig()">Apply Config</button>
+      <button onclick="clearConfig()">Clear Config</button>
+    </div>
+
+    <h2>Encoded Config</h2>
+    <pre class="encoded-output" id="encoded-output">-</pre>
+
+    <h2>How It Works</h2>
+    <ol>
+      <li>Edit the JSON config above</li>
+      <li>Click "Apply Config" to update the URL</li>
+      <li>
+        The preview bundle reads <code>algolia_experiences_config</code> from
+        the URL
+      </li>
+      <li>
+        The decoded config is passed to <code>AlgoliaExperiences.run()</code>
+      </li>
+    </ol>
+
+    <h2>Encoding</h2>
+    <pre><code>const encoded = btoa(encodeURIComponent(JSON.stringify(config)));</code></pre>
+
+    <script>
+      // Display current config from URL
+      function displayCurrentConfig() {
+        const params = new URLSearchParams(window.location.search);
+        const encoded = params.get('algolia_experiences_config');
+
+        if (encoded) {
+          try {
+            const decoded = JSON.parse(decodeURIComponent(atob(encoded)));
+            document.getElementById('current-config').textContent =
+              JSON.stringify(decoded, null, 2);
+            document.getElementById('encoded-output').textContent = encoded;
+          } catch (e) {
+            document.getElementById('current-config').textContent =
+              'Invalid config: ' + e.message;
+          }
+        } else {
+          document.getElementById('current-config').textContent =
+            'No config in URL';
+          document.getElementById('encoded-output').textContent = '-';
+        }
+      }
+
+      // Apply config to URL
+      function applyConfig() {
+        const input = document.getElementById('config-input').value;
+        const errorEl = document.getElementById('error');
+        errorEl.textContent = '';
+
+        try {
+          const config = JSON.parse(input);
+          const encoded = btoa(encodeURIComponent(JSON.stringify(config)));
+          const url = new URL(window.location.href);
+          url.searchParams.set('algolia_experiences_config', encoded);
+          window.history.pushState({}, '', url);
+          displayCurrentConfig();
+        } catch (e) {
+          errorEl.textContent = 'Invalid JSON: ' + e.message;
+        }
+      }
+
+      // Clear config from URL
+      function clearConfig() {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('algolia_experiences_config');
+        window.history.pushState({}, '', url);
+        displayCurrentConfig();
+      }
+
+      // Initialize
+      displayCurrentConfig();
+    </script>
+
+    <!-- Preview bundle reads config from page URL -->
+    <script src="https://github.com/algolia/experiences/releases/download/canary/experiences.preview.js?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID"></script>
+  </body>
+</html>
