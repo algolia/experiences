@@ -1,5 +1,5 @@
 import { RESOLVER_URL } from './constants';
-import type { LoaderConfiguration } from './get-config';
+import type { LoaderConfiguration } from './types';
 
 export type ResolverResponse = {
   bundleUrl: string;

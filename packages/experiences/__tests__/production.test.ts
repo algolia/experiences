@@ -11,7 +11,7 @@ import {
   vi,
 } from 'vitest';
 
-import { RESOLVER_URL } from '../src/constants';
+import { RESOLVER_URL } from '../src/core/constants';
 
 const server = setupServer();
 
@@ -25,7 +25,7 @@ afterAll(() => server.close());
 const BUNDLE_URL =
   'https://github.com/algolia/experiences/releases/download/canary/runtime.js';
 
-describe('loader', () => {
+describe('production loader', () => {
   let script: HTMLScriptElement;
 
   beforeEach(() => {
@@ -47,7 +47,7 @@ describe('loader', () => {
 
   it('injects the runtime script returned by the resolver', async () => {
     script.src =
-      '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+      '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     server.use(
       http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
@@ -56,7 +56,7 @@ describe('loader', () => {
     );
 
     await (
-      await import('../src/index')
+      await import('../src/entries/production')
     ).default;
 
     expect(document.head.querySelector('script')?.src).toBe(BUNDLE_URL);
@@ -64,7 +64,7 @@ describe('loader', () => {
 
   it('sends Algolia credentials as headers', async () => {
     script.src =
-      '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+      '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     let headers: Headers;
 
@@ -76,7 +76,7 @@ describe('loader', () => {
     );
 
     await (
-      await import('../src/index')
+      await import('../src/entries/production')
     ).default;
 
     expect(headers!.get('X-Algolia-Application-Id')).toBe('YOUR_APP_ID');
@@ -85,12 +85,12 @@ describe('loader', () => {
 
   it('logs error when appId is missing', async () => {
     script.src =
-      '../src/index.ts?apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+      '../src/entries/production.ts?apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     await (
-      await import('../src/index')
+      await import('../src/entries/production')
     ).default;
 
     expect(errorSpy).toHaveBeenCalledWith(
@@ -104,12 +104,12 @@ describe('loader', () => {
 
   it('logs error when apiKey is missing', async () => {
     script.src =
-      '../src/index.ts?appId=YOUR_APP_ID&experienceId=YOUR_EXPERIENCE_ID';
+      '../src/entries/production.ts?appId=YOUR_APP_ID&experienceId=YOUR_EXPERIENCE_ID';
 
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     await (
-      await import('../src/index')
+      await import('../src/entries/production')
     ).default;
 
     expect(errorSpy).toHaveBeenCalledWith(
@@ -122,12 +122,13 @@ describe('loader', () => {
   });
 
   it('logs error when experienceId is missing', async () => {
-    script.src = '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY';
+    script.src =
+      '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY';
 
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     await (
-      await import('../src/index')
+      await import('../src/entries/production')
     ).default;
 
     expect(errorSpy).toHaveBeenCalledWith(
@@ -141,7 +142,7 @@ describe('loader', () => {
 
   it('logs error when resolver fails', async () => {
     script.src =
-      '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+      '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     server.use(
       http.get(
@@ -154,7 +155,7 @@ describe('loader', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     await (
-      await import('../src/index')
+      await import('../src/entries/production')
     ).default;
 
     expect(errorSpy).toHaveBeenCalledWith(
@@ -166,7 +167,7 @@ describe('loader', () => {
 
   it('logs error when bundle fails to load', async () => {
     script.src =
-      '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+      '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     server.use(
       http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
@@ -177,7 +178,7 @@ describe('loader', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     await (
-      await import('../src/index')
+      await import('../src/entries/production')
     ).default;
 
     const injectedScript = document.head.querySelector('script');
@@ -194,7 +195,7 @@ describe('loader', () => {
 
   it('logs error when network fails', async () => {
     script.src =
-      '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+      '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     server.use(
       http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => HttpResponse.error())
@@ -203,7 +204,7 @@ describe('loader', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     await (
-      await import('../src/index')
+      await import('../src/entries/production')
     ).default;
 
     expect(errorSpy).toHaveBeenCalledWith(
@@ -217,7 +218,7 @@ describe('loader', () => {
 
   it('logs error when resolver returns invalid JSON', async () => {
     script.src =
-      '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+      '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     server.use(
       http.get(
@@ -232,7 +233,7 @@ describe('loader', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     await (
-      await import('../src/index')
+      await import('../src/entries/production')
     ).default;
 
     expect(errorSpy).toHaveBeenCalledWith(
@@ -244,7 +245,7 @@ describe('loader', () => {
 
   it('calls AlgoliaExperiences.run when bundle loads', async () => {
     script.src =
-      '../src/index.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+      '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     server.use(
       http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
@@ -256,12 +257,38 @@ describe('loader', () => {
     window.AlgoliaExperiences = { run: runSpy };
 
     await (
-      await import('../src/index')
+      await import('../src/entries/production')
     ).default;
 
     const injectedScript = document.head.querySelector('script');
     injectedScript?.onload?.(new Event('load'));
 
     expect(runSpy).toHaveBeenCalled();
+  });
+
+  it('does not pass runtime config in production', async () => {
+    const runtimeConfig = { foo: 'bar' };
+    const encodedConfig = btoa(
+      encodeURIComponent(JSON.stringify(runtimeConfig))
+    );
+    script.src = `../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID&algolia_experiences_config=${encodedConfig}`;
+
+    server.use(
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
+        HttpResponse.json({ bundleUrl: BUNDLE_URL })
+      )
+    );
+
+    const runSpy = vi.fn();
+    window.AlgoliaExperiences = { run: runSpy };
+
+    await (
+      await import('../src/entries/production')
+    ).default;
+
+    const injectedScript = document.head.querySelector('script');
+    injectedScript?.onload?.(new Event('load'));
+
+    expect(runSpy).toHaveBeenCalledWith(undefined);
   });
 });
