@@ -6,7 +6,7 @@ import { getExperience } from './get-experience';
 import chat from 'instantsearch.js/es/widgets/chat/chat';
 
 import { renderTemplate, renderTool } from './renderer';
-import { ExperienceWidget } from './types';
+import type { ExperienceWidget } from './types';
 
 import type { ChatTransport } from 'instantsearch.js/es/connectors/chat/connectChat';
 import type { InstantSearch } from 'instantsearch.js/es/types';

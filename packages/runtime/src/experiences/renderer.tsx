@@ -128,7 +128,7 @@ export function renderTemplate(
         ])
     );
 
-    // @ts-ignore
+    // @ts-expect-error -- dynamic tag name
     return <Tag {...attributes}>{children}</Tag>;
   }
 
@@ -183,6 +183,11 @@ export function renderTool({ name, experience }: RenderToolParams) {
                 success: true,
                 ...data,
               },
+            })
+          )
+          .catch(() =>
+            addToolResult({
+              output: { success: false, error: 'Webhook call failed' },
             })
           );
       },
