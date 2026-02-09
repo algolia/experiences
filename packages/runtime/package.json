@@ -5,18 +5,24 @@
   "description": "Algolia Experiences runtime bundle",
   "license": "MIT",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/runtime.js",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc --build",
-    "dev": "tsc --build --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "algoliasearch": "5.48.0",
+    "instantsearch.css": "8.10.0",
+    "instantsearch.js": "4.87.1",
+    "preact": "10.28.3"
   },
   "devDependencies": {
     "@experiences/typescript-config": "*",
+    "tsdown": "0.9.3",
     "typescript": "5.9.2"
   }
 }

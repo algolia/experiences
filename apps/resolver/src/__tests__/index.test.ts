@@ -127,7 +127,7 @@ describe('/{experienceId}', () => {
       const body = await response.json<ResponseBody>();
       expect(body.experienceId).toBe('exp123');
       expect(body.bundleUrl).toBe(
-        'https://cdn.jsdelivr.net/npm/@algolia/runtime@2.0.0/dist/experiences.umd.js'
+        'https://github.com/algolia/experiences/releases/download/2.0.0/runtime.js'
       );
     });
 

@@ -107,5 +107,5 @@ async function validateAcl(
 }
 
 function getBundleURL(bundleVersion: string) {
-  return `https://cdn.jsdelivr.net/npm/@algolia/runtime@${bundleVersion}/dist/experiences.umd.js`;
+  return `https://github.com/algolia/experiences/releases/download/${bundleVersion}/runtime.js`;
 }
