@@ -42,6 +42,9 @@ describe('production loader', () => {
     document.head
       .querySelectorAll('script')
       .forEach((script) => script.remove());
+    document.head
+      .querySelectorAll('link[rel="stylesheet"]')
+      .forEach((link) => link.remove());
     delete window.AlgoliaExperiences;
   });
 
@@ -59,7 +62,29 @@ describe('production loader', () => {
       await import('../src/entries/production')
     ).default;
 
-    expect(document.head.querySelector('script')?.src).toBe(BUNDLE_URL);
+    expect(document.head.querySelector('script')?.src).toBe(
+      `${BUNDLE_URL}?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID`
+    );
+  });
+
+  it('injects the runtime CSS stylesheet', async () => {
+    script.src =
+      '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
+
+    server.use(
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
+        HttpResponse.json({ bundleUrl: BUNDLE_URL })
+      )
+    );
+
+    await (
+      await import('../src/entries/production')
+    ).default;
+
+    const link = document.head.querySelector('link[rel="stylesheet"]');
+    expect(link?.getAttribute('href')).toBe(
+      BUNDLE_URL.replace(/\.js$/, '.css')
+    );
   });
 
   it('sends Algolia credentials as headers', async () => {
