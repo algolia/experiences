@@ -1,8 +1,4 @@
-export type LoaderConfiguration = {
-  appId: string;
-  apiKey: string;
-  experienceId: string;
-};
+import type { LoaderConfiguration } from './types';
 
 /**
  * Extracts configuration from the current script's URL parameters.
@@ -36,5 +32,9 @@ export function getConfig(): LoaderConfiguration {
     );
   }
 
-  return config as LoaderConfiguration;
+  return {
+    appId: config.appId,
+    apiKey: config.apiKey,
+    experienceId: config.experienceId,
+  } as LoaderConfiguration;
 }
