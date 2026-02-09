@@ -142,7 +142,8 @@ type RenderToolParams = {
 };
 
 export function renderTool({ name, experience }: RenderToolParams) {
-  const { template, webhook } = experience.blocks[0]?.parameters as unknown as {
+  const block = experience.blocks[0];
+  const { template, webhook } = (block?.parameters ?? {}) as unknown as {
     template: TemplateChild[];
     webhook?: string;
   };
