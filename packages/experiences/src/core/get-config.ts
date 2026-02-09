@@ -32,9 +32,12 @@ export function getConfig(): LoaderConfiguration {
     );
   }
 
+  const env = params.get('env') ?? undefined;
+
   return {
     appId: config.appId,
     apiKey: config.apiKey,
     experienceId: config.experienceId,
+    env,
   } as LoaderConfiguration;
 }

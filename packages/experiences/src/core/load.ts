@@ -23,6 +23,9 @@ export async function load(config: LoaderConfiguration) {
   runtimeUrl.searchParams.set('appId', config.appId);
   runtimeUrl.searchParams.set('apiKey', config.apiKey);
   runtimeUrl.searchParams.set('experienceId', config.experienceId);
+  if (config.env) {
+    runtimeUrl.searchParams.set('env', config.env);
+  }
 
   const cssUrl = bundleUrl.replace(/\.js$/, '.css');
   const link = document.createElement('link');
