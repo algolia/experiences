@@ -40,7 +40,7 @@ export function getConfig(): RuntimeConfiguration {
     );
   }
 
-  const env = params.get('env') as RuntimeConfiguration['env'];
+  const env = (params.get('env') ?? undefined) as RuntimeConfiguration['env'];
 
   return { ...config, env } as RuntimeConfiguration;
 }
