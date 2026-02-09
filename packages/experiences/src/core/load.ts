@@ -19,9 +19,13 @@ declare global {
 export async function load(config: LoaderConfiguration) {
   const { bundleUrl } = await resolve(config);
 
+  const runtimeUrl = new URL(bundleUrl);
+  runtimeUrl.searchParams.set('appId', config.appId);
+  runtimeUrl.searchParams.set('apiKey', config.apiKey);
+  runtimeUrl.searchParams.set('experienceId', config.experienceId);
+
   const script = document.createElement('script');
-  script.src = bundleUrl;
-  script.async = true;
+  script.src = runtimeUrl.toString();
   script.onload = () => {
     window.AlgoliaExperiences?.run(config.runtimeConfig);
   };

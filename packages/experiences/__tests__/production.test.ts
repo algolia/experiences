@@ -59,7 +59,9 @@ describe('production loader', () => {
       await import('../src/entries/production')
     ).default;
 
-    expect(document.head.querySelector('script')?.src).toBe(BUNDLE_URL);
+    expect(document.head.querySelector('script')?.src).toBe(
+      `${BUNDLE_URL}?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID`
+    );
   });
 
   it('sends Algolia credentials as headers', async () => {
