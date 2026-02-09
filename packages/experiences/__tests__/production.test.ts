@@ -67,7 +67,7 @@ describe('production loader', () => {
     );
   });
 
-  it('injects the runtime CSS stylesheet', async () => {
+  it('does not inject a CSS stylesheet link (CSS is inlined in the runtime bundle)', async () => {
     script.src =
       '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
@@ -82,9 +82,7 @@ describe('production loader', () => {
     ).default;
 
     const link = document.head.querySelector('link[rel="stylesheet"]');
-    expect(link?.getAttribute('href')).toBe(
-      BUNDLE_URL.replace(/\.js$/, '.css')
-    );
+    expect(link).toBeNull();
   });
 
   it('sends Algolia credentials as headers', async () => {
