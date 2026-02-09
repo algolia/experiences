@@ -27,11 +27,9 @@ export async function load(config: LoaderConfiguration) {
     runtimeUrl.searchParams.set('env', config.env);
   }
 
-  const cssUrl = bundleUrl.replace(/\.js$/, '.css');
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = cssUrl;
-  document.head.appendChild(link);
+  // TODO: Load CSS via <link> once served from a CDN with proper MIME type.
+  // Currently, CSS is inlined in the runtime JS bundle (see injectCssPlugin in
+  // packages/runtime/tsdown.config.ts).
 
   const script = document.createElement('script');
   script.src = runtimeUrl.toString();

@@ -13,7 +13,17 @@ import type { InstantSearch } from 'instantsearch.js/es/types';
 import type { TemplateChild } from './renderer';
 import type { ExperienceWidgetParams } from './types';
 
-import 'instantsearch.css/components/chat.css';
+// TODO: Serve CSS from a CDN with proper MIME type and load via <link> from the
+// loader instead of inlining it in JS. GitHub release downloads serve as
+// application/octet-stream which browsers reject for stylesheets. Remove the
+// __CHAT_CSS__ define in tsdown.config.ts and this <style> injection once we
+// have a proper CDN setup.
+declare const __CHAT_CSS__: string;
+(() => {
+  const style = document.createElement('style');
+  style.textContent = __CHAT_CSS__;
+  document.head.appendChild(style);
+})();
 
 const withUsage = createDocumentationMessageGenerator({ name: 'experience' });
 
