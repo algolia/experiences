@@ -35,7 +35,7 @@ jobs:
           gh release create canary \
             packages/experiences/dist/experiences.js \
             packages/experiences/dist/experiences.preview.js \
-            packages/runtime/dist/runtime.js \
+            packages/experiences/dist/runtime.js \
             --prerelease \
             --title "Canary" \
             --notes "Latest build from main ($(git rev-parse --short HEAD))
