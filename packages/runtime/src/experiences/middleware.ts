@@ -42,7 +42,7 @@ export function createExperienceMiddleware(
           config.blocks.forEach((block) => {
             const { type, parameters } = block;
 
-            const cssVariablesKeys = Object.keys(parameters.cssVariables);
+            const cssVariablesKeys = Object.keys(parameters.cssVariables ?? {});
             if (cssVariablesKeys.length > 0) {
               injectStyleElement(`
                   :root {
