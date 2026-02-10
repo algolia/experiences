@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ACME Store — Fashion for Everyone</title>
+    <title>Relaxed Wool Blazer — ACME Store</title>
     <meta
       name="description"
-      content="Discover the latest trends in fashion at ACME Store. Shop women's, men's, and accessories."
+      content="Shop the Relaxed Wool Blazer from ACME Store. Premium quality, timeless design."
     />
     <link rel="stylesheet" href="/styles.css" />
   </head>
@@ -67,175 +67,107 @@
       </div>
     </nav>
 
-    <!-- ===== HERO ===== -->
-    <section class="hero">
-      <div class="hero-inner">
-        <div class="hero-content">
-          <span class="hero-tag">Spring / Summer 2026</span>
-          <h1 class="hero-title">The New Season Collection</h1>
-          <p class="hero-subtitle">
-            Effortless style meets modern design. Discover pieces crafted for
-            everyday elegance.
-          </p>
-          <div style="display: flex; gap: 12px; flex-wrap: wrap">
-            <a href="/search.html" class="btn btn-primary btn-lg">Shop Now</a>
-            <a href="/search.html" class="btn btn-outline btn-lg"
-              >Explore Lookbook</a
-            >
-          </div>
-        </div>
-        <div class="hero-image">
+    <!-- ===== PRODUCT DETAIL ===== -->
+    <div class="product-detail">
+      <!-- GALLERY -->
+      <div class="product-gallery">
+        <div class="product-gallery-main">
           <img
-            src="/images/hero.jpg"
-            alt="Spring Summer 2026 collection featuring elegant everyday fashion"
+            src="/images/products/blazer-detail-1.jpg"
+            alt="Relaxed Wool Blazer — front view"
           />
         </div>
+        <div class="product-gallery-thumbs">
+          <div class="product-gallery-thumb active">
+            <img
+              src="/images/products/blazer-detail-1.jpg"
+              alt="Front view thumbnail"
+            />
+          </div>
+          <div class="product-gallery-thumb">
+            <img
+              src="/images/products/blazer-detail-2.jpg"
+              alt="Side view thumbnail"
+            />
+          </div>
+          <div class="product-gallery-thumb">
+            <img
+              src="/images/products/blazer-detail-3.jpg"
+              alt="Back view thumbnail"
+            />
+          </div>
+          <div class="product-gallery-thumb">
+            <img
+              src="/images/products/blazer-detail-4.jpg"
+              alt="Detail view thumbnail"
+            />
+          </div>
+        </div>
       </div>
-    </section>
 
-    <!-- ===== RECOMMENDATIONS WIDGET ===== -->
-    <div class="section">
-      <div
-        id="recommendations"
-        class="widget-placeholder"
-        data-widget="Personalized Recommendations"
-      ></div>
+      <!-- INFO -->
+      <div class="product-info">
+        <div class="product-breadcrumb">
+          <a href="/index.html">Home</a> / <a href="/search.html">Women</a> /
+          Blazers
+        </div>
+        <h1 class="product-title">Relaxed Wool Blazer</h1>
+        <div class="product-price">$189.00</div>
+        <p class="product-description">
+          Crafted from premium Italian wool blend, this relaxed-fit blazer
+          combines tailored sophistication with everyday comfort. Features a
+          single-button closure, patch pockets, and a soft shoulder construction
+          for an effortlessly refined silhouette. Perfect for both office and
+          weekend wear.
+        </p>
+
+        <div class="product-options">
+          <div>
+            <div class="product-option-label">Size</div>
+            <div class="product-sizes">
+              <button class="product-size">XS</button>
+              <button class="product-size active">S</button>
+              <button class="product-size">M</button>
+              <button class="product-size">L</button>
+              <button class="product-size">XL</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="product-add-to-cart">Add to Cart</button>
+
+        <div class="product-meta">
+          <span>Free shipping on orders over $100</span>
+          <span>Free returns within 30 days</span>
+          <span>SKU: ACM-WBL-001</span>
+        </div>
+      </div>
     </div>
 
-    <!-- ===== TRENDING NOW ===== -->
+    <!-- ===== RELATED PRODUCTS WIDGET ===== -->
     <section class="section">
       <div class="section-header">
-        <h2 class="section-title">Trending Now</h2>
-        <a href="/search.html" class="section-link">View All &rarr;</a>
+        <h2 class="section-title">You Might Also Like</h2>
       </div>
-      <div class="product-grid">
-        <a href="/product.html" class="product-card">
-          <div class="product-card-image">
-            <img
-              src="/images/products/relaxed-wool-blazer.jpg"
-              alt="Relaxed Wool Blazer"
-            />
-          </div>
-          <div class="product-card-info">
-            <div class="product-card-name">Relaxed Wool Blazer</div>
-            <div class="product-card-price">$189.00</div>
-          </div>
-        </a>
-        <a href="/product.html" class="product-card">
-          <div class="product-card-image">
-            <img
-              src="/images/products/silk-midi-dress.jpg"
-              alt="Silk Midi Dress"
-            />
-          </div>
-          <div class="product-card-info">
-            <div class="product-card-name">Silk Midi Dress</div>
-            <div class="product-card-price">$245.00</div>
-          </div>
-        </a>
-        <a href="/product.html" class="product-card">
-          <div class="product-card-image">
-            <img
-              src="/images/products/cotton-crew-tee.jpg"
-              alt="Cotton Crew Tee"
-            />
-          </div>
-          <div class="product-card-info">
-            <div class="product-card-name">Cotton Crew Tee</div>
-            <div class="product-card-price">$49.00</div>
-          </div>
-        </a>
-        <a href="/product.html" class="product-card">
-          <div class="product-card-image">
-            <img
-              src="/images/products/tailored-trousers.jpg"
-              alt="Tailored Trousers"
-            />
-          </div>
-          <div class="product-card-info">
-            <div class="product-card-name">Tailored Trousers</div>
-            <div class="product-card-price">$135.00</div>
-          </div>
-        </a>
-        <a href="/product.html" class="product-card">
-          <div class="product-card-image">
-            <img
-              src="/images/products/leather-crossbody-bag.jpg"
-              alt="Leather Crossbody Bag"
-            />
-          </div>
-          <div class="product-card-info">
-            <div class="product-card-name">Leather Crossbody Bag</div>
-            <div class="product-card-price">$210.00</div>
-          </div>
-        </a>
-        <a href="/product.html" class="product-card">
-          <div class="product-card-image">
-            <img
-              src="/images/products/oversized-linen-shirt.jpg"
-              alt="Oversized Linen Shirt"
-            />
-          </div>
-          <div class="product-card-info">
-            <div class="product-card-name">Oversized Linen Shirt</div>
-            <div class="product-card-price">$89.00</div>
-          </div>
-        </a>
-        <a href="/product.html" class="product-card">
-          <div class="product-card-image">
-            <img
-              src="/images/products/cashmere-cardigan.jpg"
-              alt="Cashmere Cardigan"
-            />
-          </div>
-          <div class="product-card-info">
-            <div class="product-card-name">Cashmere Cardigan</div>
-            <div class="product-card-price">$275.00</div>
-          </div>
-        </a>
-        <a href="/product.html" class="product-card">
-          <div class="product-card-image">
-            <img src="/images/products/denim-jacket.jpg" alt="Denim Jacket" />
-          </div>
-          <div class="product-card-info">
-            <div class="product-card-name">Denim Jacket</div>
-            <div class="product-card-price">$165.00</div>
-          </div>
-        </a>
-      </div>
+      <div
+        id="related-products"
+        class="widget-placeholder"
+        data-widget="Related Products"
+        style="min-height: 200px"
+      ></div>
     </section>
 
-    <!-- ===== SHOP BY CATEGORY ===== -->
+    <!-- ===== FREQUENTLY BOUGHT TOGETHER WIDGET ===== -->
     <section class="section">
       <div class="section-header">
-        <h2 class="section-title">Shop by Category</h2>
+        <h2 class="section-title">Frequently Bought Together</h2>
       </div>
-      <div class="category-grid">
-        <a href="/search.html" class="category-card">
-          <img src="/images/categories/women.jpg" alt="Women's fashion" />
-          <div class="category-card-overlay">
-            <span class="category-card-label">Women</span>
-          </div>
-        </a>
-        <a href="/search.html" class="category-card">
-          <img src="/images/categories/men.jpg" alt="Men's fashion" />
-          <div class="category-card-overlay">
-            <span class="category-card-label">Men</span>
-          </div>
-        </a>
-        <a href="/search.html" class="category-card">
-          <img src="/images/categories/accessories.jpg" alt="Accessories" />
-          <div class="category-card-overlay">
-            <span class="category-card-label">Accessories</span>
-          </div>
-        </a>
-        <a href="/search.html" class="category-card">
-          <img src="/images/categories/sale.jpg" alt="Sale items" />
-          <div class="category-card-overlay">
-            <span class="category-card-label">Sale</span>
-          </div>
-        </a>
-      </div>
+      <div
+        id="frequently-bought-together"
+        class="widget-placeholder"
+        data-widget="Frequently Bought Together"
+        style="min-height: 200px"
+      ></div>
     </section>
 
     <!-- ===== FOOTER ===== -->

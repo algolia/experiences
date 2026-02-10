@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search — ACME Store</title>
+    <meta
+      name="description"
+      content="Browse and search the full ACME Store collection. Filter by category, brand, and price."
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+
+  <body>
+    <div class="staging-banner">
+      Staging — This is a preview environment, not production.
+    </div>
+
+    <!-- ===== NAVIGATION ===== -->
+    <nav class="nav">
+      <div class="nav-inner">
+        <a href="/index.html" class="nav-logo">ACME Store</a>
+
+        <div class="nav-search-wrapper">
+          <svg
+            class="nav-search-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" stroke-linecap="round" />
+          </svg>
+          <input
+            type="text"
+            class="nav-search"
+            placeholder="Search products..."
+            aria-label="Search products"
+          />
+          <div class="nav-autocomplete">
+            <div id="autocomplete"></div>
+          </div>
+        </div>
+
+        <div class="nav-actions">
+          <a href="/search.html" class="nav-link">Shop</a>
+          <a href="/search.html" class="nav-link">New In</a>
+          <a href="/search.html" class="nav-link">Sale</a>
+          <button class="nav-cart" aria-label="Shopping cart">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ===== SEARCH LAYOUT ===== -->
+    <div class="search-layout">
+      <!-- SIDEBAR -->
+      <aside class="search-sidebar">
+        <div class="search-sidebar-title">Filters</div>
+        <div
+          id="refinement-list-category"
+          class="widget-placeholder"
+          data-widget="Category Filter"
+        ></div>
+        <div
+          id="refinement-list-brand"
+          class="widget-placeholder"
+          data-widget="Brand Filter"
+        ></div>
+        <div
+          id="price-range"
+          class="widget-placeholder"
+          data-widget="Price Range"
+        ></div>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main class="search-main">
+        <div class="search-top-bar">
+          <div class="search-top-bar-left">
+            <div
+              id="search-box"
+              class="widget-placeholder"
+              data-widget="Search Box"
+            ></div>
+          </div>
+          <div
+            id="sort-by"
+            class="widget-placeholder"
+            data-widget="Sort By"
+            style="min-width: 180px"
+          ></div>
+        </div>
+
+        <div
+          id="current-refinements"
+          class="widget-placeholder"
+          data-widget="Current Refinements"
+        ></div>
+
+        <div
+          id="hits"
+          class="widget-placeholder"
+          data-widget="Product Hits"
+          style="min-height: 400px"
+        ></div>
+
+        <div
+          id="pagination"
+          class="widget-placeholder"
+          data-widget="Pagination"
+        ></div>
+      </main>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="footer-brand-name">ACME Store</div>
+            <p class="footer-brand-text">
+              Curated fashion essentials designed for modern living. Quality
+              materials, timeless style.
+            </p>
+          </div>
+          <div>
+            <div class="footer-col-title">Shop</div>
+            <ul class="footer-links">
+              <li><a href="/search.html">New Arrivals</a></li>
+              <li><a href="/search.html">Women</a></li>
+              <li><a href="/search.html">Men</a></li>
+              <li><a href="/search.html">Accessories</a></li>
+              <li><a href="/search.html">Sale</a></li>
+            </ul>
+          </div>
+          <div>
+            <div class="footer-col-title">Company</div>
+            <ul class="footer-links">
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Careers</a></li>
+              <li><a href="#">Sustainability</a></li>
+              <li><a href="#">Press</a></li>
+            </ul>
+          </div>
+          <div>
+            <div class="footer-col-title">Support</div>
+            <ul class="footer-links">
+              <li><a href="#">Contact Us</a></li>
+              <li><a href="#">Shipping &amp; Returns</a></li>
+              <li><a href="#">FAQ</a></li>
+              <li><a href="#">Size Guide</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <div class="footer-copy">
+            &copy; 2026 ACME Store. All rights reserved.
+          </div>
+          <div class="footer-socials">
+            <a href="#" aria-label="Instagram"
+              ><svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <rect x="2" y="2" width="20" height="20" rx="5" />
+                <circle cx="12" cy="12" r="5" />
+                <circle
+                  cx="17.5"
+                  cy="6.5"
+                  r="1.5"
+                  fill="currentColor"
+                  stroke="none"
+                /></svg
+            ></a>
+            <a href="#" aria-label="Twitter"
+              ><svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path
+                  d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"
+                /></svg
+            ></a>
+            <a href="#" aria-label="Facebook"
+              ><svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path
+                  d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"
+                /></svg
+            ></a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ===== FLOATING CHAT ===== -->
+    <div class="chat-float">
+      <div class="chat-container">
+        <div id="chat"></div>
+      </div>
+    </div>
+
+    <script src="https://github.com/algolia/experiences/releases/download/canary/experiences.preview.js?appId=F4T6CUV2AH&apiKey=95d23095918f4e5c35e11d5e5e57b92d&experienceId=6deb7b47-102f-4962-9bee-85a6edef0f2e&env=beta"></script>
+  </body>
+</html>
