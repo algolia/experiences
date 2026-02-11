@@ -5,6 +5,7 @@ declare global {
   interface Window {
     AlgoliaExperiences?: {
       run: (config?: Record<string, unknown>) => void;
+      dispose: () => void;
     };
   }
 }

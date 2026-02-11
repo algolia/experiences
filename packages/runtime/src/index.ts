@@ -6,15 +6,41 @@ import {
   experience,
   getConfig,
   getExperience,
+  type Environment,
   type ExperienceApiResponse,
 } from './experiences';
 
 export { createExperienceMiddleware, experience };
 
+export type RunOptions = {
+  appId: string;
+  apiKey: string;
+  experienceId: string;
+  env?: Environment;
+  config?: ExperienceApiResponse;
+};
+
 let search: InstantSearch | null = null;
 
-export async function run(runtimeConfig?: ExperienceApiResponse) {
-  const { appId, apiKey, experienceId, env = 'prod' } = getConfig();
+export async function run(options?: RunOptions | ExperienceApiResponse) {
+  let appId: string;
+  let apiKey: string;
+  let experienceId: string;
+  let env: Environment;
+  let runtimeConfig: ExperienceApiResponse | undefined;
+
+  if (options && !('blocks' in options)) {
+    ({
+      appId,
+      apiKey,
+      experienceId,
+      env = 'prod',
+      config: runtimeConfig,
+    } = options);
+  } else {
+    ({ appId, apiKey, experienceId, env = 'prod' } = getConfig());
+    runtimeConfig = options as ExperienceApiResponse | undefined;
+  }
 
   const experienceConfig =
     runtimeConfig ??
@@ -39,4 +65,11 @@ export async function run(runtimeConfig?: ExperienceApiResponse) {
   search.addWidgets([experience({ id: experienceId })]);
 
   search.start();
+}
+
+export function dispose() {
+  if (search) {
+    search.dispose();
+    search = null;
+  }
 }
