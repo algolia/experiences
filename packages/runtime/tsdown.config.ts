@@ -14,6 +14,11 @@ const chatCssPath = resolve(
   '../../node_modules/instantsearch.css/components/chat.css'
 );
 const chatCss = readFileSync(chatCssPath, 'utf-8');
+const autocompleteCssPath = resolve(
+  __dirname,
+  '../../node_modules/instantsearch.css/components/autocomplete.css'
+);
+const autocompleteCss = readFileSync(autocompleteCssPath, 'utf-8');
 
 export default defineConfig({
   entry: { runtime: 'src/index.ts' },
@@ -27,5 +32,6 @@ export default defineConfig({
   noExternal: [/.*/],
   define: {
     __CHAT_CSS__: JSON.stringify(chatCss),
+    __AUTOCOMPLETE_CSS__: JSON.stringify(autocompleteCss),
   },
 });

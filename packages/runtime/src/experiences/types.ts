@@ -42,5 +42,6 @@ export type ExperienceWidget = Widget & {
   $$widgetParams: ExperienceWidgetParams;
   $$supportedWidgets: {
     'ais.chat': SupportedWidget<Parameters<ChatWidget>[0]>;
-  } & Record<'ais.chat' | (string & {}), SupportedWidget>;
+    'ais.autocomplete': SupportedWidget;
+  } & Record<'ais.chat' | 'ais.autocomplete' | (string & {}), SupportedWidget>;
 };

@@ -68,7 +68,10 @@ export function createExperienceMiddleware(
                   newWidget &&
                   document.querySelector(parameters.container) !== null
                 ) {
-                  parent.addWidgets([newWidget(transformedParams)]);
+                  const widgets = newWidget(transformedParams);
+                  parent.addWidgets(
+                    Array.isArray(widgets) ? widgets : [widgets]
+                  );
                 }
               });
           });
