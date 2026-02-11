@@ -16,38 +16,18 @@
       Staging — This is a preview environment, not production.
     </div>
 
-    <!-- ===== NAVIGATION ===== -->
     <nav class="nav">
       <div class="nav-inner">
-        <a href="/index.html" class="nav-logo">ACME Store</a>
+        <a href="/" class="nav-logo">ACME Store</a>
 
         <div class="nav-search-wrapper">
-          <svg
-            class="nav-search-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.3-4.3" stroke-linecap="round" />
-          </svg>
-          <input
-            type="text"
-            class="nav-search"
-            placeholder="Search products..."
-            aria-label="Search products"
-          />
-          <div class="nav-autocomplete">
-            <div id="autocomplete"></div>
-          </div>
+          <div id="autocomplete"></div>
         </div>
 
         <div class="nav-actions">
-          <a href="/search.html" class="nav-link">Shop</a>
-          <a href="/search.html" class="nav-link">New In</a>
-          <a href="/search.html" class="nav-link">Sale</a>
+          <a href="/search" class="nav-link">Shop</a>
+          <a href="/search" class="nav-link">New In</a>
+          <a href="/search" class="nav-link">Sale</a>
           <button class="nav-cart" aria-label="Shopping cart">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -67,7 +47,6 @@
       </div>
     </nav>
 
-    <!-- ===== HERO ===== -->
     <section class="hero">
       <div class="hero-inner">
         <div class="hero-content">
@@ -78,8 +57,8 @@
             everyday elegance.
           </p>
           <div style="display: flex; gap: 12px; flex-wrap: wrap">
-            <a href="/search.html" class="btn btn-primary btn-lg">Shop Now</a>
-            <a href="/search.html" class="btn btn-outline btn-lg"
+            <a href="/search" class="btn btn-primary btn-lg">Shop Now</a>
+            <a href="/search" class="btn btn-outline btn-lg"
               >Explore Lookbook</a
             >
           </div>
@@ -93,7 +72,6 @@
       </div>
     </section>
 
-    <!-- ===== RECOMMENDATIONS WIDGET ===== -->
     <div class="section">
       <div
         id="recommendations"
@@ -102,14 +80,13 @@
       ></div>
     </div>
 
-    <!-- ===== TRENDING NOW ===== -->
     <section class="section">
       <div class="section-header">
         <h2 class="section-title">Trending Now</h2>
-        <a href="/search.html" class="section-link">View All &rarr;</a>
+        <a href="/search" class="section-link">View All &rarr;</a>
       </div>
       <div class="product-grid">
-        <a href="/product.html" class="product-card">
+        <a href="/product" class="product-card">
           <div class="product-card-image">
             <img
               src="/images/products/relaxed-wool-blazer.jpg"
@@ -121,7 +98,7 @@
             <div class="product-card-price">$189.00</div>
           </div>
         </a>
-        <a href="/product.html" class="product-card">
+        <a href="/product" class="product-card">
           <div class="product-card-image">
             <img
               src="/images/products/silk-midi-dress.jpg"
@@ -133,7 +110,7 @@
             <div class="product-card-price">$245.00</div>
           </div>
         </a>
-        <a href="/product.html" class="product-card">
+        <a href="/product" class="product-card">
           <div class="product-card-image">
             <img
               src="/images/products/cotton-crew-tee.jpg"
@@ -145,7 +122,7 @@
             <div class="product-card-price">$49.00</div>
           </div>
         </a>
-        <a href="/product.html" class="product-card">
+        <a href="/product" class="product-card">
           <div class="product-card-image">
             <img
               src="/images/products/tailored-trousers.jpg"
@@ -157,7 +134,7 @@
             <div class="product-card-price">$135.00</div>
           </div>
         </a>
-        <a href="/product.html" class="product-card">
+        <a href="/product" class="product-card">
           <div class="product-card-image">
             <img
               src="/images/products/leather-crossbody-bag.jpg"
@@ -169,7 +146,7 @@
             <div class="product-card-price">$210.00</div>
           </div>
         </a>
-        <a href="/product.html" class="product-card">
+        <a href="/product" class="product-card">
           <div class="product-card-image">
             <img
               src="/images/products/oversized-linen-shirt.jpg"
@@ -181,7 +158,7 @@
             <div class="product-card-price">$89.00</div>
           </div>
         </a>
-        <a href="/product.html" class="product-card">
+        <a href="/product" class="product-card">
           <div class="product-card-image">
             <img
               src="/images/products/cashmere-cardigan.jpg"
@@ -193,7 +170,7 @@
             <div class="product-card-price">$275.00</div>
           </div>
         </a>
-        <a href="/product.html" class="product-card">
+        <a href="/product" class="product-card">
           <div class="product-card-image">
             <img src="/images/products/denim-jacket.jpg" alt="Denim Jacket" />
           </div>
@@ -205,31 +182,30 @@
       </div>
     </section>
 
-    <!-- ===== SHOP BY CATEGORY ===== -->
     <section class="section">
       <div class="section-header">
         <h2 class="section-title">Shop by Category</h2>
       </div>
       <div class="category-grid">
-        <a href="/search.html" class="category-card">
+        <a href="/search" class="category-card">
           <img src="/images/categories/women.jpg" alt="Women's fashion" />
           <div class="category-card-overlay">
             <span class="category-card-label">Women</span>
           </div>
         </a>
-        <a href="/search.html" class="category-card">
+        <a href="/search" class="category-card">
           <img src="/images/categories/men.jpg" alt="Men's fashion" />
           <div class="category-card-overlay">
             <span class="category-card-label">Men</span>
           </div>
         </a>
-        <a href="/search.html" class="category-card">
+        <a href="/search" class="category-card">
           <img src="/images/categories/accessories.jpg" alt="Accessories" />
           <div class="category-card-overlay">
             <span class="category-card-label">Accessories</span>
           </div>
         </a>
-        <a href="/search.html" class="category-card">
+        <a href="/search" class="category-card">
           <img src="/images/categories/sale.jpg" alt="Sale items" />
           <div class="category-card-overlay">
             <span class="category-card-label">Sale</span>
@@ -238,7 +214,6 @@
       </div>
     </section>
 
-    <!-- ===== FOOTER ===== -->
     <footer class="footer">
       <div class="footer-inner">
         <div class="footer-grid">
@@ -252,11 +227,11 @@
           <div>
             <div class="footer-col-title">Shop</div>
             <ul class="footer-links">
-              <li><a href="/search.html">New Arrivals</a></li>
-              <li><a href="/search.html">Women</a></li>
-              <li><a href="/search.html">Men</a></li>
-              <li><a href="/search.html">Accessories</a></li>
-              <li><a href="/search.html">Sale</a></li>
+              <li><a href="/search">New Arrivals</a></li>
+              <li><a href="/search">Women</a></li>
+              <li><a href="/search">Men</a></li>
+              <li><a href="/search">Accessories</a></li>
+              <li><a href="/search">Sale</a></li>
             </ul>
           </div>
           <div>
@@ -331,13 +306,12 @@
       </div>
     </footer>
 
-    <!-- ===== FLOATING CHAT ===== -->
     <div class="chat-float">
       <div class="chat-container">
         <div id="chat"></div>
       </div>
     </div>
 
-    <script src="https://github.com/algolia/experiences/releases/download/canary/experiences.preview.js?appId=F4T6CUV2AH&apiKey=95d23095918f4e5c35e11d5e5e57b92d&experienceId=6deb7b47-102f-4962-9bee-85a6edef0f2e&env=beta"></script>
+    <script src="https://github.com/algolia/experiences/releases/download/canary/experiences.preview.js?appId=F4T6CUV2AH&apiKey=95d23095918f4e5c35e11d5e5e57b92d&experienceId=11e02c95-34ef-45c6-89c0-8e3cd5538a23&env=beta"></script>
   </body>
 </html>
