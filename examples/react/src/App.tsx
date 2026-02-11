@@ -1,13 +1,28 @@
-import { BrowserRouter, Link, Outlet, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom';
 
+import { Link } from './components/Link';
 import { HomePage } from './pages/HomePage';
 import { ProductPage } from './pages/ProductPage';
 import { SearchPage } from './pages/SearchPage';
+import { PreviewProvider } from './PreviewContext';
 import { useAlgoliaExperiences } from './useAlgoliaExperiences';
 
-function Layout() {
+const LOADER_SRC =
+  'https://github.com/algolia/experiences/releases/download/canary/experiences.js';
+const PREVIEW_LOADER_SRC =
+  'https://github.com/algolia/experiences/releases/download/canary/experiences.preview.js';
+
+const pages = (
+  <>
+    <Route index element={<HomePage />} />
+    <Route path="search" element={<SearchPage />} />
+    <Route path="product" element={<ProductPage />} />
+  </>
+);
+
+function Layout({ preview = false }: { preview?: boolean }) {
   useAlgoliaExperiences({
-    src: 'https://github.com/algolia/experiences/releases/download/canary/experiences.js',
+    src: preview ? PREVIEW_LOADER_SRC : LOADER_SRC,
     appId: 'F4T6CUV2AH',
     apiKey: '95d23095918f4e5c35e11d5e5e57b92d',
     experienceId: '11e02c95-34ef-45c6-89c0-8e3cd5538a23',
@@ -15,7 +30,13 @@ function Layout() {
   });
 
   return (
-    <>
+    <PreviewProvider value={preview}>
+      {preview && (
+        <div className="staging-banner">
+          Staging — This is a preview environment, not production.
+        </div>
+      )}
+
       <nav className="nav">
         <div className="nav-inner">
           <Link to="/" className="nav-logo">
@@ -181,7 +202,7 @@ function Layout() {
           <div id="chat"></div>
         </div>
       </div>
-    </>
+    </PreviewProvider>
   );
 }
 
@@ -189,10 +210,9 @@ export function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<Layout />}>
-          <Route index element={<HomePage />} />
-          <Route path="search" element={<SearchPage />} />
-          <Route path="product" element={<ProductPage />} />
+        <Route element={<Layout />}>{pages}</Route>
+        <Route path="preview" element={<Layout preview />}>
+          {pages}
         </Route>
       </Routes>
     </BrowserRouter>

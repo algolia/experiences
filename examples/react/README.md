@@ -51,8 +51,19 @@ The experience config references DOM containers by `id`. Make sure the matching 
 
 ```tsx
 <div id="autocomplete"></div>
-<div id="recommendations"></div>
 <div id="chat"></div>
+```
+
+## Preview mode
+
+Navigating to `/preview` serves the same storefront but uses the **preview loader** (`experiences.preview.js`). This mirrors a real staging environment where the Algolia dashboard can push live config overrides via the `algolia_experiences_config` URL parameter.
+
+The preview routes show a yellow staging banner and all links stay within `/preview/*`.
+
+```
+/preview          → Home (preview loader)
+/preview/search   → Search (preview loader)
+/preview/product  → Product (preview loader)
 ```
 
 ## Pages
