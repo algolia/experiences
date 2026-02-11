@@ -31,6 +31,7 @@ function resolveFile(urlPath) {
 const pages = ['index.html', 'search.html', 'product.html'];
 
 export default {
+  appType: 'mpa',
   build: {
     rollupOptions: {
       input: Object.fromEntries(
