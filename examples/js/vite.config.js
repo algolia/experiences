@@ -31,7 +31,6 @@ function resolveFile(urlPath) {
 const pages = ['index.html', 'search.html', 'product.html'];
 
 export default {
-  appType: 'mpa',
   build: {
     rollupOptions: {
       input: Object.fromEntries(
@@ -43,27 +42,25 @@ export default {
     {
       name: 'preview-mode',
       configureServer(server) {
-        // Return so this runs AFTER Vite's built-in middleware.
-        // Non-preview requests are handled normally by Vite;
-        // preview requests fall through to here.
-        return () => {
-          server.middlewares.use(async (req, res, next) => {
-            if (!req.url?.startsWith('/preview')) return next();
+        // Added BEFORE Vite's built-in middleware so we intercept
+        // /preview requests before the SPA fallback serves index.html.
+        server.middlewares.use(async (req, res, next) => {
+          const [pathname] = (req.url || '').split('?');
+          if (!pathname.startsWith('/preview')) return next();
 
-            const actualPath = req.url.replace(/^\/preview/, '') || '/';
-            const file = resolveFile(actualPath);
+          const actualPath = pathname.replace(/^\/preview/, '') || '/';
+          const file = resolveFile(actualPath);
 
-            try {
-              let html = readFileSync(resolve(__dirname, file), 'utf-8');
-              html = await server.transformIndexHtml(`/${file}`, html);
-              html = transformForPreview(html);
-              res.writeHead(200, { 'Content-Type': 'text/html' });
-              res.end(html);
-            } catch {
-              next();
-            }
-          });
-        };
+          try {
+            let html = readFileSync(resolve(__dirname, file), 'utf-8');
+            html = await server.transformIndexHtml(`/${file}`, html);
+            html = transformForPreview(html);
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(html);
+          } catch {
+            next();
+          }
+        });
       },
       closeBundle() {
         const outDir = resolve(__dirname, 'dist');
