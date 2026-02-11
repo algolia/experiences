@@ -2,6 +2,8 @@
 
 An e-commerce storefront built with plain HTML, demonstrating how to integrate Algolia Experiences with a single script tag.
 
+**Demo:** [Production](https://algolia-experiences-js.netlify.app/) · [Preview](https://algolia-experiences-js.netlify.app/preview)
+
 ## Setup
 
 ```sh

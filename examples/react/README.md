@@ -2,6 +2,8 @@
 
 An e-commerce storefront built with React, demonstrating how to integrate Algolia Experiences in a single-page application with client-side routing.
 
+**Demo:** [Production](https://algolia-experiences-react.netlify.app/) · [Preview](https://algolia-experiences-react.netlify.app/preview)
+
 ## Setup
 
 ```sh
