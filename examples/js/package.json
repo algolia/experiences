@@ -1,5 +1,5 @@
 {
-  "name": "@experiences/example-basic",
+  "name": "@experiences/example-js",
   "private": true,
   "scripts": {
     "dev": "vite",
