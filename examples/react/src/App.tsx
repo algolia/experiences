@@ -1,50 +1,18 @@
-import { useEffect, useRef } from 'react';
-import {
-  BrowserRouter,
-  Link,
-  Outlet,
-  Route,
-  Routes,
-  useLocation,
-} from 'react-router-dom';
+import { BrowserRouter, Link, Outlet, Route, Routes } from 'react-router-dom';
 
 import { HomePage } from './pages/HomePage';
 import { ProductPage } from './pages/ProductPage';
 import { SearchPage } from './pages/SearchPage';
-
-const LOADER_SRC = '/dist/experiences.js';
-
-function injectLoader() {
-  const url = new URL(LOADER_SRC, window.location.origin);
-  url.searchParams.set('appId', 'F4T6CUV2AH');
-  url.searchParams.set('apiKey', '95d23095918f4e5c35e11d5e5e57b92d');
-  url.searchParams.set('experienceId', '11e02c95-34ef-45c6-89c0-8e3cd5538a23');
-  url.searchParams.set('env', 'beta');
-
-  const script = document.createElement('script');
-  script.src = url.toString();
-  document.head.appendChild(script);
-}
+import { useAlgoliaExperiences } from './useAlgoliaExperiences';
 
 function Layout() {
-  const location = useLocation();
-  const loaderInjected = useRef(false);
-
-  useEffect(() => {
-    if (!loaderInjected.current) {
-      // First mount: inject the loader script with config as URL params.
-      // It auto-resolves the runtime, loads it, and calls run().
-      injectLoader();
-      loaderInjected.current = true;
-    } else {
-      // Subsequent route changes: re-run the already-loaded runtime.
-      window.AlgoliaExperiences?.run();
-    }
-
-    return () => {
-      window.AlgoliaExperiences?.dispose();
-    };
-  }, [location.pathname]);
+  useAlgoliaExperiences({
+    src: 'https://github.com/algolia/experiences/releases/download/canary/experiences.js',
+    appId: 'F4T6CUV2AH',
+    apiKey: '95d23095918f4e5c35e11d5e5e57b92d',
+    experienceId: '11e02c95-34ef-45c6-89c0-8e3cd5538a23',
+    env: 'beta',
+  });
 
   return (
     <>
