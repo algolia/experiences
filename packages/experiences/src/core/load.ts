@@ -7,6 +7,12 @@ declare global {
       run: (config?: Record<string, unknown>) => void;
       dispose: () => void;
     };
+    __ALGOLIA_EXPERIENCES_TOOLBAR_CONFIG__?: {
+      appId: string;
+      apiKey: string;
+      experienceId: string;
+      env?: string;
+    };
   }
 }
 
@@ -16,8 +22,11 @@ declare global {
  * 1. Calls the resolver to get the runtime bundle URL
  * 2. Injects the runtime script into the page
  * 3. Calls the runtime's run function with optional config
+ *
+ * Returns the resolved bundle URL so callers (e.g. preview entry) can
+ * derive sibling asset URLs from it.
  */
-export async function load(config: LoaderConfiguration) {
+export async function load(config: LoaderConfiguration): Promise<string> {
   const { bundleUrl } = await resolve(config);
 
   const runtimeUrl = new URL(bundleUrl);
@@ -44,4 +53,6 @@ export async function load(config: LoaderConfiguration) {
   };
 
   document.head.appendChild(script);
+
+  return bundleUrl;
 }
