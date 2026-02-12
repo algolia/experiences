@@ -1,8 +1,34 @@
 import type { ExperienceApiBlockParameters } from '../types';
 import { CssVariablesEditor } from './fields/css-variables-editor';
+import { ObjectField } from './fields/object-field';
+import { SwitchField } from './fields/switch-field';
 import { TextField } from './fields/text-field';
 
+type FieldOverride =
+  | { type: 'switch'; label: string }
+  | {
+      type: 'object';
+      label: string;
+      fields: Array<{ key: string; label: string }>;
+    };
+
+const FIELD_OVERRIDES: Record<string, Record<string, FieldOverride>> = {
+  'ais.autocomplete': {
+    showRecent: { type: 'switch', label: 'Show Recent Searches' },
+    showSuggestions: {
+      type: 'object',
+      label: 'Show Suggestions',
+      fields: [
+        { key: 'indexName', label: 'Index Name' },
+        { key: 'searchPageUrl', label: 'Search Page URL' },
+        { key: 'q', label: 'Query Parameter' },
+      ],
+    },
+  },
+};
+
 type BlockEditorProps = {
+  type: string;
   parameters: ExperienceApiBlockParameters;
   onParameterChange: (key: string, value: unknown) => void;
   onCssVariableChange: (key: string, value: string) => void;
@@ -11,6 +37,7 @@ type BlockEditorProps = {
 const HIDDEN_PARAMS = new Set(['container', 'cssVariables']);
 
 export function BlockEditor({
+  type,
   parameters,
   onParameterChange,
   onCssVariableChange,
@@ -18,6 +45,7 @@ export function BlockEditor({
   const editableParams = Object.entries(parameters).filter(
     ([key]) => !HIDDEN_PARAMS.has(key)
   );
+  const overrides = FIELD_OVERRIDES[type] ?? {};
 
   return (
     <div class="space-y-3">
@@ -32,14 +60,53 @@ export function BlockEditor({
           </div>
         )}
 
-      {editableParams.map(([key, value]) => (
-        <TextField
-          key={key}
-          label={key}
-          value={typeof value === 'string' ? value : JSON.stringify(value)}
-          onInput={(v) => onParameterChange(key, v)}
-        />
-      ))}
+      {editableParams.map(([key, value]) => {
+        const override = overrides[key];
+
+        if (!override) {
+          return (
+            <TextField
+              key={key}
+              label={key}
+              value={typeof value === 'string' ? value : JSON.stringify(value)}
+              onInput={(v) => onParameterChange(key, v)}
+            />
+          );
+        }
+
+        switch (override.type) {
+          case 'switch':
+            return (
+              <SwitchField
+                key={key}
+                label={override.label}
+                checked={Boolean(value)}
+                onToggle={(v) => onParameterChange(key, v)}
+              />
+            );
+          case 'object':
+            return (
+              <ObjectField
+                key={key}
+                label={override.label}
+                value={
+                  typeof value === 'object' && value !== null
+                    ? (value as Record<string, unknown>)
+                    : {}
+                }
+                fields={override.fields}
+                onChange={(subKey, subValue) =>
+                  onParameterChange(key, {
+                    ...(typeof value === 'object' && value !== null
+                      ? value
+                      : {}),
+                    [subKey]: subValue,
+                  })
+                }
+              />
+            );
+        }
+      })}
     </div>
   );
 }

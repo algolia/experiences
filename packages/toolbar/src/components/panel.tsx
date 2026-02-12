@@ -1,5 +1,6 @@
 import type { ExperienceApiResponse } from '../types';
 import { BlockCard } from './block-card';
+import { Alert, AlertDescription } from './ui/alert';
 import { Button } from './ui/button';
 
 type PanelProps = {
@@ -63,6 +64,25 @@ export function Panel({
 
       {/* Block list */}
       <div class="flex-1 overflow-y-auto p-4">
+        <Alert class="mb-3">
+          <svg
+            class="size-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 16v-4" />
+            <path d="M12 8h.01" />
+          </svg>
+          <AlertDescription>
+            These are the Algolia Experience widgets on this page. Expand a
+            widget to edit its parameters.
+          </AlertDescription>
+        </Alert>
         <div class="space-y-3">
           {experience.blocks.map((block, index) => (
             <BlockCard
