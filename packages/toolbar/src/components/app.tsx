@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+
 import { saveExperience } from '../api';
 import type { ExperienceApiResponse, ToolbarConfig } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
@@ -13,23 +14,20 @@ type AppProps = {
 type SaveState = 'idle' | 'saving' | 'saved';
 
 export function App({ config, initialExperience }: AppProps) {
-  const [expanded, setExpanded] = useState(false);
-  const [experience, setExperience] =
-    useState<ExperienceApiResponse>(initialExperience);
-  const [dirty, setDirty] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [experience, setExperience] = useState(initialExperience);
+  const [isDirty, setIsDirty] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [toast, setToast] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const scheduleRun = useCallback(
-    (updatedExperience: ExperienceApiResponse) => {
-      clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        window.AlgoliaExperiences?.run(updatedExperience);
-      }, 300);
-    },
-    []
-  );
+  const scheduleRun = useCallback((newExperience: ExperienceApiResponse) => {
+    clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      window.AlgoliaExperiences?.run(newExperience);
+    }, 300);
+  }, []);
 
   const updateCssVariablesOnPage = useCallback(
     (blockIndex: number, key: string, value: string) => {
@@ -37,6 +35,7 @@ export function App({ config, initialExperience }: AppProps) {
         'style[data-algolia-experiences-toolbar]'
       );
       const style = existingStyle ?? document.createElement('style');
+
       if (!existingStyle) {
         style.setAttribute('data-algolia-experiences-toolbar', '');
         document.head.appendChild(style);
@@ -44,8 +43,10 @@ export function App({ config, initialExperience }: AppProps) {
 
       // Collect all css variables from all blocks
       const allVars: Record<string, string> = {};
+
       experience.blocks.forEach((block, i) => {
         const vars = block.parameters.cssVariables ?? {};
+
         Object.entries(vars).forEach(([k, v]) => {
           if (i === blockIndex && k === key) {
             allVars[`--ais-${k}`] = value;
@@ -62,13 +63,13 @@ export function App({ config, initialExperience }: AppProps) {
     [experience]
   );
 
-  const handleParameterChange = useCallback(
-    (blockIndex: number, key: string, value: unknown) => {
+  const onParameterChange = useCallback(
+    (index: number, key: string, value: unknown) => {
       setExperience((prev) => {
         const updated = {
           ...prev,
           blocks: prev.blocks.map((block, i) =>
-            i === blockIndex
+            i === index
               ? {
                   ...block,
                   parameters: { ...block.parameters, [key]: value },
@@ -76,22 +77,24 @@ export function App({ config, initialExperience }: AppProps) {
               : block
           ),
         };
+
         scheduleRun(updated);
+
         return updated;
       });
-      setDirty(true);
+      setIsDirty(true);
     },
     [scheduleRun]
   );
 
-  const handleCssVariableChange = useCallback(
-    (blockIndex: number, key: string, value: string) => {
-      updateCssVariablesOnPage(blockIndex, key, value);
+  const onCssVariableChange = useCallback(
+    (index: number, key: string, value: string) => {
+      updateCssVariablesOnPage(index, key, value);
 
       setExperience((prev) => ({
         ...prev,
         blocks: prev.blocks.map((block, i) =>
-          i === blockIndex
+          i === index
             ? {
                 ...block,
                 parameters: {
@@ -105,7 +108,8 @@ export function App({ config, initialExperience }: AppProps) {
             : block
         ),
       }));
-      setDirty(true);
+
+      setIsDirty(true);
     },
     [updateCssVariablesOnPage]
   );
@@ -152,27 +156,29 @@ export function App({ config, initialExperience }: AppProps) {
     });
   }, []);
 
-  const handleDeleteBlock = useCallback(
-    (blockIndex: number) => {
-      setExperience((prev) => {
+  const onDeleteBlock = useCallback(
+    (index: number) => {
+      setExperience((value) => {
         const updated = {
-          ...prev,
-          blocks: prev.blocks.filter((_, i) => i !== blockIndex),
+          ...value,
+          blocks: value.blocks.filter((_, i) => i !== index),
         };
+
         scheduleRun(updated);
+
         return updated;
       });
-      setDirty(true);
+      setIsDirty(true);
     },
     [scheduleRun]
   );
 
-  const handleAddBlock = useCallback((type: string) => {
-    setExperience((prev) => {
-      const updated = {
-        ...prev,
+  const onAddBlock = useCallback((type: string) => {
+    setExperience((value) => {
+      return {
+        ...value,
         blocks: [
-          ...prev.blocks,
+          ...value.blocks,
           {
             type,
             parameters: {
@@ -183,13 +189,14 @@ export function App({ config, initialExperience }: AppProps) {
           },
         ],
       };
-      return updated;
     });
-    setDirty(true);
+
+    setIsDirty(true);
   }, []);
 
-  const handleSave = useCallback(async () => {
+  const onSave = useCallback(async () => {
     setSaveState('saving');
+
     try {
       await saveExperience({
         appId: config.appId,
@@ -198,18 +205,23 @@ export function App({ config, initialExperience }: AppProps) {
         env: config.env ?? 'prod',
         config: experience,
       });
-      setDirty(false);
+
+      setIsDirty(false);
       setSaveState('saved');
       setTimeout(() => setSaveState('idle'), 2000);
-    } catch (error) {
+    } catch (err) {
       setSaveState('idle');
-      setToast(error instanceof Error ? error.message : 'Failed to save.');
+      setToast(err instanceof Error ? err.message : 'Failed to save.');
     }
   }, [config, experience]);
 
   useEffect(() => {
-    if (!toast) return;
+    if (!toast) {
+      return;
+    }
+
     const timer = setTimeout(() => setToast(null), 4000);
+
     return () => clearTimeout(timer);
   }, [toast]);
 
@@ -217,18 +229,18 @@ export function App({ config, initialExperience }: AppProps) {
     <>
       <Panel
         experience={experience}
-        dirty={dirty}
+        dirty={isDirty}
         saveState={saveState}
-        open={expanded}
-        onClose={() => setExpanded(false)}
-        onSave={handleSave}
-        onParameterChange={handleParameterChange}
-        onCssVariableChange={handleCssVariableChange}
+        open={isExpanded}
+        onClose={() => setIsExpanded(false)}
+        onSave={onSave}
+        onParameterChange={onParameterChange}
+        onCssVariableChange={onCssVariableChange}
         onLocate={onLocate}
-        onDeleteBlock={handleDeleteBlock}
-        onAddBlock={handleAddBlock}
+        onDeleteBlock={onDeleteBlock}
+        onAddBlock={onAddBlock}
       />
-      <Pill visible={!expanded} onClick={() => setExpanded(true)} />
+      <Pill visible={!isExpanded} onClick={() => setIsExpanded(true)} />
 
       {toast && (
         <div
