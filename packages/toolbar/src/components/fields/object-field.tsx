@@ -17,18 +17,18 @@ export function ObjectField({
     <div class="space-y-1.5">
       <p class="text-xs font-medium text-foreground">{label}</p>
       <div class="space-y-2 rounded-md border border-border p-3">
-        {fields.map((field) => (
-          <TextField
-            key={field.key}
-            label={field.label}
-            value={
-              typeof value[field.key] === 'string'
-                ? value[field.key]
-                : (value[field.key] ?? '') + ''
-            }
-            onInput={(v) => onChange(field.key, v)}
-          />
-        ))}
+        {fields.map((field) => {
+          const raw = value[field.key];
+
+          return (
+            <TextField
+              key={field.key}
+              label={field.label}
+              value={typeof raw === 'string' ? raw : String(raw ?? '')}
+              onInput={(v) => onChange(field.key, v)}
+            />
+          );
+        })}
       </div>
     </div>
   );
