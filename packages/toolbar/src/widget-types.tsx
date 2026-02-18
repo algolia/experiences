@@ -6,6 +6,7 @@ export type FieldOverride =
   | {
       type: 'object';
       label: string;
+      defaultValue: Record<string, unknown>;
       fields: Array<{ key: string; label: string }>;
     };
 
@@ -41,7 +42,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       container: '',
       cssVariables: { 'primary-color-rgb': '#003dff' },
       showRecent: false,
-      showSuggestions: { indexName: '', searchPageUrl: '', q: 'q' },
+      showSuggestions: false,
     },
     fieldOrder: [
       'cssVariables',
@@ -54,7 +55,8 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       showRecent: { type: 'switch', label: 'Recent Searches' },
       showSuggestions: {
         type: 'object',
-        label: 'Show Suggestions',
+        label: 'Suggestions',
+        defaultValue: { indexName: '', searchPageUrl: '', q: 'q' },
         fields: [
           { key: 'indexName', label: 'Index Name' },
           { key: 'searchPageUrl', label: 'Search Page URL' },

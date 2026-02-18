@@ -67,27 +67,30 @@ export function BlockEditor({
                 onToggle={(v) => onParameterChange(key, v)}
               />
             );
-          case 'object':
+          case 'object': {
+            const enabled =
+              typeof value === 'object' && value !== null && value !== false;
+            const objectValue = enabled
+              ? (value as Record<string, unknown>)
+              : {};
             return (
               <ObjectField
                 key={key}
                 label={override.label}
-                value={
-                  typeof value === 'object' && value !== null
-                    ? (value as Record<string, unknown>)
-                    : {}
-                }
+                enabled={enabled}
+                value={objectValue}
+                defaultValue={override.defaultValue}
                 fields={override.fields}
-                onChange={(subKey, subValue) =>
+                onToggle={(v) => onParameterChange(key, v)}
+                onFieldChange={(subKey, subValue) =>
                   onParameterChange(key, {
-                    ...(typeof value === 'object' && value !== null
-                      ? value
-                      : {}),
+                    ...objectValue,
                     [subKey]: subValue,
                   })
                 }
               />
             );
+          }
         }
       })}
     </div>
