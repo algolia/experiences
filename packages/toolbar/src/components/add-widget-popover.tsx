@@ -2,7 +2,6 @@ import { useState } from 'preact/hooks';
 
 import { WIDGET_TYPES } from '../widget-types';
 import { Badge } from './ui/badge';
-import { Button } from './ui/button';
 import { CollapsibleContent } from './ui/collapsible';
 
 type AddWidgetPopoverProps = {
@@ -44,10 +43,14 @@ export function AddWidgetPopover({ onSelect }: AddWidgetPopoverProps) {
               return (
                 <div
                   key={type}
-                  class="text-muted-foreground flex cursor-not-allowed items-center gap-2 rounded-md px-3 py-2 text-sm opacity-50"
+                  class="flex cursor-not-allowed items-center gap-2.5 rounded-lg px-2 py-1.5 opacity-40"
                 >
-                  <Icon />
-                  <span>{config.label}</span>
+                  <div class="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
+                    <Icon />
+                  </div>
+                  <span class="text-muted-foreground text-sm">
+                    {config.label}
+                  </span>
                   <Badge variant="secondary" class="ml-auto text-[10px]">
                     Coming Soon
                   </Badge>
@@ -56,18 +59,20 @@ export function AddWidgetPopover({ onSelect }: AddWidgetPopoverProps) {
             }
 
             return (
-              <Button
+              <button
                 key={type}
-                variant="ghost"
-                class="w-full justify-start"
+                type="button"
+                class="group/item flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-accent"
                 onClick={() => {
                   onSelect(type);
                   setOpen(false);
                 }}
               >
-                <Icon />
-                {config.label}
-              </Button>
+                <div class="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors group-hover/item:bg-background">
+                  <Icon />
+                </div>
+                <span class="text-sm font-semibold">{config.label}</span>
+              </button>
             );
           })}
         </div>
