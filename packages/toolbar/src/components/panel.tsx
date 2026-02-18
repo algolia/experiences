@@ -1,8 +1,11 @@
+import { useState } from 'preact/hooks';
 import type { ExperienceApiResponse } from '../types';
 import { AddWidgetPopover } from './add-widget-popover';
 import { BlockCard } from './block-card';
+import { Badge } from './ui/badge';
 import { Alert, AlertDescription } from './ui/alert';
 import { Button } from './ui/button';
+import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 
 type PanelProps = {
   experience: ExperienceApiResponse;
@@ -16,6 +19,8 @@ type PanelProps = {
   onAddBlock: (type: string) => void;
 };
 
+type Tab = 'manual' | 'ai';
+
 export function Panel({
   experience,
   dirty,
@@ -27,6 +32,8 @@ export function Panel({
   onLocate,
   onAddBlock,
 }: PanelProps) {
+  const [tab, setTab] = useState<Tab>('manual');
+
   return (
     <div
       class="bg-background text-foreground fixed left-0 top-0 bottom-0 z-[2147483647] flex w-[480px] flex-col border-r shadow-2xl transition-transform duration-300 ease-in-out"
@@ -67,60 +74,136 @@ export function Panel({
         </Button>
       </div>
 
-      {/* Block list */}
-      <div class="flex-1 overflow-y-auto p-4">
-        <Alert class="mb-3">
-          <svg
-            class="size-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+      {/* Tabs */}
+      <div class="px-4 pt-3">
+        <TabsList>
+          <TabsTrigger
+            active={tab === 'manual'}
+            onClick={() => setTab('manual')}
           >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 16v-4" />
-            <path d="M12 8h.01" />
-          </svg>
-          <AlertDescription>
-            These are the Algolia Experience widgets on this page. Expand a
-            widget to edit its parameters.
-          </AlertDescription>
-        </Alert>
-        <div class="space-y-3">
-          {experience.blocks.map((block, index) => (
-            <BlockCard
-              key={index}
-              type={block.type}
-              parameters={block.parameters}
-              initialOpen={
-                index === experience.blocks.length - 1 &&
-                block.parameters.container === ''
-              }
-              onParameterChange={(key, value) =>
-                onParameterChange(index, key, value)
-              }
-              onCssVariableChange={(key, value) =>
-                onCssVariableChange(index, key, value)
-              }
-              onLocate={() => onLocate(block.parameters.container)}
-            />
-          ))}
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            Manual
+          </TabsTrigger>
+          <TabsTrigger active={tab === 'ai'} onClick={() => setTab('ai')}>
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z" />
+              <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />
+            </svg>
+            AI Mode
+            <Badge variant="secondary" class="text-[10px]">
+              Soon
+            </Badge>
+          </TabsTrigger>
+        </TabsList>
+      </div>
+
+      {/* Manual tab */}
+      <TabsContent
+        active={tab === 'manual'}
+        class="flex flex-1 flex-col overflow-hidden"
+      >
+        {/* Block list */}
+        <div class="flex-1 overflow-y-auto p-4">
+          <Alert class="mb-3">
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4" />
+              <path d="M12 8h.01" />
+            </svg>
+            <AlertDescription>
+              These are the Algolia Experience widgets on this page. Expand a
+              widget to edit its parameters.
+            </AlertDescription>
+          </Alert>
+          <div class="space-y-3">
+            {experience.blocks.map((block, index) => (
+              <BlockCard
+                key={index}
+                type={block.type}
+                parameters={block.parameters}
+                initialOpen={
+                  index === experience.blocks.length - 1 &&
+                  block.parameters.container === ''
+                }
+                onParameterChange={(key, value) =>
+                  onParameterChange(index, key, value)
+                }
+                onCssVariableChange={(key, value) =>
+                  onCssVariableChange(index, key, value)
+                }
+                onLocate={() => onLocate(block.parameters.container)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Add widget */}
-      <div class="border-t px-4 py-3">
-        <AddWidgetPopover onSelect={onAddBlock} />
-      </div>
+        {/* Add widget */}
+        <div class="border-t px-4 py-3">
+          <AddWidgetPopover onSelect={onAddBlock} />
+        </div>
 
-      {/* Footer */}
-      <div class="border-t p-4">
-        <Button size="lg" class="w-full" disabled={!dirty} onClick={onSave}>
-          Save changes
-        </Button>
-      </div>
+        {/* Footer */}
+        <div class="border-t p-4">
+          <Button size="lg" class="w-full" disabled={!dirty} onClick={onSave}>
+            Save changes
+          </Button>
+        </div>
+      </TabsContent>
+
+      {/* AI tab */}
+      <TabsContent
+        active={tab === 'ai'}
+        class="flex flex-1 flex-col items-center justify-center gap-3 p-4"
+      >
+        <svg
+          class="size-10 text-muted-foreground"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z" />
+          <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />
+        </svg>
+        <div class="text-center">
+          <p class="text-sm font-semibold">AI Mode</p>
+          <p class="text-muted-foreground mt-1 text-sm">
+            Edit your experience conversationally with an AI agent.
+            <br /> Add widgets, change parameters, and update styles, all by
+            chatting.
+          </p>
+        </div>
+        <Badge variant="secondary">Coming soon</Badge>
+      </TabsContent>
     </div>
   );
 }
