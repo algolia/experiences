@@ -17,7 +17,7 @@ export function AddWidgetPopover({ onSelect }: AddWidgetPopoverProps) {
         type="button"
         aria-label="Add widget"
         onClick={() => setOpen(!open)}
-        class="group flex w-full items-center justify-center gap-2 rounded-xl border border-dashed px-3 py-3 text-xs font-medium text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
+        class="group flex w-full items-center justify-center gap-2 rounded-xl border border-dashed p-4 text-xs font-medium text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
       >
         <svg
           class="size-3.5 transition-transform group-hover:rotate-90"
