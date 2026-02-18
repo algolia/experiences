@@ -12,35 +12,38 @@ type BlockEditorProps = {
   onCssVariableChange: (key: string, value: string) => void;
 };
 
-const HIDDEN_PARAMS = new Set(['cssVariables']);
-
 export function BlockEditor({
   type,
   parameters,
   onParameterChange,
   onCssVariableChange,
 }: BlockEditorProps) {
-  const editableParams = Object.entries(parameters).filter(
-    ([key]) => !HIDDEN_PARAMS.has(key)
-  );
   const widgetType = WIDGET_TYPES[type];
   const overrides = widgetType?.fieldOverrides ?? {};
   const paramLabels = widgetType?.paramLabels ?? {};
 
+  const paramKeys = widgetType?.fieldOrder
+    ? widgetType.fieldOrder.filter((key) => key in parameters)
+    : Object.keys(parameters);
+
   return (
     <div class="space-y-3">
-      {parameters.cssVariables &&
-        Object.keys(parameters.cssVariables).length > 0 && (
-          <div class="space-y-1.5">
-            <p class="text-xs font-medium text-foreground">CSS Variables</p>
-            <CssVariablesEditor
-              variables={parameters.cssVariables}
-              onChange={onCssVariableChange}
-            />
-          </div>
-        )}
+      {paramKeys.map((key) => {
+        if (key === 'cssVariables') {
+          const vars = parameters.cssVariables;
+          if (!vars || Object.keys(vars).length === 0) return null;
+          return (
+            <div key={key} class="space-y-1.5">
+              <p class="text-xs font-medium text-foreground">CSS Variables</p>
+              <CssVariablesEditor
+                variables={vars}
+                onChange={onCssVariableChange}
+              />
+            </div>
+          );
+        }
 
-      {editableParams.map(([key, value]) => {
+        const value = parameters[key];
         const override = overrides[key];
 
         if (!override) {

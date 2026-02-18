@@ -14,6 +14,7 @@ export type WidgetTypeConfig = {
   icon: () => JSX.Element;
   enabled: boolean;
   defaultParameters: ExperienceApiBlockParameters;
+  fieldOrder?: string[];
   fieldOverrides?: Record<string, FieldOverride>;
   paramLabels?: Record<string, string>;
 };
@@ -38,13 +39,19 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     ),
     defaultParameters: {
       container: '',
-      cssVariables: { primaryColor: '#003dff' },
-      indexName: '',
+      cssVariables: { 'primary-color-rgb': '#003dff' },
       showRecent: false,
       showSuggestions: { indexName: '', searchPageUrl: '', q: 'q' },
     },
+    fieldOrder: [
+      'cssVariables',
+      'container',
+      'indexName',
+      'showRecent',
+      'showSuggestions',
+    ],
     fieldOverrides: {
-      showRecent: { type: 'switch', label: 'Show Recent Searches' },
+      showRecent: { type: 'switch', label: 'Recent Searches' },
       showSuggestions: {
         type: 'object',
         label: 'Show Suggestions',
