@@ -39,9 +39,26 @@ export async function fetchExperience({
   return res.json();
 }
 
-export async function saveExperience(
-  _params: SaveExperienceParams
-): Promise<void> {
-  // TODO: Wire up to the experiences write API in a follow-up.
-  throw new Error('[@algolia/experiences-toolbar] Save not yet wired up.');
+export async function saveExperience({
+  appId,
+  apiKey,
+  env,
+  experienceId,
+  config,
+}: SaveExperienceParams): Promise<void> {
+  const res = await fetch(`${API_BASE[env]}/experiences/${experienceId}`, {
+    method: 'PUT',
+    headers: {
+      'X-Algolia-Application-ID': appId,
+      'X-Algolia-API-Key': apiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(config),
+  });
+
+  if (!res.ok) {
+    throw new Error(
+      `[@algolia/experiences-toolbar] Failed to save experience: ${res.status} ${res.statusText}`
+    );
+  }
 }
