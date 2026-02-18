@@ -3,7 +3,6 @@ import type { ExperienceApiResponse } from '../types';
 import { AddWidgetPopover } from './add-widget-popover';
 import { BlockCard } from './block-card';
 import { Badge } from './ui/badge';
-import { Alert, AlertDescription } from './ui/alert';
 import { Button } from './ui/button';
 import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 
@@ -56,22 +55,27 @@ export function Panel({
           </svg>
           <h2 class="text-sm font-semibold">Algolia Experiences</h2>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          aria-label="Close toolbar"
-        >
-          <svg
-            class="size-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
+        <div class="flex items-center gap-1">
+          <Button disabled={!dirty} onClick={onSave}>
+            Save
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Close toolbar"
           >
-            <path d="M18 6 6 18M6 6l12 12" />
-          </svg>
-        </Button>
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </Button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -148,13 +152,6 @@ export function Panel({
         {/* Add widget */}
         <div class="border-t px-4 py-3">
           <AddWidgetPopover onSelect={onAddBlock} />
-        </div>
-
-        {/* Footer */}
-        <div class="border-t p-4">
-          <Button size="lg" class="w-full" disabled={!dirty} onClick={onSave}>
-            Save changes
-          </Button>
         </div>
       </TabsContent>
 
