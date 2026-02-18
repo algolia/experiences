@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import type { ExperienceApiResponse } from '../types';
 import { AddWidgetPopover } from './add-widget-popover';
 import { BlockCard } from './block-card';
@@ -6,15 +6,19 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 
+type SaveState = 'idle' | 'saving' | 'saved';
+
 type PanelProps = {
   experience: ExperienceApiResponse;
   dirty: boolean;
+  saveState: SaveState;
   open: boolean;
   onClose: () => void;
   onSave: () => void;
   onParameterChange: (blockIndex: number, key: string, value: unknown) => void;
   onCssVariableChange: (blockIndex: number, key: string, value: string) => void;
   onLocate: (container: string) => void;
+  onDeleteBlock: (blockIndex: number) => void;
   onAddBlock: (type: string) => void;
 };
 
@@ -23,15 +27,26 @@ type Tab = 'manual' | 'ai';
 export function Panel({
   experience,
   dirty,
+  saveState,
   open,
   onClose,
   onSave,
   onParameterChange,
   onCssVariableChange,
   onLocate,
+  onDeleteBlock,
   onAddBlock,
 }: PanelProps) {
   const [tab, setTab] = useState<Tab>('manual');
+  const [expandedBlock, setExpandedBlock] = useState<number | null>(null);
+  const prevBlockCount = useRef(experience.blocks.length);
+
+  useEffect(() => {
+    if (experience.blocks.length > prevBlockCount.current) {
+      setExpandedBlock(experience.blocks.length - 1);
+    }
+    prevBlockCount.current = experience.blocks.length;
+  }, [experience.blocks.length]);
 
   return (
     <div
@@ -42,22 +57,68 @@ export function Panel({
     >
       {/* Header */}
       <div class="flex items-center justify-between border-b px-4 py-3">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 500 500.34"
-            class="size-4 text-primary"
+            class="size-7 text-primary"
           >
             <path
               d="M250 0C113.38 0 2 110.16.03 246.32c-2 138.29 110.19 252.87 248.49 253.67 42.71.25 83.85-10.2 120.38-30.05 3.56-1.93 4.11-6.83 1.08-9.52l-23.39-20.74c-4.75-4.22-11.52-5.41-17.37-2.92-25.5 10.85-53.21 16.39-81.76 16.04-111.75-1.37-202.04-94.35-200.26-206.1C48.96 136.37 139.26 47.15 250 47.15h202.83v360.53L337.75 305.43c-3.72-3.31-9.43-2.66-12.43 1.31-18.47 24.46-48.56 39.67-81.98 37.36-46.36-3.2-83.92-40.52-87.4-86.86-4.15-55.28 39.65-101.58 94.07-101.58 49.21 0 89.74 37.88 93.97 86.01.38 4.28 2.31 8.28 5.53 11.13l29.97 26.57c3.4 3.01 8.8 1.17 9.63-3.3 2.16-11.55 2.92-23.6 2.07-35.95-4.83-70.39-61.84-127.01-132.26-131.35-80.73-4.98-148.23 58.18-150.37 137.35-2.09 77.15 61.12 143.66 138.28 145.36 32.21.71 62.07-9.42 86.2-26.97L483.39 497.8c6.45 5.71 16.62 1.14 16.62-7.48V9.49C500 4.25 495.75 0 490.51 0z"
               fill="currentColor"
             />
           </svg>
-          <h2 class="text-sm font-semibold">Algolia Experiences</h2>
+          <div>
+            <h2 class="text-sm font-semibold">Algolia Experiences</h2>
+            <p class="text-muted-foreground text-xs">
+              {experience.blocks.length} widget
+              {experience.blocks.length !== 1 ? 's' : ''} configured
+            </p>
+          </div>
         </div>
         <div class="flex items-center gap-1">
-          <Button disabled={!dirty} onClick={onSave}>
-            Save
+          <Button
+            disabled={!dirty || saveState !== 'idle'}
+            onClick={onSave}
+            class={
+              saveState === 'saved'
+                ? 'bg-green-600 hover:bg-green-600'
+                : undefined
+            }
+          >
+            {saveState === 'saving' && (
+              <svg class="size-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+            )}
+            {saveState === 'saved' && (
+              <svg
+                class="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            )}
+            {saveState === 'idle' && 'Save'}
+            {saveState === 'saving' && 'Saving\u2026'}
+            {saveState === 'saved' && 'Saved'}
           </Button>
           <Button
             variant="ghost"
@@ -133,9 +194,9 @@ export function Panel({
                 key={index}
                 type={block.type}
                 parameters={block.parameters}
-                initialOpen={
-                  index === experience.blocks.length - 1 &&
-                  block.parameters.container === ''
+                open={expandedBlock === index}
+                onToggle={() =>
+                  setExpandedBlock(expandedBlock === index ? null : index)
                 }
                 onParameterChange={(key, value) =>
                   onParameterChange(index, key, value)
@@ -144,6 +205,7 @@ export function Panel({
                   onCssVariableChange(index, key, value)
                 }
                 onLocate={() => onLocate(block.parameters.container)}
+                onDeleteBlock={() => onDeleteBlock(index)}
               />
             ))}
           </div>

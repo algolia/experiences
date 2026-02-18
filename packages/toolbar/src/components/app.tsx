@@ -10,11 +10,14 @@ type AppProps = {
   initialExperience: ExperienceApiResponse;
 };
 
+type SaveState = 'idle' | 'saving' | 'saved';
+
 export function App({ config, initialExperience }: AppProps) {
   const [expanded, setExpanded] = useState(false);
   const [experience, setExperience] =
     useState<ExperienceApiResponse>(initialExperience);
   const [dirty, setDirty] = useState(false);
+  const [saveState, setSaveState] = useState<SaveState>('idle');
   const [toast, setToast] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -149,6 +152,21 @@ export function App({ config, initialExperience }: AppProps) {
     });
   }, []);
 
+  const handleDeleteBlock = useCallback(
+    (blockIndex: number) => {
+      setExperience((prev) => {
+        const updated = {
+          ...prev,
+          blocks: prev.blocks.filter((_, i) => i !== blockIndex),
+        };
+        scheduleRun(updated);
+        return updated;
+      });
+      setDirty(true);
+    },
+    [scheduleRun]
+  );
+
   const handleAddBlock = useCallback((type: string) => {
     setExperience((prev) => {
       const updated = {
@@ -171,6 +189,7 @@ export function App({ config, initialExperience }: AppProps) {
   }, []);
 
   const handleSave = useCallback(async () => {
+    setSaveState('saving');
     try {
       await saveExperience({
         appId: config.appId,
@@ -180,7 +199,10 @@ export function App({ config, initialExperience }: AppProps) {
         config: experience,
       });
       setDirty(false);
+      setSaveState('saved');
+      setTimeout(() => setSaveState('idle'), 2000);
     } catch (error) {
+      setSaveState('idle');
       setToast(error instanceof Error ? error.message : 'Failed to save.');
     }
   }, [config, experience]);
@@ -196,12 +218,14 @@ export function App({ config, initialExperience }: AppProps) {
       <Panel
         experience={experience}
         dirty={dirty}
+        saveState={saveState}
         open={expanded}
         onClose={() => setExpanded(false)}
         onSave={handleSave}
         onParameterChange={handleParameterChange}
         onCssVariableChange={handleCssVariableChange}
         onLocate={onLocate}
+        onDeleteBlock={handleDeleteBlock}
         onAddBlock={handleAddBlock}
       />
       <Pill visible={!expanded} onClick={() => setExpanded(true)} />
