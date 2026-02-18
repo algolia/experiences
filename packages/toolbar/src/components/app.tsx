@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { saveExperience } from '../api';
 import type { ExperienceApiResponse, ToolbarConfig } from '../types';
+import { WIDGET_TYPES } from '../widget-types';
 import { Panel } from './panel';
 import { Pill } from './pill';
 
@@ -148,6 +149,27 @@ export function App({ config, initialExperience }: AppProps) {
     });
   }, []);
 
+  const handleAddBlock = useCallback((type: string) => {
+    setExperience((prev) => {
+      const updated = {
+        ...prev,
+        blocks: [
+          ...prev.blocks,
+          {
+            type,
+            parameters: {
+              ...(WIDGET_TYPES[type]?.defaultParameters ?? {
+                container: '',
+              }),
+            },
+          },
+        ],
+      };
+      return updated;
+    });
+    setDirty(true);
+  }, []);
+
   const handleSave = useCallback(async () => {
     try {
       await saveExperience({
@@ -180,6 +202,7 @@ export function App({ config, initialExperience }: AppProps) {
         onParameterChange={handleParameterChange}
         onCssVariableChange={handleCssVariableChange}
         onLocate={onLocate}
+        onAddBlock={handleAddBlock}
       />
       <Pill visible={!expanded} onClick={() => setExpanded(true)} />
 

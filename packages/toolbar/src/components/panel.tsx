@@ -1,4 +1,5 @@
 import type { ExperienceApiResponse } from '../types';
+import { AddWidgetPopover } from './add-widget-popover';
 import { BlockCard } from './block-card';
 import { Alert, AlertDescription } from './ui/alert';
 import { Button } from './ui/button';
@@ -12,6 +13,7 @@ type PanelProps = {
   onParameterChange: (blockIndex: number, key: string, value: unknown) => void;
   onCssVariableChange: (blockIndex: number, key: string, value: string) => void;
   onLocate: (container: string) => void;
+  onAddBlock: (type: string) => void;
 };
 
 export function Panel({
@@ -23,6 +25,7 @@ export function Panel({
   onParameterChange,
   onCssVariableChange,
   onLocate,
+  onAddBlock,
 }: PanelProps) {
   return (
     <div
@@ -88,9 +91,13 @@ export function Panel({
         <div class="space-y-3">
           {experience.blocks.map((block, index) => (
             <BlockCard
-              key={`${block.type}-${block.parameters.container}`}
+              key={index}
               type={block.type}
               parameters={block.parameters}
+              initialOpen={
+                index === experience.blocks.length - 1 &&
+                block.parameters.container === ''
+              }
               onParameterChange={(key, value) =>
                 onParameterChange(index, key, value)
               }
@@ -101,6 +108,11 @@ export function Panel({
             />
           ))}
         </div>
+      </div>
+
+      {/* Add widget */}
+      <div class="border-t px-4 py-3">
+        <AddWidgetPopover onSelect={onAddBlock} />
       </div>
 
       {/* Footer */}

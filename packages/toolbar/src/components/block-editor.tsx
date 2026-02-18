@@ -1,31 +1,9 @@
 import type { ExperienceApiBlockParameters } from '../types';
+import { WIDGET_TYPES } from '../widget-types';
 import { CssVariablesEditor } from './fields/css-variables-editor';
 import { ObjectField } from './fields/object-field';
 import { SwitchField } from './fields/switch-field';
 import { TextField } from './fields/text-field';
-
-type FieldOverride =
-  | { type: 'switch'; label: string }
-  | {
-      type: 'object';
-      label: string;
-      fields: Array<{ key: string; label: string }>;
-    };
-
-const FIELD_OVERRIDES: Record<string, Record<string, FieldOverride>> = {
-  'ais.autocomplete': {
-    showRecent: { type: 'switch', label: 'Show Recent Searches' },
-    showSuggestions: {
-      type: 'object',
-      label: 'Show Suggestions',
-      fields: [
-        { key: 'indexName', label: 'Index Name' },
-        { key: 'searchPageUrl', label: 'Search Page URL' },
-        { key: 'q', label: 'Query Parameter' },
-      ],
-    },
-  },
-};
 
 type BlockEditorProps = {
   type: string;
@@ -34,7 +12,7 @@ type BlockEditorProps = {
   onCssVariableChange: (key: string, value: string) => void;
 };
 
-const HIDDEN_PARAMS = new Set(['container', 'cssVariables']);
+const HIDDEN_PARAMS = new Set(['cssVariables']);
 
 export function BlockEditor({
   type,
@@ -45,7 +23,9 @@ export function BlockEditor({
   const editableParams = Object.entries(parameters).filter(
     ([key]) => !HIDDEN_PARAMS.has(key)
   );
-  const overrides = FIELD_OVERRIDES[type] ?? {};
+  const widgetType = WIDGET_TYPES[type];
+  const overrides = widgetType?.fieldOverrides ?? {};
+  const paramLabels = widgetType?.paramLabels ?? {};
 
   return (
     <div class="space-y-3">
@@ -67,7 +47,7 @@ export function BlockEditor({
           return (
             <TextField
               key={key}
-              label={key}
+              label={paramLabels[key] ?? key}
               value={typeof value === 'string' ? value : JSON.stringify(value)}
               onInput={(v) => onParameterChange(key, v)}
             />
