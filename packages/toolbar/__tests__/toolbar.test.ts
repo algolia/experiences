@@ -137,7 +137,7 @@ describe('toolbar', () => {
         expect(popoverText).toContain('Autocomplete');
         expect(popoverText).toContain('Chat');
         expect(popoverText).toContain('Hits');
-        expect(popoverText).toContain('Coming soon');
+        expect(popoverText).toContain('Coming Soon');
       });
 
       it('adds a new block when selecting "Autocomplete"', async () => {

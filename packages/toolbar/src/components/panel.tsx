@@ -205,12 +205,8 @@ export function Panel({
                 onDeleteBlock={() => onDeleteBlock(index)}
               />
             ))}
+            <AddWidgetPopover onSelect={onAddBlock} />
           </div>
-        </div>
-
-        {/* Add widget */}
-        <div class="border-t px-4 py-3">
-          <AddWidgetPopover onSelect={onAddBlock} />
         </div>
       </TabsContent>
 
