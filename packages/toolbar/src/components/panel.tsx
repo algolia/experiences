@@ -108,7 +108,7 @@ export function Panel({
               <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z" />
               <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />
             </svg>
-            AI Mode
+            AI
             <Badge variant="secondary" class="text-[10px]">
               Soon
             </Badge>
@@ -123,25 +123,6 @@ export function Panel({
       >
         {/* Block list */}
         <div class="flex-1 overflow-y-auto p-4">
-          <Alert class="mb-3">
-            <svg
-              class="size-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 16v-4" />
-              <path d="M12 8h.01" />
-            </svg>
-            <AlertDescription>
-              These are the Algolia Experience widgets on this page. Expand a
-              widget to edit its parameters.
-            </AlertDescription>
-          </Alert>
           <div class="space-y-3">
             {experience.blocks.map((block, index) => (
               <BlockCard
