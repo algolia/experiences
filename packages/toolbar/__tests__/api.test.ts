@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { fetchExperience, saveExperience } from '../src/api';
+import { checkApiKeyAcl, fetchExperience, saveExperience } from '../src/api';
 
 const server = setupServer();
 
@@ -212,5 +212,44 @@ describe('saveExperience', () => {
         config: { blocks: [] },
       })
     ).rejects.toThrow('Failed to save experience: 403');
+  });
+});
+
+describe('checkApiKeyAcl', () => {
+  it('returns true when the key has the requested ACL', async () => {
+    server.use(
+      http.get('https://APP_ID-dsn.algolia.net/1/keys/API_KEY', () =>
+        HttpResponse.json({ acl: ['search', 'editSettings'] })
+      )
+    );
+
+    const result = await checkApiKeyAcl('APP_ID', 'API_KEY', 'editSettings');
+
+    expect(result).toBe(true);
+  });
+
+  it('returns false when the key lacks the requested ACL', async () => {
+    server.use(
+      http.get('https://APP_ID-dsn.algolia.net/1/keys/API_KEY', () =>
+        HttpResponse.json({ acl: ['search'] })
+      )
+    );
+
+    const result = await checkApiKeyAcl('APP_ID', 'API_KEY', 'editSettings');
+
+    expect(result).toBe(false);
+  });
+
+  it('throws when the API responds with an error', async () => {
+    server.use(
+      http.get(
+        'https://APP_ID-dsn.algolia.net/1/keys/API_KEY',
+        () => new HttpResponse(null, { status: 403, statusText: 'Forbidden' })
+      )
+    );
+
+    await expect(
+      checkApiKeyAcl('APP_ID', 'API_KEY', 'editSettings')
+    ).rejects.toThrow('Failed to validate API key: 403');
   });
 });
