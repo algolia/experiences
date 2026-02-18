@@ -107,5 +107,68 @@ describe('toolbar', () => {
       );
       expect(pill).not.toBeNull();
     });
+
+    describe('locate button', () => {
+      beforeEach(() => {
+        // jsdom does not implement Web Animations API
+        Element.prototype.animate = vi.fn(() => ({
+          onfinish: null,
+          cancel: vi.fn(),
+          finished: Promise.resolve(),
+        })) as unknown as typeof Element.prototype.animate;
+      });
+
+      async function openToolbar() {
+        await import('../src/index');
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        const host = document.getElementById('algolia-experiences-toolbar');
+        const pill = host?.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Open Algolia Experiences toolbar"]'
+        );
+        pill?.click();
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        return host!;
+      }
+
+      it('scrolls the matching container element into view', async () => {
+        const container = document.createElement('div');
+        container.id = 'chat';
+        container.scrollIntoView = vi.fn();
+        document.body.appendChild(container);
+
+        const host = await openToolbar();
+
+        const locateButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Locate #chat"]'
+        );
+        expect(locateButton).not.toBeNull();
+        locateButton!.click();
+
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        expect(container.scrollIntoView).toHaveBeenCalledWith({
+          behavior: 'instant',
+          block: 'center',
+        });
+      });
+
+      it('shows a toast when the container element is not found', async () => {
+        const host = await openToolbar();
+
+        const locateButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Locate #chat"]'
+        );
+        expect(locateButton).not.toBeNull();
+        locateButton!.click();
+
+        // Wait for Preact to re-render after setToast
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        const allText = host.shadowRoot?.innerHTML ?? '';
+        expect(allText).toContain('Container "#chat" not found on page.');
+      });
+    });
   });
 });

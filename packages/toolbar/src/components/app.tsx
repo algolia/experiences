@@ -106,6 +106,48 @@ export function App({ config, initialExperience }: AppProps) {
     [updateCssVariablesOnPage]
   );
 
+  const onLocate = useCallback((container: string) => {
+    let el: Element | null;
+    try {
+      el = document.querySelector(container);
+    } catch {
+      setToast(`Invalid selector "${container}".`);
+      return;
+    }
+
+    if (!el) {
+      setToast(`Container "${container}" not found on page.`);
+      return;
+    }
+
+    el.scrollIntoView({ behavior: 'instant', block: 'center' });
+
+    requestAnimationFrame(() => {
+      const candidate = el.firstChild instanceof Element ? el.firstChild : el;
+      const rect = candidate.getBoundingClientRect();
+      const target =
+        rect.width === 0 || rect.height === 0
+          ? el.getBoundingClientRect()
+          : rect;
+
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `position:fixed;top:${target.top}px;left:${target.left}px;width:${target.width}px;height:${target.height}px;border:2px solid #003dff;background:rgba(0,61,255,0.08);border-radius:4px;pointer-events:none;z-index:2147483646`;
+      document.body.appendChild(overlay);
+
+      const removeOverlay = () => overlay.remove();
+      const animation = overlay.animate(
+        [
+          { opacity: 1, offset: 0 },
+          { opacity: 1, offset: 0.75 },
+          { opacity: 0, offset: 1 },
+        ],
+        { duration: 2000, easing: 'ease-out' }
+      );
+      animation.onfinish = removeOverlay;
+      animation.oncancel = removeOverlay;
+    });
+  }, []);
+
   const handleSave = useCallback(async () => {
     try {
       await saveExperience({
@@ -137,11 +179,15 @@ export function App({ config, initialExperience }: AppProps) {
         onSave={handleSave}
         onParameterChange={handleParameterChange}
         onCssVariableChange={handleCssVariableChange}
+        onLocate={onLocate}
       />
       <Pill visible={!expanded} onClick={() => setExpanded(true)} />
 
       {toast && (
-        <div class="animate-[toast-in_200ms_ease-out] bg-background text-foreground fixed bottom-4 left-1/2 z-[2147483647] -translate-x-1/2 rounded-lg border px-4 py-2.5 text-sm shadow-lg">
+        <div
+          role="alert"
+          class="animate-[toast-in_200ms_ease-out] bg-background text-foreground fixed bottom-4 left-1/2 z-[2147483647] -translate-x-1/2 rounded-lg border px-4 py-2.5 text-sm shadow-lg"
+        >
           {toast}
         </div>
       )}

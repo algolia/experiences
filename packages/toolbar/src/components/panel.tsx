@@ -11,6 +11,7 @@ type PanelProps = {
   onSave: () => void;
   onParameterChange: (blockIndex: number, key: string, value: unknown) => void;
   onCssVariableChange: (blockIndex: number, key: string, value: string) => void;
+  onLocate: (container: string) => void;
 };
 
 export function Panel({
@@ -21,6 +22,7 @@ export function Panel({
   onSave,
   onParameterChange,
   onCssVariableChange,
+  onLocate,
 }: PanelProps) {
   return (
     <div
@@ -95,6 +97,7 @@ export function Panel({
               onCssVariableChange={(key, value) =>
                 onCssVariableChange(index, key, value)
               }
+              onLocate={() => onLocate(block.parameters.container)}
             />
           ))}
         </div>
