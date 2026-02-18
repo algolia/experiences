@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
-import { saveExperience } from '../api';
+import { checkApiKeyAcl, saveExperience } from '../api';
 import type { ExperienceApiResponse, ToolbarConfig } from '../types';
 import { Panel } from './panel';
 import { Pill } from './pill';
@@ -15,6 +15,8 @@ export function App({ config, initialExperience }: AppProps) {
     useState<ExperienceApiResponse>(initialExperience);
   const [dirty, setDirty] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [adminApiKey, setAdminApiKey] = useState<string | null>(null);
+  const [needsAdminKey, setNeedsAdminKey] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   const scheduleRun = useCallback(
@@ -148,20 +150,54 @@ export function App({ config, initialExperience }: AppProps) {
     });
   }, []);
 
-  const handleSave = useCallback(async () => {
-    try {
+  const doSave = useCallback(
+    async (apiKey: string) => {
       await saveExperience({
         appId: config.appId,
-        apiKey: config.apiKey,
+        apiKey,
         experienceId: config.experienceId,
         env: config.env ?? 'prod',
         config: experience,
       });
       setDirty(false);
+    },
+    [config, experience]
+  );
+
+  const handleSave = useCallback(async () => {
+    try {
+      if (adminApiKey) {
+        await doSave(adminApiKey);
+        return;
+      }
+      const hasAcl = await checkApiKeyAcl(
+        config.appId,
+        config.apiKey,
+        'editSettings'
+      );
+      if (hasAcl) {
+        setAdminApiKey(config.apiKey);
+        await doSave(config.apiKey);
+      } else {
+        setNeedsAdminKey(true);
+      }
     } catch (error) {
       setToast(error instanceof Error ? error.message : 'Failed to save.');
     }
-  }, [config, experience]);
+  }, [config, adminApiKey, doSave]);
+
+  const handleAdminKeySave = useCallback(
+    async (key: string) => {
+      try {
+        setAdminApiKey(key);
+        setNeedsAdminKey(false);
+        await doSave(key);
+      } catch (error) {
+        setToast(error instanceof Error ? error.message : 'Failed to save.');
+      }
+    },
+    [doSave]
+  );
 
   useEffect(() => {
     if (!toast) return;
@@ -172,11 +208,14 @@ export function App({ config, initialExperience }: AppProps) {
   return (
     <>
       <Panel
+        appId={config.appId}
         experience={experience}
         dirty={dirty}
         open={expanded}
+        needsAdminKey={needsAdminKey}
         onClose={() => setExpanded(false)}
         onSave={handleSave}
+        onAdminKeySave={handleAdminKeySave}
         onParameterChange={handleParameterChange}
         onCssVariableChange={handleCssVariableChange}
         onLocate={onLocate}

@@ -62,3 +62,28 @@ export async function saveExperience({
     );
   }
 }
+
+export async function checkApiKeyAcl(
+  appId: string,
+  apiKey: string,
+  acl: string
+): Promise<boolean> {
+  const res = await fetch(`https://${appId}-dsn.algolia.net/1/keys/${apiKey}`, {
+    method: 'GET',
+    headers: {
+      'X-Algolia-Application-ID': appId,
+      'X-Algolia-API-Key': apiKey,
+    },
+  });
+
+  if (!res.ok) {
+    const status = res.status;
+    const error = new Error(
+      `[@algolia/experiences-toolbar] Failed to validate API key: ${status} ${res.statusText}`
+    );
+    throw error;
+  }
+
+  const data: { acl: string[] } = await res.json();
+  return data.acl.includes(acl);
+}

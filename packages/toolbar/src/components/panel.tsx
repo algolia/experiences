@@ -1,29 +1,74 @@
+import { useState } from 'preact/hooks';
+import { checkApiKeyAcl } from '../api';
 import type { ExperienceApiResponse } from '../types';
 import { BlockCard } from './block-card';
 import { Alert, AlertDescription } from './ui/alert';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Spinner } from './ui/spinner';
+
+type AdminKeyState =
+  | { status: 'idle'; input: string }
+  | { status: 'validating'; input: string }
+  | { status: 'error'; input: string; message: string };
 
 type PanelProps = {
+  appId: string;
   experience: ExperienceApiResponse;
   dirty: boolean;
   open: boolean;
+  needsAdminKey: boolean;
   onClose: () => void;
   onSave: () => void;
+  onAdminKeySave: (key: string) => void;
   onParameterChange: (blockIndex: number, key: string, value: unknown) => void;
   onCssVariableChange: (blockIndex: number, key: string, value: string) => void;
   onLocate: (container: string) => void;
 };
 
 export function Panel({
+  appId,
   experience,
   dirty,
   open,
+  needsAdminKey,
   onClose,
   onSave,
+  onAdminKeySave,
   onParameterChange,
   onCssVariableChange,
   onLocate,
 }: PanelProps) {
+  const [adminKey, setAdminKey] = useState<AdminKeyState>({
+    status: 'idle',
+    input: '',
+  });
+
+  const validateAdminKey = async () => {
+    const key = adminKey.input.trim();
+    if (!key) return;
+    setAdminKey({ status: 'validating', input: adminKey.input });
+    try {
+      const hasAcl = await checkApiKeyAcl(appId, key, 'editSettings');
+      if (!hasAcl) {
+        setAdminKey({
+          status: 'error',
+          input: adminKey.input,
+          message: 'This key does not have the required permissions.',
+        });
+        return;
+      }
+      onAdminKeySave(key);
+    } catch (error) {
+      setAdminKey({
+        status: 'error',
+        input: adminKey.input,
+        message: 'Invalid API key. Please check and try again.',
+      });
+    }
+  };
+
   return (
     <div
       class="bg-background text-foreground fixed left-0 top-0 bottom-0 z-[2147483647] flex w-[480px] flex-col border-r shadow-2xl transition-transform duration-300 ease-in-out"
@@ -105,9 +150,56 @@ export function Panel({
 
       {/* Footer */}
       <div class="border-t p-4">
-        <Button size="lg" class="w-full" disabled={!dirty} onClick={onSave}>
-          Save changes
-        </Button>
+        {needsAdminKey ? (
+          <div class="space-y-2">
+            <Label
+              htmlFor="admin-api-key"
+              class={adminKey.status === 'error' ? 'text-destructive' : ''}
+            >
+              {adminKey.status === 'error'
+                ? adminKey.message
+                : 'Please provide an Admin API Key'}
+            </Label>
+            <div class="relative">
+              <Input
+                id="admin-api-key"
+                type="password"
+                value={adminKey.input}
+                disabled={adminKey.status === 'validating'}
+                onInput={(e) =>
+                  setAdminKey({
+                    status: 'idle',
+                    input: (e.target as HTMLInputElement).value,
+                  })
+                }
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && adminKey.input.trim()) {
+                    validateAdminKey();
+                  }
+                }}
+                placeholder="Admin API Key"
+                class={adminKey.status === 'error' ? 'border-destructive' : ''}
+              />
+              {adminKey.status === 'validating' && (
+                <Spinner class="text-muted-foreground absolute right-2.5 top-1/2 -translate-y-1/2" />
+              )}
+            </div>
+            <Button
+              size="lg"
+              class="w-full"
+              disabled={
+                !adminKey.input.trim() || adminKey.status === 'validating'
+              }
+              onClick={validateAdminKey}
+            >
+              Update and save changes
+            </Button>
+          </div>
+        ) : (
+          <Button size="lg" class="w-full" disabled={!dirty} onClick={onSave}>
+            Save changes
+          </Button>
+        )}
       </div>
     </div>
   );
