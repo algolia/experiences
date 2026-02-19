@@ -1,5 +1,12 @@
 import { resolve } from 'node:path';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, watch, writeFileSync } from 'node:fs';
+
+const CANARY_URL =
+  'https://github.com/algolia/experiences/releases/download/canary/';
+const LOCAL_PREFIX = '/__local__/';
+const RESOLVER_URL =
+  'https://experiences-bundle-resolver.algolia-5d2.workers.dev';
+const DIST_DIR = resolve(__dirname, '../../packages/experiences/dist');
 
 function transformForPreview(html) {
   // Inject staging banner after <body>
@@ -39,6 +46,61 @@ export default {
     },
   },
   plugins: [
+    {
+      name: 'local-canary-proxy',
+      // Rewrite GitHub canary URLs to a local prefix so Vite serves them.
+      transformIndexHtml(html) {
+        return html.replaceAll(CANARY_URL, LOCAL_PREFIX);
+      },
+      configureServer(server) {
+        // Reload the browser when local dist files change (e.g. after
+        // tsdown --watch rebuilds the toolbar or runtime).
+        watch(DIST_DIR, (_, filename) => {
+          if (filename?.endsWith('.js')) {
+            server.ws.send({ type: 'full-reload' });
+          }
+        });
+
+        // Mock the resolver: return a bundleUrl pointing to the local prefix.
+        server.middlewares.use((req, res, next) => {
+          if (!req.url?.startsWith('/__resolver__/')) return next();
+
+          const origin = `http://${req.headers.host}`;
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(
+            JSON.stringify({ bundleUrl: `${origin}${LOCAL_PREFIX}runtime.js` })
+          );
+        });
+
+        // Serve /__local__/<filename> from the local dist directory.
+        // Also patches the loader bundles to route resolver calls through
+        // the local mock instead of the remote worker.
+        server.middlewares.use((req, res, next) => {
+          const [pathname] = (req.url || '').split('?');
+          if (!pathname.startsWith(LOCAL_PREFIX)) return next();
+
+          const filename = pathname.slice(LOCAL_PREFIX.length);
+          const filePath = resolve(DIST_DIR, filename);
+
+          try {
+            let content = readFileSync(filePath, 'utf-8');
+
+            // Patch loader bundles to call the local resolver mock
+            if (filename.startsWith('experiences')) {
+              content = content.replaceAll(RESOLVER_URL, '/__resolver__');
+            }
+
+            res.writeHead(200, {
+              'Content-Type': 'application/javascript',
+              'Cache-Control': 'no-cache',
+            });
+            res.end(content);
+          } catch {
+            next();
+          }
+        });
+      },
+    },
     {
       name: 'preview-mode',
       configureServer(server) {

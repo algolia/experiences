@@ -1,0 +1,255 @@
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+
+import { saveExperience } from '../api';
+import type { ExperienceApiResponse, ToolbarConfig } from '../types';
+import { WIDGET_TYPES } from '../widget-types';
+import { Panel } from './panel';
+import { Pill } from './pill';
+
+type AppProps = {
+  config: ToolbarConfig;
+  initialExperience: ExperienceApiResponse;
+};
+
+type SaveState = 'idle' | 'saving' | 'saved';
+
+export function App({ config, initialExperience }: AppProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [experience, setExperience] = useState(initialExperience);
+  const [isDirty, setIsDirty] = useState(false);
+  const [saveState, setSaveState] = useState<SaveState>('idle');
+  const [toast, setToast] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const scheduleRun = useCallback((newExperience: ExperienceApiResponse) => {
+    clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      window.AlgoliaExperiences?.run(newExperience);
+    }, 300);
+  }, []);
+
+  const updateCssVariablesOnPage = useCallback(
+    (blockIndex: number, key: string, value: string) => {
+      const existingStyle = document.querySelector(
+        'style[data-algolia-experiences-toolbar]'
+      );
+      const style = existingStyle ?? document.createElement('style');
+
+      if (!existingStyle) {
+        style.setAttribute('data-algolia-experiences-toolbar', '');
+        document.head.appendChild(style);
+      }
+
+      // Collect all css variables from all blocks
+      const allVars: Record<string, string> = {};
+
+      experience.blocks.forEach((block, i) => {
+        const vars = block.parameters.cssVariables ?? {};
+
+        Object.entries(vars).forEach(([k, v]) => {
+          if (i === blockIndex && k === key) {
+            allVars[`--ais-${k}`] = value;
+          } else {
+            allVars[`--ais-${k}`] = v;
+          }
+        });
+      });
+
+      style.textContent = `:root { ${Object.entries(allVars)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join('; ')} }`;
+    },
+    [experience]
+  );
+
+  const onParameterChange = useCallback(
+    (index: number, key: string, value: unknown) => {
+      setExperience((prev) => {
+        const updated = {
+          ...prev,
+          blocks: prev.blocks.map((block, i) =>
+            i === index
+              ? {
+                  ...block,
+                  parameters: { ...block.parameters, [key]: value },
+                }
+              : block
+          ),
+        };
+
+        scheduleRun(updated);
+
+        return updated;
+      });
+      setIsDirty(true);
+    },
+    [scheduleRun]
+  );
+
+  const onCssVariableChange = useCallback(
+    (index: number, key: string, value: string) => {
+      updateCssVariablesOnPage(index, key, value);
+
+      setExperience((prev) => ({
+        ...prev,
+        blocks: prev.blocks.map((block, i) =>
+          i === index
+            ? {
+                ...block,
+                parameters: {
+                  ...block.parameters,
+                  cssVariables: {
+                    ...(block.parameters.cssVariables ?? {}),
+                    [key]: value,
+                  },
+                },
+              }
+            : block
+        ),
+      }));
+
+      setIsDirty(true);
+    },
+    [updateCssVariablesOnPage]
+  );
+
+  const onLocate = useCallback((container: string) => {
+    let el: Element | null;
+    try {
+      el = document.querySelector(container);
+    } catch {
+      setToast(`Invalid selector "${container}".`);
+      return;
+    }
+
+    if (!el) {
+      setToast(`Container "${container}" not found on page.`);
+      return;
+    }
+
+    el.scrollIntoView({ behavior: 'instant', block: 'center' });
+
+    requestAnimationFrame(() => {
+      const candidate = el.firstChild instanceof Element ? el.firstChild : el;
+      const rect = candidate.getBoundingClientRect();
+      const target =
+        rect.width === 0 || rect.height === 0
+          ? el.getBoundingClientRect()
+          : rect;
+
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `position:fixed;top:${target.top}px;left:${target.left}px;width:${target.width}px;height:${target.height}px;border:2px solid #003dff;background:rgba(0,61,255,0.08);border-radius:4px;pointer-events:none;z-index:2147483646`;
+      document.body.appendChild(overlay);
+
+      const removeOverlay = () => overlay.remove();
+      const animation = overlay.animate(
+        [
+          { opacity: 1, offset: 0 },
+          { opacity: 1, offset: 0.75 },
+          { opacity: 0, offset: 1 },
+        ],
+        { duration: 2000, easing: 'ease-out' }
+      );
+      animation.onfinish = removeOverlay;
+      animation.oncancel = removeOverlay;
+    });
+  }, []);
+
+  const onDeleteBlock = useCallback(
+    (index: number) => {
+      setExperience((value) => {
+        const updated = {
+          ...value,
+          blocks: value.blocks.filter((_, i) => i !== index),
+        };
+
+        scheduleRun(updated);
+
+        return updated;
+      });
+      setIsDirty(true);
+    },
+    [scheduleRun]
+  );
+
+  const onAddBlock = useCallback((type: string) => {
+    setExperience((value) => {
+      return {
+        ...value,
+        blocks: [
+          ...value.blocks,
+          {
+            type,
+            parameters: {
+              ...(WIDGET_TYPES[type]?.defaultParameters ?? {
+                container: '',
+              }),
+            },
+          },
+        ],
+      };
+    });
+
+    setIsDirty(true);
+  }, []);
+
+  const onSave = useCallback(async () => {
+    setSaveState('saving');
+
+    try {
+      await saveExperience({
+        appId: config.appId,
+        apiKey: config.apiKey,
+        experienceId: config.experienceId,
+        env: config.env ?? 'prod',
+        config: experience,
+      });
+
+      setIsDirty(false);
+      setSaveState('saved');
+      setTimeout(() => setSaveState('idle'), 2000);
+    } catch (err) {
+      setSaveState('idle');
+      setToast(err instanceof Error ? err.message : 'Failed to save.');
+    }
+  }, [config, experience]);
+
+  useEffect(() => {
+    if (!toast) {
+      return;
+    }
+
+    const timer = setTimeout(() => setToast(null), 4000);
+
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  return (
+    <>
+      <Panel
+        experience={experience}
+        dirty={isDirty}
+        saveState={saveState}
+        open={isExpanded}
+        onClose={() => setIsExpanded(false)}
+        onSave={onSave}
+        onParameterChange={onParameterChange}
+        onCssVariableChange={onCssVariableChange}
+        onLocate={onLocate}
+        onDeleteBlock={onDeleteBlock}
+        onAddBlock={onAddBlock}
+      />
+      <Pill visible={!isExpanded} onClick={() => setIsExpanded(true)} />
+
+      {toast && (
+        <div
+          role="alert"
+          class="animate-[toast-in_200ms_ease-out] bg-background text-foreground fixed bottom-4 left-1/2 z-[2147483647] -translate-x-1/2 rounded-lg border px-4 py-2.5 text-sm shadow-lg"
+        >
+          {toast}
+        </div>
+      )}
+    </>
+  );
+}

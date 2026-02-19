@@ -21,6 +21,7 @@ jobs:
 
       - run: npm run build --workspace=@algolia/experiences
       - run: npm run build --workspace=@experiences/runtime
+      - run: npm run build --workspace=@experiences/toolbar
 
       - name: Delete existing canary release
         run: gh release delete canary --yes || true
@@ -36,6 +37,7 @@ jobs:
             packages/experiences/dist/experiences.js \
             packages/experiences/dist/experiences.preview.js \
             packages/experiences/dist/runtime.js \
+            packages/experiences/dist/toolbar.js \
             --prerelease \
             --title "Canary" \
             --notes "Latest build from main ($(git rev-parse --short HEAD))
