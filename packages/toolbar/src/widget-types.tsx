@@ -20,7 +20,6 @@ export type WidgetTypeConfig = {
   fieldOverrides?: Record<string, FieldOverride>;
   paramLabels?: Record<string, string>;
   paramDescriptions?: Record<string, string>;
-  cssVariableDescriptions?: Record<string, string>;
 };
 
 export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
@@ -81,10 +80,6 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         "When enabled, shows the user's recent searches below the input.",
       showSuggestions:
         'When enabled, shows query suggestions from a dedicated suggestions index. Requires an indexName, a searchPageUrl, and a query parameter name.',
-    },
-    cssVariableDescriptions: {
-      'primary-color-rgb':
-        'The main brand color used for highlights, links, and interactive elements.',
     },
   },
   'ais.chat': {

@@ -37,12 +37,6 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('recent searches');
   });
 
-  it('includes CSS variable descriptions as sub-items', () => {
-    const result = describeWidgetTypes();
-    expect(result).toContain('primary-color-rgb');
-    expect(result).toContain('brand color');
-  });
-
   it('excludes disabled widget types', () => {
     const result = describeWidgetTypes();
     expect(result).not.toContain('ais.hits');
@@ -193,34 +187,6 @@ describe('getTools', () => {
       );
     });
 
-    it('applies cssVariables via top-level field', async () => {
-      const experience: ExperienceApiResponse = { blocks: [] };
-      const callbacks = createCallbacks(experience);
-      const tools = getTools(callbacks);
-
-      const result = await tools.add_widget.execute!(
-        {
-          type: 'ais.autocomplete',
-          container: '#search',
-          cssVariables: { 'primary-color-rgb': '255, 0, 0' },
-        },
-        { toolCallId: 'tc1', messages: [] }
-      );
-
-      expect(result).toMatchObject({
-        success: true,
-        applied: expect.arrayContaining([
-          'container',
-          'cssVariables.primary-color-rgb',
-        ]),
-      });
-      expect(callbacks.onCssVariableChange).toHaveBeenCalledWith(
-        0,
-        'primary-color-rgb',
-        '255, 0, 0'
-      );
-    });
-
     it('computes the correct index for non-empty experiences', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
@@ -336,7 +302,7 @@ describe('getTools', () => {
       });
     });
 
-    it('handles cssVariables changes via top-level field', async () => {
+    it('handles cssVariables changes', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -354,37 +320,6 @@ describe('getTools', () => {
       const result = await tools.edit_widget.execute!(
         {
           index: 0,
-          cssVariables: { 'primary-color-rgb': '#ff0000' },
-        },
-        { toolCallId: 'tc1', messages: [] }
-      );
-
-      expect(result).toMatchObject({
-        success: true,
-        applied: ['cssVariables.primary-color-rgb'],
-      });
-      expect(callbacks.onCssVariableChange).toHaveBeenCalledWith(
-        0,
-        'primary-color-rgb',
-        '#ff0000'
-      );
-    });
-
-    it('ignores cssVariables nested inside parameters', async () => {
-      const experience: ExperienceApiResponse = {
-        blocks: [
-          {
-            type: 'ais.autocomplete',
-            parameters: { container: '#search' },
-          },
-        ],
-      };
-      const callbacks = createCallbacks(experience);
-      const tools = getTools(callbacks);
-
-      const result = await tools.edit_widget.execute!(
-        {
-          index: 0,
           parameters: {
             cssVariables: { 'primary-color-rgb': '#ff0000' },
           },
@@ -392,7 +327,12 @@ describe('getTools', () => {
         { toolCallId: 'tc1', messages: [] }
       );
 
-      expect(callbacks.onCssVariableChange).not.toHaveBeenCalled();
+      expect(result).toMatchObject({ success: true });
+      expect(callbacks.onCssVariableChange).toHaveBeenCalledWith(
+        0,
+        'primary-color-rgb',
+        '#ff0000'
+      );
     });
   });
 
