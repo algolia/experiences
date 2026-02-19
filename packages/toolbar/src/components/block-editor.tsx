@@ -68,8 +68,7 @@ export function BlockEditor({
               />
             );
           case 'object': {
-            const enabled =
-              typeof value === 'object' && value !== null && value !== false;
+            const enabled = typeof value === 'object' && value !== null;
             const objectValue = enabled
               ? (value as Record<string, unknown>)
               : {};
