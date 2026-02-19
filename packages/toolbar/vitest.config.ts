@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 
@@ -15,9 +16,31 @@ function stubToolbarCss(): Plugin {
   };
 }
 
+const root = resolve(__dirname, '../..');
+const preactCompat = resolve(
+  root,
+  'node_modules/preact/compat/dist/compat.mjs'
+);
+const preactJsxRuntime = resolve(
+  root,
+  'node_modules/preact/jsx-runtime/dist/jsxRuntime.mjs'
+);
+
 export default defineConfig({
   plugins: [stubToolbarCss()],
+  resolve: {
+    alias: {
+      'react/jsx-runtime': preactJsxRuntime,
+      'react-dom': preactCompat,
+      react: preactCompat,
+    },
+  },
   test: {
     environment: 'jsdom',
+    server: {
+      deps: {
+        inline: ['react', 'react-dom', '@ai-sdk/react'],
+      },
+    },
   },
 });
