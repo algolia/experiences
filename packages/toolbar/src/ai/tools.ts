@@ -129,8 +129,14 @@ export function getTools(callbacks: ToolCallbacks) {
           .record(z.unknown())
           .optional()
           .describe('Additional parameters for the widget'),
+        cssVariables: z
+          .record(z.string())
+          .optional()
+          .describe(
+            'CSS variables for theming (e.g. { "primary-color-rgb": "255, 0, 0" })'
+          ),
       }),
-      execute: async ({ type, container, parameters }) => {
+      execute: async ({ type, container, parameters, cssVariables }) => {
         const experience = callbacks.getExperience();
         const newIndex = experience.blocks.length;
 
@@ -148,13 +154,20 @@ export function getTools(callbacks: ToolCallbacks) {
 
         if (parameters) {
           for (const [key, value] of Object.entries(parameters)) {
-            if (key === 'container') continue;
+            if (key === 'container' || key === 'cssVariables') continue;
             if (allowedKeys.has(key)) {
               callbacks.onParameterChange(newIndex, key, value);
               applied.push(key);
             } else {
               rejected.push(key);
             }
+          }
+        }
+
+        if (cssVariables) {
+          for (const [cssKey, cssValue] of Object.entries(cssVariables)) {
+            callbacks.onCssVariableChange(newIndex, cssKey, cssValue);
+            applied.push(`cssVariables.${cssKey}`);
           }
         }
 
@@ -171,14 +184,21 @@ export function getTools(callbacks: ToolCallbacks) {
 
     edit_widget: tool({
       description:
-        'Edit parameters of an existing widget. Only modify allowed parameters.',
+        'Edit parameters or CSS variables of an existing widget. Use the cssVariables field for theming changes (colors, etc.).',
       inputSchema: z.object({
         index: z.number().describe('The index of the widget to edit'),
         parameters: z
           .record(z.unknown())
+          .optional()
           .describe('Parameters to update (key-value pairs)'),
+        cssVariables: z
+          .record(z.string())
+          .optional()
+          .describe(
+            'CSS variables to update (e.g. { "primary-color-rgb": "255, 0, 0" })'
+          ),
       }),
-      execute: async ({ index, parameters }) => {
+      execute: async ({ index, parameters, cssVariables }) => {
         const experience = callbacks.getExperience();
 
         if (index < 0 || index >= experience.blocks.length) {
@@ -198,23 +218,22 @@ export function getTools(callbacks: ToolCallbacks) {
         const applied: string[] = [];
         const rejected: string[] = [];
 
-        for (const [key, value] of Object.entries(parameters)) {
-          if (
-            key === 'cssVariables' &&
-            typeof value === 'object' &&
-            value !== null
-          ) {
-            for (const [cssKey, cssValue] of Object.entries(
-              value as Record<string, string>
-            )) {
-              callbacks.onCssVariableChange(index, cssKey, cssValue);
-              applied.push(`cssVariables.${cssKey}`);
+        if (parameters) {
+          for (const [key, value] of Object.entries(parameters)) {
+            if (key === 'cssVariables') continue;
+            if (allowedKeys.has(key)) {
+              callbacks.onParameterChange(index, key, value);
+              applied.push(key);
+            } else {
+              rejected.push(key);
             }
-          } else if (allowedKeys.has(key)) {
-            callbacks.onParameterChange(index, key, value);
-            applied.push(key);
-          } else {
-            rejected.push(key);
+          }
+        }
+
+        if (cssVariables) {
+          for (const [cssKey, cssValue] of Object.entries(cssVariables)) {
+            callbacks.onCssVariableChange(index, cssKey, cssValue);
+            applied.push(`cssVariables.${cssKey}`);
           }
         }
 
