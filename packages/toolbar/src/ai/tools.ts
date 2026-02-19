@@ -25,23 +25,42 @@ export function describeWidgetTypes(): string {
 
   return enabled
     .map(([key, config]) => {
-      const params = Object.keys(config.defaultParameters).filter(
+      const paramKeys = Object.keys(config.defaultParameters).filter(
         (k) => k !== 'container'
       );
-      const overrides = config.fieldOverrides
-        ? Object.entries(config.fieldOverrides).map(
-            ([k, override]) => `${k} (${override.type}: ${override.label})`
-          )
-        : [];
-
-      const editableParams = [
-        ...params,
-        ...overrides.filter((o) => !params.some((p) => o.startsWith(p))),
-      ];
+      const overrideKeys = Object.keys(config.fieldOverrides ?? {});
+      const allKeys = [...new Set([...paramKeys, ...overrideKeys])];
 
       let desc = `- ${key} ("${config.label}")`;
-      if (editableParams.length > 0) {
-        desc += `\n  Editable parameters: ${editableParams.join(', ')}`;
+      if (config.description) {
+        desc += `: ${config.description}`;
+      }
+
+      if (allKeys.length > 0) {
+        const paramLines = allKeys.flatMap((k) => {
+          const override = config.fieldOverrides?.[k];
+          const paramDesc = config.paramDescriptions?.[k];
+          let line = `    - ${k}`;
+          if (override) {
+            line += ` (${override.type})`;
+          }
+          if (paramDesc) {
+            line += `: ${paramDesc}`;
+          }
+
+          const lines = [line];
+
+          if (k === 'cssVariables' && config.cssVariableDescriptions) {
+            for (const [varName, varDesc] of Object.entries(
+              config.cssVariableDescriptions
+            )) {
+              lines.push(`      - ${varName}: ${varDesc}`);
+            }
+          }
+
+          return lines;
+        });
+        desc += `\n  Parameters:\n${paramLines.join('\n')}`;
       }
 
       return desc;
@@ -63,7 +82,14 @@ export function describeExperience(experience: ExperienceApiResponse): string {
         .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
         .join(', ');
 
-      return `[${index}] ${label} (${block.type}): ${params}`;
+      const cssVars = block.parameters.cssVariables ?? {};
+      const cssEntries = Object.entries(cssVars);
+      const cssStr =
+        cssEntries.length > 0
+          ? `, cssVariables: { ${cssEntries.map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(', ')} }`
+          : '';
+
+      return `[${index}] ${label} (${block.type}): ${params}${cssStr}`;
     })
     .join('\n');
 }

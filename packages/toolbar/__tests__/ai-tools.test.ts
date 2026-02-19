@@ -29,6 +29,20 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Chat');
   });
 
+  it('includes widget descriptions and parameter descriptions', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('search-as-you-type');
+    expect(result).toContain('Parameters:');
+    expect(result).toContain('showRecent');
+    expect(result).toContain('recent searches');
+  });
+
+  it('includes CSS variable descriptions as sub-items', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('primary-color-rgb');
+    expect(result).toContain('brand color');
+  });
+
   it('excludes disabled widget types', () => {
     const result = describeWidgetTypes();
     expect(result).not.toContain('ais.hits');
