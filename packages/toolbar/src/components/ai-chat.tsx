@@ -49,6 +49,7 @@ export function AiChat({
     return DEFAULT_MODEL;
   });
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const experienceRef = useRef(experience);
   experienceRef.current = experience;
@@ -132,7 +133,11 @@ export function AiChat({
   const isStreaming = status === 'streaming' || status === 'submitted';
 
   useEffect(() => {
-    if (isStreaming) setModelPickerOpen(false);
+    if (isStreaming) {
+      setModelPickerOpen(false);
+    } else {
+      inputRef.current?.focus();
+    }
   }, [isStreaming]);
 
   useEffect(() => {
@@ -312,9 +317,11 @@ export function AiChat({
             if (!text || isStreaming) return;
             chat.sendMessage({ text });
             input.value = '';
+            requestAnimationFrame(() => inputRef.current?.focus());
           }}
         >
           <input
+            ref={inputRef}
             name="message"
             type="text"
             placeholder="Ask me to edit your experience"
