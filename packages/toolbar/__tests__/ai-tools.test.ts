@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   describeExperience,
+  describeToolAction,
   describeWidgetTypes,
   getTools,
   type ToolCallbacks,
@@ -396,5 +397,63 @@ describe('getTools', () => {
         error: expect.stringContaining('no widgets'),
       });
     });
+  });
+});
+
+describe('describeToolAction', () => {
+  it('describes get_experience', () => {
+    expect(describeToolAction('get_experience', {}, {})).toBe(
+      'Checked experience state'
+    );
+  });
+
+  it('describes add_widget with type and container', () => {
+    expect(
+      describeToolAction(
+        'add_widget',
+        { type: 'ais.autocomplete', container: '#search' },
+        { success: true }
+      )
+    ).toBe('Added ais.autocomplete to #search');
+  });
+
+  it('describes add_widget without container', () => {
+    expect(
+      describeToolAction('add_widget', { type: 'ais.chat' }, { success: true })
+    ).toBe('Added ais.chat');
+  });
+
+  it('describes edit_widget with applied params', () => {
+    expect(
+      describeToolAction(
+        'edit_widget',
+        { index: 0 },
+        { success: true, applied: ['container', 'showRecent'], rejected: [] }
+      )
+    ).toBe('Edited widget 0 — container, showRecent');
+  });
+
+  it('describes edit_widget with no applied params', () => {
+    expect(
+      describeToolAction(
+        'edit_widget',
+        { index: 2 },
+        { success: true, applied: [], rejected: ['unknownParam'] }
+      )
+    ).toBe('Edited widget 2');
+  });
+
+  it('describes remove_widget', () => {
+    expect(
+      describeToolAction(
+        'remove_widget',
+        { index: 1 },
+        { success: true, removedType: 'ais.chat' }
+      )
+    ).toBe('Removed widget 1');
+  });
+
+  it('falls back for unknown tools', () => {
+    expect(describeToolAction('unknown_tool', {}, {})).toBe('Action completed');
   });
 });

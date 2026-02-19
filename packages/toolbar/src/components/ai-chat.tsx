@@ -2,11 +2,12 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { useChat } from '@ai-sdk/react';
 import { DirectChatTransport, ToolLoopAgent } from 'ai';
 import { Marked } from 'marked';
+import { Fragment } from 'preact';
 import { useEffect, useMemo, useRef } from 'preact/hooks';
 
 import type { ExperienceApiResponse } from '../types';
 import { buildSystemPrompt } from '../ai/system-prompt';
-import { getTools, type ToolCallbacks } from '../ai/tools';
+import { describeToolAction, getTools, type ToolCallbacks } from '../ai/tools';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Button } from './ui/button';
 
@@ -168,50 +169,95 @@ export function AiChat({
               Ask me to add, edit, or remove widgets from your experience.
             </div>
           )}
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              class={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                class={`max-w-[85%] overflow-hidden break-words rounded-lg px-3 py-2 text-sm ${
-                  message.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted'
-                }`}
-              >
+          {messages.map((message) =>
+            message.role === 'user' ? (
+              <div key={message.id} class="flex justify-end">
+                <div class="bg-primary text-primary-foreground max-w-[85%] overflow-hidden break-words rounded-lg px-3 py-2 text-sm">
+                  {message.parts.map((part, index) =>
+                    part.type === 'text' ? (
+                      <div key={index}>{part.text}</div>
+                    ) : null
+                  )}
+                </div>
+              </div>
+            ) : (
+              <Fragment key={message.id}>
                 {message.parts.map((part, index) => {
                   if (part.type === 'text') {
                     return (
-                      <div
-                        key={index}
-                        class="ai-chat-markdown"
-                        dangerouslySetInnerHTML={{
-                          __html: marked.parse(escapeHtml(part.text)) as string,
-                        }}
-                      />
+                      <div key={index} class="flex justify-start">
+                        <div class="bg-muted max-w-[85%] overflow-hidden break-words rounded-lg px-3 py-2 text-sm">
+                          <div
+                            class="ai-chat-markdown"
+                            dangerouslySetInnerHTML={{
+                              __html: marked.parse(
+                                escapeHtml(part.text)
+                              ) as string,
+                            }}
+                          />
+                        </div>
+                      </div>
                     );
                   }
 
-                  if (part.type.startsWith('tool-')) {
-                    if ('output' in part && part.output) {
-                      return (
-                        <p
-                          key={index}
-                          class="text-muted-foreground my-1 text-xs"
-                        >
-                          Action completed
-                        </p>
-                      );
-                    }
-                    return null;
+                  if (
+                    part.type === 'dynamic-tool' ||
+                    part.type.startsWith('tool-')
+                  ) {
+                    if (!('output' in part) || !part.output) return null;
+
+                    const toolName =
+                      'toolName' in part
+                        ? String(part.toolName)
+                        : part.type.replace(/^tool-/, '');
+                    const input =
+                      'input' in part
+                        ? (part.input as Record<string, unknown>)
+                        : undefined;
+                    const output = part.output as Record<string, unknown>;
+
+                    return (
+                      <details
+                        key={index}
+                        class="text-muted-foreground border-border rounded-md border px-3 py-2 text-xs group"
+                      >
+                        <summary class="flex cursor-pointer select-none list-none items-center gap-1.5">
+                          <svg
+                            class="size-3 shrink-0 transition-transform group-open:rotate-90"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <path d="m9 18 6-6-6-6" />
+                          </svg>
+                          <svg
+                            class="size-3 shrink-0"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                          </svg>
+                          {describeToolAction(toolName, input, output)}
+                        </summary>
+                        <pre class="mt-2 overflow-x-auto whitespace-pre-wrap border-t pt-2 text-[11px] opacity-70">
+                          {JSON.stringify(output, null, 2)}
+                        </pre>
+                      </details>
+                    );
                   }
 
                   return null;
                 })}
-              </div>
-            </div>
-          ))}
+              </Fragment>
+            )
+          )}
           {isStreaming && (
             <div class="flex justify-start">
               <div class="bg-muted rounded-lg px-3 py-2">

@@ -76,6 +76,31 @@ export function describeExperience(experience: ExperienceApiResponse): string {
     .join('\n');
 }
 
+export function describeToolAction(
+  toolName: string,
+  input: Record<string, unknown> | undefined,
+  output: Record<string, unknown> | undefined
+): string {
+  switch (toolName) {
+    case 'get_experience':
+      return 'Checked experience state';
+    case 'add_widget':
+      return `Added ${input?.type ?? 'widget'}${input?.container ? ` to ${String(input.container)}` : ''}`;
+    case 'edit_widget': {
+      const applied = output?.applied;
+      const desc = `Edited widget ${input?.index ?? ''}`;
+      if (Array.isArray(applied) && applied.length > 0) {
+        return `${desc} — ${applied.join(', ')}`;
+      }
+      return desc;
+    }
+    case 'remove_widget':
+      return `Removed widget ${input?.index ?? ''}`;
+    default:
+      return 'Action completed';
+  }
+}
+
 function boundsError(index: number, count: number): string {
   if (count === 0) {
     return `Invalid index ${index}. The experience has no widgets.`;
