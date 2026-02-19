@@ -3,7 +3,7 @@ import { useChat } from '@ai-sdk/react';
 import { DirectChatTransport, ToolLoopAgent } from 'ai';
 import { Marked } from 'marked';
 import { Fragment } from 'preact';
-import { useEffect, useMemo, useRef } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
 import type { ExperienceApiResponse } from '../types';
 import { buildSystemPrompt } from '../ai/system-prompt';
@@ -17,6 +17,15 @@ const marked = new Marked({
 });
 
 const STORAGE_KEY = 'algolia-experiences-ai-chat';
+const MODEL_STORAGE_KEY = 'algolia-experiences-ai-model';
+const DEFAULT_MODEL = 'gpt-4o';
+const MODELS = [
+  { id: 'gpt-4o', label: 'GPT-4o' },
+  { id: 'gpt-4o-mini', label: 'GPT-4o Mini' },
+  { id: 'gpt-4.1', label: 'GPT-4.1' },
+  { id: 'gpt-4.1-mini', label: 'GPT-4.1 Mini' },
+  { id: 'gpt-4.1-nano', label: 'GPT-4.1 Nano' },
+];
 
 type AiChatProps = {
   experience: ExperienceApiResponse;
@@ -34,6 +43,12 @@ export function AiChat({
   onDeleteBlock,
 }: AiChatProps) {
   const apiKey = window.__OPENAI_API_KEY__;
+  const [model, setModel] = useState(() => {
+    const stored = localStorage.getItem(MODEL_STORAGE_KEY);
+    if (stored && MODELS.some((m) => m.id === stored)) return stored;
+    return DEFAULT_MODEL;
+  });
+  const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const experienceRef = useRef(experience);
   experienceRef.current = experience;
@@ -67,13 +82,13 @@ export function AiChat({
     const tools = getTools(callbacks);
 
     const agent = new ToolLoopAgent({
-      model: openai.chat('gpt-4o-mini'),
+      model: openai.chat(model),
       tools,
       instructions: buildSystemPrompt(),
     });
 
     return new DirectChatTransport({ agent });
-  }, [apiKey, callbacks]);
+  }, [apiKey, model, callbacks]);
 
   const initialMessages = useMemo(() => {
     try {
@@ -114,6 +129,11 @@ export function AiChat({
   });
 
   const { messages, setMessages, status, error } = chat;
+  const isStreaming = status === 'streaming' || status === 'submitted';
+
+  useEffect(() => {
+    if (isStreaming) setModelPickerOpen(false);
+  }, [isStreaming]);
 
   useEffect(() => {
     try {
@@ -157,8 +177,6 @@ export function AiChat({
     );
   }
 
-  const isStreaming = status === 'streaming' || status === 'submitted';
-
   return (
     <div class="flex flex-1 flex-col overflow-hidden">
       {/* Messages */}
@@ -184,6 +202,8 @@ export function AiChat({
               <Fragment key={message.id}>
                 {message.parts.map((part, index) => {
                   if (part.type === 'text') {
+                    if (!part.text.trim()) return null;
+
                     return (
                       <div key={index} class="flex justify-start">
                         <div class="bg-muted max-w-[85%] overflow-hidden break-words rounded-lg px-3 py-2 text-sm">
@@ -282,7 +302,6 @@ export function AiChat({
       {/* Input */}
       <div class="border-t p-3">
         <form
-          class="flex gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             const form = e.currentTarget;
@@ -299,36 +318,112 @@ export function AiChat({
             name="message"
             type="text"
             placeholder="Ask me to edit your experience"
-            class="bg-muted flex-1 rounded-md border-0 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-ring/50 focus-visible:ring-2"
+            class="w-full border-0 bg-transparent px-0 py-1 text-sm outline-none placeholder:text-muted-foreground"
             disabled={isStreaming}
             autoComplete="off"
           />
-          <Button type="submit" disabled={isStreaming} size="icon">
-            <svg
-              class="size-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="m5 12 7-7 7 7" />
-              <path d="M12 19V5" />
-            </svg>
-          </Button>
-          {messages.length > 0 && (
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              disabled={isStreaming}
-              aria-label="Clear conversation"
-              onClick={() => {
-                setMessages([]);
-                sessionStorage.removeItem(STORAGE_KEY);
-              }}
-            >
+          <div class="mt-1 flex items-center justify-between">
+            <div class="relative flex items-center gap-1">
+              <button
+                type="button"
+                class="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                onClick={() => setModelPickerOpen(!modelPickerOpen)}
+                disabled={isStreaming}
+              >
+                <svg
+                  class="size-3 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 8V4H8" />
+                  <rect width="16" height="12" x="4" y="8" rx="2" />
+                  <path d="M2 14h2" />
+                  <path d="M20 14h2" />
+                  <path d="M15 13v2" />
+                  <path d="M9 13v2" />
+                </svg>
+                {MODELS.find((m) => m.id === model)?.label ?? model}
+                <svg
+                  class="size-3 shrink-0 opacity-50"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+              {modelPickerOpen && (
+                <>
+                  <div
+                    class="fixed inset-0 z-40"
+                    onClick={() => setModelPickerOpen(false)}
+                  />
+                  <div class="absolute bottom-full left-0 z-50 mb-1 min-w-[160px] rounded-lg border bg-background p-1 shadow-md">
+                    {MODELS.map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted"
+                        onClick={() => {
+                          setModel(m.id);
+                          localStorage.setItem(MODEL_STORAGE_KEY, m.id);
+                          setModelPickerOpen(false);
+                        }}
+                      >
+                        <span class="flex-1">{m.label}</span>
+                        {m.id === model && (
+                          <svg
+                            class="size-3 shrink-0"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <path d="M20 6 9 17l-5-5" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+              {messages.length > 0 && (
+                <button
+                  type="button"
+                  class="rounded-md px-1.5 py-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  disabled={isStreaming}
+                  aria-label="Clear conversation"
+                  onClick={() => {
+                    setMessages([]);
+                    sessionStorage.removeItem(STORAGE_KEY);
+                  }}
+                >
+                  <svg
+                    class="size-3"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M3 6h18" />
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            <Button type="submit" disabled={isStreaming} size="icon">
               <svg
                 class="size-4"
                 viewBox="0 0 24 24"
@@ -338,12 +433,11 @@ export function AiChat({
                 stroke-linecap="round"
                 stroke-linejoin="round"
               >
-                <path d="M3 6h18" />
-                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                <path d="m5 12 7-7 7 7" />
+                <path d="M12 19V5" />
               </svg>
             </Button>
-          )}
+          </div>
         </form>
       </div>
     </div>

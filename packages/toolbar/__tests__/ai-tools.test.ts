@@ -456,4 +456,16 @@ describe('describeToolAction', () => {
   it('falls back for unknown tools', () => {
     expect(describeToolAction('unknown_tool', {}, {})).toBe('Action completed');
   });
+
+  it('handles undefined input and output', () => {
+    expect(describeToolAction('add_widget', undefined, undefined)).toBe(
+      'Added widget'
+    );
+    expect(describeToolAction('edit_widget', undefined, undefined)).toBe(
+      'Edited widget '
+    );
+    expect(describeToolAction('remove_widget', undefined, undefined)).toBe(
+      'Removed widget '
+    );
+  });
 });
