@@ -77,7 +77,10 @@ export function AiChat({
   const initialMessages = useMemo(() => {
     try {
       const stored = sessionStorage.getItem(STORAGE_KEY);
-      if (!stored) return undefined;
+
+      if (!stored) {
+        return undefined;
+      }
 
       const parsed = JSON.parse(stored);
       if (
@@ -93,6 +96,7 @@ export function AiChat({
         )
       ) {
         sessionStorage.removeItem(STORAGE_KEY);
+
         return undefined;
       }
 
@@ -108,7 +112,7 @@ export function AiChat({
     messages: initialMessages,
   });
 
-  const { messages, status, error } = chat;
+  const { messages, setMessages, status, error } = chat;
 
   useEffect(() => {
     try {
@@ -267,6 +271,33 @@ export function AiChat({
               <path d="M12 19V5" />
             </svg>
           </Button>
+          {messages.length > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              disabled={isStreaming}
+              aria-label="Clear conversation"
+              onClick={() => {
+                setMessages([]);
+                sessionStorage.removeItem(STORAGE_KEY);
+              }}
+            >
+              <svg
+                class="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 6h18" />
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+              </svg>
+            </Button>
+          )}
         </form>
       </div>
     </div>
