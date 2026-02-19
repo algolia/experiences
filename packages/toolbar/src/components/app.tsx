@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 
 import { saveExperience } from '../api';
+import { useElementPicker } from '../hooks/use-element-picker';
 import type {
   Environment,
   ExperienceApiResponse,
@@ -32,6 +33,7 @@ export function App({ config, initialExperience }: AppProps) {
     sessionStorage.getItem(`experiences.${config.experienceId}.key`)
   );
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const picker = useElementPicker();
 
   const scheduleRun = useCallback((newExperience: ExperienceApiResponse) => {
     clearTimeout(debounceRef.current);
@@ -53,7 +55,6 @@ export function App({ config, initialExperience }: AppProps) {
         document.head.appendChild(style);
       }
 
-      // Collect all css variables from all blocks
       const allVars: Record<string, string> = {};
 
       experience.blocks.forEach((block, i) => {
@@ -134,47 +135,59 @@ export function App({ config, initialExperience }: AppProps) {
     [updateCssVariablesOnPage]
   );
 
-  const onLocate = useCallback((container: string) => {
-    let el: Element | null;
-    try {
-      el = document.querySelector(container);
-    } catch {
-      setToast(`Invalid selector "${container}".`);
-      return;
-    }
+  const onLocate = useCallback(
+    (container: string, placement: string | undefined) => {
+      let el: Element | null;
+      try {
+        el = document.querySelector(container);
+      } catch {
+        setToast(`Invalid selector "${container}".`);
+        return;
+      }
 
-    if (!el) {
-      setToast(`Container "${container}" not found on page.`);
-      return;
-    }
+      if (!el) {
+        setToast(`Container "${container}" not found on page.`);
+        return;
+      }
 
-    el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      if (placement === 'before' && el.previousElementSibling) {
+        el = el.previousElementSibling;
+      } else if (
+        (placement === 'after' || placement === 'replace') &&
+        el.nextElementSibling
+      ) {
+        el = el.nextElementSibling;
+      }
 
-    requestAnimationFrame(() => {
-      const candidate = el.firstChild instanceof Element ? el.firstChild : el;
-      const rect = candidate.getBoundingClientRect();
-      const target =
-        rect.width === 0 || rect.height === 0
-          ? el.getBoundingClientRect()
-          : rect;
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
 
-      const overlay = document.createElement('div');
-      overlay.style.cssText = `position:fixed;top:${target.top}px;left:${target.left}px;width:${target.width}px;height:${target.height}px;border:2px solid #003dff;background:rgba(0,61,255,0.08);border-radius:4px;pointer-events:none;z-index:2147483646`;
-      document.body.appendChild(overlay);
+      requestAnimationFrame(() => {
+        const candidate = el.firstChild instanceof Element ? el.firstChild : el;
+        const rect = candidate.getBoundingClientRect();
+        const target =
+          rect.width === 0 || rect.height === 0
+            ? el.getBoundingClientRect()
+            : rect;
 
-      const removeOverlay = () => overlay.remove();
-      const animation = overlay.animate(
-        [
-          { opacity: 1, offset: 0 },
-          { opacity: 1, offset: 0.75 },
-          { opacity: 0, offset: 1 },
-        ],
-        { duration: 2000, easing: 'ease-out' }
-      );
-      animation.onfinish = removeOverlay;
-      animation.oncancel = removeOverlay;
-    });
-  }, []);
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `position:fixed;top:${target.top}px;left:${target.left}px;width:${target.width}px;height:${target.height}px;border:2px solid #003dff;background:rgba(0,61,255,0.08);border-radius:4px;pointer-events:none;z-index:2147483646`;
+        document.body.appendChild(overlay);
+
+        const removeOverlay = () => overlay.remove();
+        const animation = overlay.animate(
+          [
+            { opacity: 1, offset: 0 },
+            { opacity: 1, offset: 0.75 },
+            { opacity: 0, offset: 1 },
+          ],
+          { duration: 2000, easing: 'ease-out' }
+        );
+        animation.onfinish = removeOverlay;
+        animation.oncancel = removeOverlay;
+      });
+    },
+    []
+  );
 
   const onDeleteBlock = useCallback(
     (index: number) => {
@@ -193,26 +206,33 @@ export function App({ config, initialExperience }: AppProps) {
     [scheduleRun]
   );
 
-  const onAddBlock = useCallback((type: string) => {
-    setExperience((value) => {
-      return {
-        ...value,
-        blocks: [
-          ...value.blocks,
-          {
-            type,
-            parameters: {
-              ...(WIDGET_TYPES[type]?.defaultParameters ?? {
-                container: '',
-              }),
+  const onAddBlock = useCallback(
+    (type: string) => {
+      setExperience((value) => {
+        const updated = {
+          ...value,
+          blocks: [
+            ...value.blocks,
+            {
+              type,
+              parameters: {
+                ...(WIDGET_TYPES[type]?.defaultParameters ?? {
+                  container: '',
+                }),
+              },
             },
-          },
-        ],
-      };
-    });
+          ],
+        };
 
-    setIsDirty(true);
-  }, []);
+        scheduleRun(updated);
+
+        return updated;
+      });
+
+      setIsDirty(true);
+    },
+    [scheduleRun]
+  );
 
   const onSave = useCallback(async () => {
     setSaveState('saving');
@@ -275,6 +295,7 @@ export function App({ config, initialExperience }: AppProps) {
         onLocate={onLocate}
         onDeleteBlock={onDeleteBlock}
         onAddBlock={onAddBlock}
+        onPickElement={picker.startPicking}
       />
       <Pill
         visible={!isExpanded}

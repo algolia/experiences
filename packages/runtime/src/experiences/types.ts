@@ -9,9 +9,10 @@ export type Environment = 'prod' | 'beta';
 
 type ExperienceApiBlockParameters = {
   container: string;
-  cssVariables: Record<string, string>;
+  placement?: 'inside' | 'before' | 'after' | 'replace' | 'body';
+  cssVariables?: Record<string, string>;
   indexName?: string;
-} & Record<'container' | 'cssVariables' | 'indexName' | (string & {}), unknown>;
+} & Record<string & {}, unknown>;
 
 export type ExperienceApiResponse = {
   blocks: Array<{

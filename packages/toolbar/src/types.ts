@@ -2,6 +2,7 @@ export type Environment = 'prod' | 'beta';
 
 export type ExperienceApiBlockParameters = {
   container: string;
+  placement?: 'inside' | 'before' | 'after' | 'replace' | 'body';
   cssVariables?: Record<string, string>;
   indexName?: string;
 } & Record<string, unknown>;

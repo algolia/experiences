@@ -12,12 +12,72 @@ export type ExperienceProps = {
   env?: Environment;
 };
 
+type Placement = 'inside' | 'before' | 'after' | 'replace' | 'body';
+
+type ResolvedContainer = {
+  container: HTMLElement;
+  cleanup: () => void;
+};
+
+function resolveContainer(
+  selector: string | undefined,
+  placement: Placement = 'inside'
+): ResolvedContainer | null {
+  if (placement === 'body') {
+    const div = document.createElement('div');
+    document.body.appendChild(div);
+    return { container: div, cleanup: () => div.remove() };
+  }
+
+  if (!selector) {
+    return null;
+  }
+
+  const target = document.querySelector(selector);
+  if (!target || !target.parentNode) {
+    return null;
+  }
+
+  if (placement === 'inside') {
+    return { container: target as HTMLElement, cleanup: () => {} };
+  }
+
+  const div = document.createElement('div');
+
+  if (placement === 'before') {
+    target.parentNode.insertBefore(div, target);
+  } else if (placement === 'after') {
+    target.parentNode.insertBefore(div, target.nextSibling);
+  } else if (placement === 'replace') {
+    const originalDisplay = (target as HTMLElement).style.display;
+    (target as HTMLElement).style.display = 'none';
+    target.parentNode.insertBefore(div, target.nextSibling);
+
+    return {
+      container: div,
+      cleanup: () => {
+        div.remove();
+        (target as HTMLElement).style.display = originalDisplay;
+      },
+    };
+  }
+
+  return {
+    container: div,
+    cleanup: () => {
+      div.remove();
+    },
+  };
+}
+
 export function createExperienceMiddleware(
   props: ExperienceProps
 ): InternalMiddleware {
   const { config, env = 'prod' } = props;
 
   return ({ instantSearchInstance }) => {
+    const cleanups: Array<() => void> = [];
+
     return {
       $$type: 'ais.experience',
       $$internal: true,
@@ -42,13 +102,14 @@ export function createExperienceMiddleware(
           config.blocks.forEach((block) => {
             const { type, parameters } = block;
 
-            const cssVariablesKeys = Object.keys(parameters.cssVariables ?? {});
+            const cssVariables = parameters.cssVariables ?? {};
+            const cssVariablesKeys = Object.keys(cssVariables);
             if (cssVariablesKeys.length > 0) {
               injectStyleElement(`
                   :root {
                     ${cssVariablesKeys
                       .map((key) => {
-                        return `--ais-${key}: ${parameters.cssVariables[key]};`;
+                        return `--ais-${key}: ${cssVariables[key]};`;
                       })
                       .join(';')}
                   }
@@ -60,25 +121,47 @@ export function createExperienceMiddleware(
               return;
             }
 
+            const { placement, ...widgetParams } = parameters;
+            const resolved = resolveContainer(
+              widgetParams.container,
+              placement as Placement | undefined
+            );
+
+            if (!resolved) {
+              return;
+            }
+
+            cleanups.push(resolved.cleanup);
+
             const newWidget = supportedWidget.widget;
             supportedWidget
-              .transformParams(parameters, { env, instantSearchInstance })
+              .transformParams(widgetParams, { env, instantSearchInstance })
               .then((transformedParams) => {
-                if (
-                  newWidget &&
-                  document.querySelector(parameters.container) !== null
-                ) {
-                  const widgets = newWidget(transformedParams);
+                if (newWidget) {
+                  const params = {
+                    ...(transformedParams as Record<string, unknown>),
+                    container: resolved.container,
+                  };
+                  const widgets = newWidget(params);
                   parent.addWidgets(
                     Array.isArray(widgets) ? widgets : [widgets]
                   );
                 }
+              })
+              .catch((error) => {
+                console.error(
+                  `[Algolia Experiences] Failed to mount widget "${type}":`,
+                  error
+                );
               });
           });
         });
       },
       started: () => {},
-      unsubscribe: () => {},
+      unsubscribe: () => {
+        cleanups.forEach((cleanup) => cleanup());
+        cleanups.length = 0;
+      },
     };
   };
 }

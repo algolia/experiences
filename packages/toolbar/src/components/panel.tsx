@@ -17,9 +17,10 @@ type PanelProps = {
   onSave: () => void;
   onParameterChange: (index: number, key: string, value: unknown) => void;
   onCssVariableChange: (index: number, key: string, value: string) => void;
-  onLocate: (container: string) => void;
+  onLocate: (container: string, placement: string | undefined) => void;
   onDeleteBlock: (index: number) => void;
   onAddBlock: (type: string) => void;
+  onPickElement: (callback: (selector: string) => void) => void;
 };
 
 type Tab = 'manual' | 'ai';
@@ -36,6 +37,7 @@ export function Panel({
   onLocate,
   onDeleteBlock,
   onAddBlock,
+  onPickElement,
 }: PanelProps) {
   const [tab, setTab] = useState<Tab>('manual');
   const [aiMounted, setAiMounted] = useState(false);
@@ -208,8 +210,14 @@ export function Panel({
                 onCssVariableChange={(key, value) =>
                   onCssVariableChange(index, key, value)
                 }
-                onLocate={() => onLocate(block.parameters.container)}
+                onLocate={() =>
+                  onLocate(
+                    block.parameters.container,
+                    block.parameters.placement as string | undefined
+                  )
+                }
                 onDeleteBlock={() => onDeleteBlock(index)}
+                onPickElement={onPickElement}
               />
             ))}
             <AddWidgetPopover onSelect={onAddBlock} />

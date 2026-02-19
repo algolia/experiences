@@ -51,6 +51,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     fieldOrder: [
       'cssVariables',
       'container',
+      'placement',
       'indexName',
       'showRecent',
       'showSuggestions',
@@ -102,6 +103,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     ),
     defaultParameters: {
       container: '',
+      placement: 'body',
       agentId: '',
     },
     paramLabels: {
