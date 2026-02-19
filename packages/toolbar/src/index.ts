@@ -7,6 +7,7 @@ import type { ToolbarConfig } from './types';
 declare global {
   interface Window {
     __ALGOLIA_EXPERIENCES_TOOLBAR_CONFIG__?: ToolbarConfig;
+    __OPENAI_API_KEY__?: string;
     AlgoliaExperiences?: {
       run: (config?: Record<string, unknown>) => void;
       dispose: () => void;
