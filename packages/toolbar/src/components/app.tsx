@@ -79,7 +79,7 @@ export function App({ config, initialExperience }: AppProps) {
     if (adminApiKey) {
       setIsExpanded(true);
     } else {
-      location.href = `${DASHBOARD_BASE[config.env || 'prod']}/apps/${config.appId}/experiences/${initialExperience.indexName}/authenticate/${config.experienceId}?previewUrl=${location.href}`;
+      location.href = `${DASHBOARD_BASE[config.env || 'prod']}/apps/${config.appId}/experiences/${initialExperience.indexName}/authenticate/${config.experienceId}?previewUrl=${encodeURIComponent(location.href)}`;
     }
   };
 
@@ -247,13 +247,13 @@ export function App({ config, initialExperience }: AppProps) {
 
   useEffect(() => {
     const url = new URL(window.location.href);
-    const adminApiKey = url.searchParams.get('algoliaExperiencesKey');
+    const algoliaExperiencesKey = url.searchParams.get('algoliaExperiencesKey');
 
-    if (adminApiKey) {
-      setAdminApiKey(adminApiKey);
+    if (algoliaExperiencesKey) {
+      setAdminApiKey(algoliaExperiencesKey);
       sessionStorage.setItem(
         `experiences.${config.experienceId}.key`,
-        adminApiKey
+        algoliaExperiencesKey
       );
       setIsExpanded(true);
 
