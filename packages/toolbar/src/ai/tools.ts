@@ -26,12 +26,13 @@ export function describeWidgetTypes(): string {
   return enabled
     .map(([key, config]) => {
       const paramKeys = Object.keys(config.defaultParameters).filter(
-        (k) => k !== 'container'
+        (k) => k !== 'container' && k !== 'placement'
       );
       const overrideKeys = Object.keys(config.fieldOverrides ?? {});
       const allKeys = [...new Set([...paramKeys, ...overrideKeys])];
 
-      let desc = `- ${key} ("${config.label}")`;
+      const defaultPlacement = config.defaultParameters.placement ?? 'inside';
+      let desc = `- ${key} ("${config.label}", default placement: ${defaultPlacement})`;
       if (config.description) {
         desc += `: ${config.description}`;
       }
@@ -67,11 +68,29 @@ export function describeExperience(experience: ExperienceApiResponse): string {
     .map((block, index) => {
       const config = WIDGET_TYPES[block.type];
       const label = config?.label ?? block.type;
+      const placement =
+        (block.parameters.placement as string | undefined) ??
+        (config?.defaultParameters.placement as string | undefined) ??
+        'inside';
+      const container = block.parameters.container as string | undefined;
+
+      let placementDesc: string;
+      if (placement === 'body') {
+        placementDesc = 'body';
+      } else if (container) {
+        placementDesc = `${placement} ${container}`;
+      } else {
+        placementDesc = placement;
+      }
+
       const params = Object.entries(block.parameters)
+        .filter(([k]) => k !== 'container' && k !== 'placement')
         .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
         .join(', ');
 
-      return `[${index}] ${label} (${block.type}): ${params}`;
+      const paramsSuffix = params ? `: ${params}` : '';
+
+      return `[${index}] ${label} (${block.type}) [${placementDesc}]${paramsSuffix}`;
     })
     .join('\n');
 }
@@ -84,8 +103,19 @@ export function describeToolAction(
   switch (toolName) {
     case 'get_experience':
       return 'Checked experience state';
-    case 'add_widget':
-      return `Added ${input?.type ?? 'widget'}${input?.container ? ` to ${String(input.container)}` : ''}`;
+    case 'add_widget': {
+      const widgetType = input?.type ?? 'widget';
+      const placement = input?.placement as string | undefined;
+      const container = input?.container as string | undefined;
+
+      if (placement === 'body') {
+        return `Added ${widgetType} to body`;
+      }
+      if (placement && placement !== 'inside' && container) {
+        return `Added ${widgetType} ${placement} ${container}`;
+      }
+      return `Added ${widgetType}${container ? ` to ${container}` : ''}`;
+    }
     case 'edit_widget': {
       const applied = output?.applied;
       const desc = `Edited widget ${input?.index ?? ''}`;
@@ -126,18 +156,27 @@ export function getTools(callbacks: ToolCallbacks) {
 
     add_widget: tool({
       description:
-        'Add a new widget to the experience. Always ask the user for the container CSS selector if not provided.',
+        'Add a new widget to the experience. When placement is "body", no container is needed. For other placements, a container CSS selector is required.',
       inputSchema: z.object({
         type: typeEnum.describe('The widget type to add'),
         container: z
           .string()
-          .describe('CSS selector for the container element'),
+          .optional()
+          .describe(
+            'CSS selector for the container element (required unless placement is "body")'
+          ),
+        placement: z
+          .enum(['inside', 'before', 'after', 'replace', 'body'])
+          .optional()
+          .describe(
+            'Where to place the widget relative to the container. Uses the widget type default placement if not specified.'
+          ),
         parameters: z
           .record(z.unknown())
           .optional()
           .describe('Additional parameters for the widget'),
       }),
-      execute: async ({ type, container, parameters }) => {
+      execute: async ({ type, container, placement, parameters }) => {
         const experience = callbacks.getExperience();
         const newIndex = experience.blocks.length;
 
@@ -145,17 +184,41 @@ export function getTools(callbacks: ToolCallbacks) {
         const allowedKeys = new Set([
           ...Object.keys(config?.defaultParameters ?? {}),
           ...Object.keys(config?.fieldOverrides ?? {}),
+          'placement',
         ]);
 
-        callbacks.onAddBlock(type);
-        callbacks.onParameterChange(newIndex, 'container', container);
+        const effectivePlacement =
+          placement ??
+          (config?.defaultParameters.placement as string | undefined) ??
+          'inside';
 
-        const applied: string[] = ['container'];
+        callbacks.onAddBlock(type);
+
+        const applied: string[] = [];
         const rejected: string[] = [];
+
+        if (
+          effectivePlacement !== 'body' &&
+          !container &&
+          !parameters?.container
+        ) {
+          return {
+            success: false,
+            error: `A container CSS selector is required when placement is "${effectivePlacement}".`,
+          };
+        }
+
+        callbacks.onParameterChange(newIndex, 'placement', effectivePlacement);
+        applied.push('placement');
+
+        if (container) {
+          callbacks.onParameterChange(newIndex, 'container', container);
+          applied.push('container');
+        }
 
         if (parameters) {
           for (const [key, value] of Object.entries(parameters)) {
-            if (key === 'container') continue;
+            if (key === 'container' || key === 'placement') continue;
             if (allowedKeys.has(key)) {
               callbacks.onParameterChange(newIndex, key, value);
               applied.push(key);
@@ -169,6 +232,7 @@ export function getTools(callbacks: ToolCallbacks) {
           success: true,
           index: newIndex,
           type,
+          placement: effectivePlacement,
           container,
           applied,
           rejected,
@@ -200,6 +264,7 @@ export function getTools(callbacks: ToolCallbacks) {
         const allowedKeys = new Set([
           ...Object.keys(config?.defaultParameters ?? {}),
           ...Object.keys(config?.fieldOverrides ?? {}),
+          'placement',
         ]);
 
         const applied: string[] = [];
