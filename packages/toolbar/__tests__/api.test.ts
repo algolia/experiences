@@ -104,13 +104,13 @@ describe('fetchExperience', () => {
 });
 
 describe('saveExperience', () => {
-  it('sends a PUT request with the config as JSON body', async () => {
+  it('sends a POST request with the config as JSON body', async () => {
     let requestMethod = '';
     let requestBody: unknown;
 
     server.use(
-      http.put(
-        'https://experiences.algolia.com/1/experiences/exp-123',
+      http.post(
+        'https://experiences.algolia.com/1/experiences',
         async ({ request }) => {
           requestMethod = request.method;
           requestBody = await request.json();
@@ -123,7 +123,6 @@ describe('saveExperience', () => {
       appId: 'APP_ID',
       apiKey: 'API_KEY',
       env: 'prod',
-      experienceId: 'exp-123',
       config: {
         blocks: [
           {
@@ -134,7 +133,7 @@ describe('saveExperience', () => {
       },
     });
 
-    expect(requestMethod).toBe('PUT');
+    expect(requestMethod).toBe('POST');
     expect(requestBody).toEqual({
       blocks: [
         {
@@ -149,8 +148,8 @@ describe('saveExperience', () => {
     let headers: Headers;
 
     server.use(
-      http.put(
-        'https://experiences.algolia.com/1/experiences/exp-123',
+      http.post(
+        'https://experiences.algolia.com/1/experiences',
         ({ request }) => {
           headers = request.headers;
           return new HttpResponse(null, { status: 200 });
@@ -162,7 +161,6 @@ describe('saveExperience', () => {
       appId: 'MY_APP_ID',
       apiKey: 'MY_API_KEY',
       env: 'prod',
-      experienceId: 'exp-123',
       config: { blocks: [] },
     });
 
@@ -175,8 +173,8 @@ describe('saveExperience', () => {
     let requestUrl = '';
 
     server.use(
-      http.put(
-        'https://experiences-beta.algolia.com/1/experiences/exp-123',
+      http.post(
+        'https://experiences-beta.algolia.com/1/experiences',
         ({ request }) => {
           requestUrl = request.url;
           return new HttpResponse(null, { status: 200 });
@@ -188,7 +186,6 @@ describe('saveExperience', () => {
       appId: 'APP_ID',
       apiKey: 'API_KEY',
       env: 'beta',
-      experienceId: 'exp-123',
       config: { blocks: [] },
     });
 
@@ -197,8 +194,8 @@ describe('saveExperience', () => {
 
   it('throws when the API responds with an error', async () => {
     server.use(
-      http.put(
-        'https://experiences.algolia.com/1/experiences/exp-123',
+      http.post(
+        'https://experiences.algolia.com/1/experiences',
         () => new HttpResponse(null, { status: 403, statusText: 'Forbidden' })
       )
     );
@@ -208,7 +205,6 @@ describe('saveExperience', () => {
         appId: 'APP_ID',
         apiKey: 'API_KEY',
         env: 'prod',
-        experienceId: 'exp-123',
         config: { blocks: [] },
       })
     ).rejects.toThrow('Failed to save experience: 403');
