@@ -34,7 +34,7 @@ function resolveContainer(
   }
 
   const target = document.querySelector(selector);
-  if (!target || !target.parentNode) {
+  if (!target) {
     return null;
   }
 
@@ -44,14 +44,10 @@ function resolveContainer(
 
   const div = document.createElement('div');
 
-  if (placement === 'before') {
-    target.parentNode.insertBefore(div, target);
-  } else if (placement === 'after') {
-    target.parentNode.insertBefore(div, target.nextSibling);
-  } else if (placement === 'replace') {
+  if (placement === 'replace') {
     const originalDisplay = (target as HTMLElement).style.display;
     (target as HTMLElement).style.display = 'none';
-    target.parentNode.insertBefore(div, target.nextSibling);
+    target.insertAdjacentElement('afterend', div);
 
     return {
       container: div,
@@ -61,6 +57,9 @@ function resolveContainer(
       },
     };
   }
+
+  const position = placement === 'before' ? 'beforebegin' : 'afterend';
+  target.insertAdjacentElement(position, div);
 
   return {
     container: div,

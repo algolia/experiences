@@ -12,7 +12,7 @@ type ExperienceApiBlockParameters = {
   placement?: 'inside' | 'before' | 'after' | 'replace' | 'body';
   cssVariables?: Record<string, string>;
   indexName?: string;
-} & Record<string & {}, unknown>;
+} & Record<'container' | 'cssVariables' | 'indexName' | (string & {}), unknown>;
 
 export type ExperienceApiResponse = {
   blocks: Array<{
