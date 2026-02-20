@@ -7,9 +7,19 @@ export function buildSystemPrompt(): string {
 
 ${describeWidgetTypes()}
 
+## Placement
+
+Each widget has a \`placement\` that controls where it renders relative to a container element:
+- \`inside\` — renders inside the container (replaces its content).
+- \`before\` — renders just before the container element.
+- \`after\` — renders just after the container element.
+- \`replace\` — replaces the container element entirely.
+- \`body\` — appends to the document body (no container needed).
+
+Each widget type has a default placement listed above. When placement is \`body\`, no container CSS selector is needed. For all other placements, a container CSS selector is required — ask the user for one if not provided.
+
 ## Rules
 
-- When adding a widget, always ask for the container CSS selector if the user hasn't provided one.
 - Only modify parameters that are listed as editable for each widget type.
 - Keep responses concise and confirm what you did after each action.
 - Before editing or removing, ALWAYS call get_experience first to verify current widget indices and state.

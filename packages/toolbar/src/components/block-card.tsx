@@ -19,7 +19,37 @@ type BlockCardProps = {
   onCssVariableChange: (key: string, value: string) => void;
   onLocate: () => void;
   onDeleteBlock: () => void;
+  onPickElement: (callback: (selector: string) => void) => void;
 };
+
+const PLACEMENT_LABELS: Record<string, string> = {
+  before: 'before',
+  after: 'after',
+  replace: 'replaces',
+};
+
+function getBadgeInfo(parameters: ExperienceApiBlockParameters): {
+  prefix: string | null;
+  text: string;
+} | null {
+  const placement = parameters.placement as string | undefined;
+  const container = parameters.container;
+
+  if (placement === 'body') {
+    return { prefix: null, text: 'body' };
+  }
+
+  if (!container) {
+    return null;
+  }
+
+  const prefix =
+    placement && placement !== 'inside'
+      ? (PLACEMENT_LABELS[placement] ?? null)
+      : null;
+
+  return { prefix, text: container };
+}
 
 export function BlockCard({
   type,
@@ -30,10 +60,12 @@ export function BlockCard({
   onCssVariableChange,
   onLocate,
   onDeleteBlock,
+  onPickElement,
 }: BlockCardProps) {
   const widgetType = WIDGET_TYPES[type];
   const label = widgetType?.label ?? type;
   const Icon = widgetType?.icon;
+  const badge = getBadgeInfo(parameters);
 
   return (
     <Card>
@@ -44,7 +76,7 @@ export function BlockCard({
           aria-expanded={open}
         >
           <CardHeader class="group w-full justify-between rounded-t-xl px-4 py-3">
-            <div class="flex items-center gap-2.5">
+            <div class="flex min-w-0 items-center gap-2.5">
               {Icon && (
                 <div
                   class={`flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors ${open ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'}`}
@@ -52,9 +84,20 @@ export function BlockCard({
                   <Icon />
                 </div>
               )}
-              <span class="text-sm font-semibold">{label}</span>
-              {parameters.container && (
-                <Badge variant="outline">{parameters.container}</Badge>
+              <span class="shrink-0 text-sm font-semibold">{label}</span>
+              {badge && (
+                <Badge
+                  variant="outline"
+                  class="truncate justify-start max-w-36 gap-1"
+                  title={
+                    badge.prefix ? `${badge.prefix} ${badge.text}` : badge.text
+                  }
+                >
+                  {badge.prefix && (
+                    <span class="text-muted-foreground">{badge.prefix}</span>
+                  )}
+                  <span class="truncate">{badge.text}</span>
+                </Badge>
               )}
             </div>
             <div class="flex items-center gap-1">
@@ -135,6 +178,7 @@ export function BlockCard({
               parameters={parameters}
               onParameterChange={onParameterChange}
               onCssVariableChange={onCssVariableChange}
+              onPickElement={onPickElement}
             />
           </CardContent>
         </CollapsibleContent>

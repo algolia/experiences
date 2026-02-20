@@ -1,7 +1,8 @@
-import type { ExperienceApiBlockParameters } from '../types';
+import type { ExperienceApiBlockParameters, Placement } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 import { CssVariablesEditor } from './fields/css-variables-editor';
 import { ObjectField } from './fields/object-field';
+import { PlacementField } from './fields/placement-field';
 import { SwitchField } from './fields/switch-field';
 import { TextField } from './fields/text-field';
 
@@ -10,6 +11,7 @@ type BlockEditorProps = {
   parameters: ExperienceApiBlockParameters;
   onParameterChange: (key: string, value: unknown) => void;
   onCssVariableChange: (key: string, value: string) => void;
+  onPickElement: (callback: (selector: string) => void) => void;
 };
 
 export function BlockEditor({
@@ -17,6 +19,7 @@ export function BlockEditor({
   parameters,
   onParameterChange,
   onCssVariableChange,
+  onPickElement,
 }: BlockEditorProps) {
   const widgetType = WIDGET_TYPES[type];
   const overrides = widgetType?.fieldOverrides ?? {};
@@ -29,6 +32,10 @@ export function BlockEditor({
   return (
     <div class="space-y-3">
       {paramKeys.map((key) => {
+        if (key === 'placement') {
+          return null;
+        }
+
         if (key === 'cssVariables') {
           const vars = parameters.cssVariables;
           if (!vars || Object.keys(vars).length === 0) return null;
@@ -40,6 +47,23 @@ export function BlockEditor({
                 onChange={onCssVariableChange}
               />
             </div>
+          );
+        }
+
+        if (key === 'container') {
+          return (
+            <PlacementField
+              key={key}
+              container={
+                typeof parameters.container === 'string'
+                  ? parameters.container
+                  : ''
+              }
+              placement={parameters.placement as Placement | undefined}
+              onContainerChange={(v) => onParameterChange('container', v)}
+              onPlacementChange={(v) => onParameterChange('placement', v)}
+              onPickElement={onPickElement}
+            />
           );
         }
 

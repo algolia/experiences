@@ -38,6 +38,14 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('recent searches');
   });
 
+  it('includes default placement per widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain(
+      'ais.autocomplete ("Autocomplete", default placement: inside)'
+    );
+    expect(result).toContain('ais.chat ("Chat", default placement: body)');
+  });
+
   it('excludes disabled widget types', () => {
     const result = describeWidgetTypes();
     expect(result).not.toContain('ais.hits');
@@ -52,7 +60,7 @@ describe('describeExperience', () => {
     expect(result).toBe('The experience has no widgets yet.');
   });
 
-  it('formats blocks with indices', () => {
+  it('formats blocks with indices and placement', () => {
     const experience: ExperienceApiResponse = {
       blocks: [
         {
@@ -61,17 +69,36 @@ describe('describeExperience', () => {
         },
         {
           type: 'ais.chat',
-          parameters: { container: '#chat', agentId: 'agent-1' },
+          parameters: {
+            container: '#chat',
+            placement: 'body',
+            agentId: 'agent-1',
+          },
         },
       ],
     };
 
     const result = describeExperience(experience);
-    expect(result).toContain('[0] Autocomplete');
-    expect(result).toContain('container="#search"');
-    expect(result).toContain('[1] Chat');
-    expect(result).toContain('container="#chat"');
+    expect(result).toContain(
+      '[0] Autocomplete (ais.autocomplete) [inside #search]'
+    );
+    expect(result).toContain('showRecent=false');
+    expect(result).not.toContain('container=');
+    expect(result).toContain('[1] Chat (ais.chat) [body]');
     expect(result).toContain('agentId="agent-1"');
+  });
+  it('uses default placement from widget config when not in parameters', () => {
+    const experience: ExperienceApiResponse = {
+      blocks: [
+        {
+          type: 'ais.chat',
+          parameters: { agentId: 'agent-1' },
+        },
+      ],
+    };
+
+    const result = describeExperience(experience);
+    expect(result).toContain('[0] Chat (ais.chat) [body]');
   });
 });
 
@@ -110,7 +137,7 @@ describe('getTools', () => {
   });
 
   describe('add_widget', () => {
-    it('calls onAddBlock and onParameterChange for container', async () => {
+    it('calls onAddBlock and onParameterChange for container and placement', async () => {
       const experience: ExperienceApiResponse = { blocks: [] };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
@@ -123,6 +150,11 @@ describe('getTools', () => {
       expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.autocomplete');
       expect(callbacks.onParameterChange).toHaveBeenCalledWith(
         0,
+        'placement',
+        'inside'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        0,
         'container',
         '#search'
       );
@@ -130,8 +162,9 @@ describe('getTools', () => {
         success: true,
         index: 0,
         type: 'ais.autocomplete',
+        placement: 'inside',
         container: '#search',
-        applied: ['container'],
+        applied: ['placement', 'container'],
         rejected: [],
       });
     });
@@ -173,7 +206,11 @@ describe('getTools', () => {
 
       expect(result).toMatchObject({
         success: true,
-        applied: expect.arrayContaining(['container', 'showRecent']),
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'showRecent',
+        ]),
         rejected: ['unknownParam'],
       });
       expect(callbacks.onParameterChange).toHaveBeenCalledWith(
@@ -186,6 +223,104 @@ describe('getTools', () => {
         'unknownParam',
         expect.anything()
       );
+    });
+
+    it('adds widget with body placement and no container', async () => {
+      const experience: ExperienceApiResponse = { blocks: [] };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.chat', placement: 'body' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        placement: 'body',
+        applied: ['placement'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        0,
+        'placement',
+        'body'
+      );
+      expect(callbacks.onParameterChange).not.toHaveBeenCalledWith(
+        0,
+        'container',
+        expect.anything()
+      );
+    });
+
+    it('uses default placement from widget config when not specified', async () => {
+      const experience: ExperienceApiResponse = { blocks: [] };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.chat' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        placement: 'body',
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        0,
+        'placement',
+        'body'
+      );
+    });
+
+    it('adds widget with explicit before placement', async () => {
+      const experience: ExperienceApiResponse = { blocks: [] };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.autocomplete', placement: 'before', container: '#search' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        placement: 'before',
+        container: '#search',
+        applied: ['placement', 'container'],
+      });
+    });
+
+    it('returns error when non-body placement has no container', async () => {
+      const experience: ExperienceApiResponse = { blocks: [] };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.autocomplete', placement: 'before' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: false,
+        error: expect.stringContaining('container CSS selector is required'),
+      });
+    });
+
+    it('returns error when default inside placement has no container', async () => {
+      const experience: ExperienceApiResponse = { blocks: [] };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.autocomplete' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: false,
+        error: expect.stringContaining('container CSS selector is required'),
+      });
     });
 
     it('computes the correct index for non-empty experiences', async () => {
@@ -301,6 +436,34 @@ describe('getTools', () => {
         success: false,
         error: expect.stringContaining('no widgets'),
       });
+    });
+
+    it('allows editing placement', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.autocomplete',
+            parameters: { container: '#search', placement: 'inside' },
+          },
+        ],
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { index: 0, parameters: { placement: 'after' } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['placement'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        0,
+        'placement',
+        'after'
+      );
     });
 
     it('handles cssVariables changes', async () => {
@@ -421,6 +584,26 @@ describe('describeToolAction', () => {
     expect(
       describeToolAction('add_widget', { type: 'ais.chat' }, { success: true })
     ).toBe('Added ais.chat');
+  });
+
+  it('describes add_widget with body placement', () => {
+    expect(
+      describeToolAction(
+        'add_widget',
+        { type: 'ais.chat', placement: 'body' },
+        { success: true }
+      )
+    ).toBe('Added ais.chat to body');
+  });
+
+  it('describes add_widget with before placement', () => {
+    expect(
+      describeToolAction(
+        'add_widget',
+        { type: 'ais.autocomplete', placement: 'before', container: '#search' },
+        { success: true }
+      )
+    ).toBe('Added ais.autocomplete before #search');
   });
 
   it('describes edit_widget with applied params', () => {
