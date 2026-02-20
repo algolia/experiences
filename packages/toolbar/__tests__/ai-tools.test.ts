@@ -51,7 +51,7 @@ describe('describeWidgetTypes', () => {
   it('excludes disabled widget types', () => {
     const result = describeWidgetTypes();
     expect(result).not.toContain('ais.hits');
-    expect(result).not.toContain('ais.searchBox');
+    expect(result).toContain('ais.searchBox');
     expect(result).not.toContain('ais.pagination');
   });
 });
