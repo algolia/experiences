@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { ExperienceApiResponse } from '../types';
 import { AddWidgetPopover } from './add-widget-popover';
+import { AiChat } from './ai-chat';
 import { BlockCard } from './block-card';
-import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 
@@ -38,6 +38,7 @@ export function Panel({
   onAddBlock,
 }: PanelProps) {
   const [tab, setTab] = useState<Tab>('manual');
+  const [aiMounted, setAiMounted] = useState(false);
   const [expandedBlock, setExpandedBlock] = useState<number | null>(null);
   const prevBlockCount = useRef(experience.blocks.length);
 
@@ -47,6 +48,12 @@ export function Panel({
     }
     prevBlockCount.current = experience.blocks.length;
   }, [experience.blocks.length]);
+
+  useEffect(() => {
+    if (tab === 'ai') {
+      setAiMounted(true);
+    }
+  }, [tab]);
 
   return (
     <div
@@ -210,31 +217,22 @@ export function Panel({
         </div>
       </TabsContent>
 
-      {/* AI tab */}
-      <TabsContent
-        active={tab === 'ai'}
-        class="flex flex-1 flex-col items-center justify-center gap-3 p-4"
-      >
-        <svg
-          class="size-10 text-muted-foreground"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+      {/* AI tab — lazy-mounted on first tab click, then kept alive (hidden) to preserve state */}
+      {aiMounted && (
+        <div
+          data-slot="tabs-content"
+          role="tabpanel"
+          class={`flex-1 outline-none flex flex-col overflow-hidden ${tab === 'ai' ? '' : 'hidden'}`}
         >
-          <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z" />
-          <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />
-        </svg>
-        <div class="text-center px-4">
-          <p class="text-sm font-semibold">AI Mode</p>
-          <p class="text-muted-foreground mt-1 text-sm">
-            Edit your experience conversationally with an AI agent.
-          </p>
+          <AiChat
+            experience={experience}
+            onAddBlock={onAddBlock}
+            onParameterChange={onParameterChange}
+            onCssVariableChange={onCssVariableChange}
+            onDeleteBlock={onDeleteBlock}
+          />
         </div>
-        <Badge variant="secondary">Coming soon</Badge>
-      </TabsContent>
+      )}
     </div>
   );
 }

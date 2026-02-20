@@ -12,17 +12,21 @@ export type FieldOverride =
 
 export type WidgetTypeConfig = {
   label: string;
+  description?: string;
   icon: () => JSX.Element;
   enabled: boolean;
   defaultParameters: ExperienceApiBlockParameters;
   fieldOrder?: string[];
   fieldOverrides?: Record<string, FieldOverride>;
   paramLabels?: Record<string, string>;
+  paramDescriptions?: Record<string, string>;
 };
 
 export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   'ais.autocomplete': {
     label: 'Autocomplete',
+    description:
+      'A search-as-you-type dropdown that shows results, suggestions, and recent searches as the user types.',
     enabled: true,
     icon: () => (
       <svg
@@ -68,9 +72,20 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       container: 'Container',
       indexName: 'Index Name',
     },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#search").',
+      cssVariables: 'CSS variables for theming.',
+      showRecent:
+        "When enabled, shows the user's recent searches below the input.",
+      showSuggestions:
+        'When enabled, shows query suggestions from a dedicated suggestions index. Requires an indexName, a searchPageUrl, and a query parameter name.',
+    },
   },
   'ais.chat': {
     label: 'Chat',
+    description:
+      'A conversational AI chat widget powered by an Algolia Agent Studio agent.',
     enabled: true,
     icon: () => (
       <svg
@@ -92,6 +107,11 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     paramLabels: {
       container: 'Container',
       agentId: 'Agent ID',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#chat").',
+      agentId: 'The ID of the Algolia Agent Studio agent to power the chat.',
     },
   },
   'ais.hits': {
