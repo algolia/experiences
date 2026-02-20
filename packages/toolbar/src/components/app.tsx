@@ -221,7 +221,6 @@ export function App({ config, initialExperience }: AppProps) {
       await saveExperience({
         appId: config.appId,
         apiKey: adminApiKey ?? config.apiKey,
-        experienceId: config.experienceId,
         env: config.env ?? 'prod',
         config: experience,
       });

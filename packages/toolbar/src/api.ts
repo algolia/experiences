@@ -43,11 +43,10 @@ export async function saveExperience({
   appId,
   apiKey,
   env,
-  experienceId,
   config,
 }: SaveExperienceParams): Promise<void> {
-  const res = await fetch(`${API_BASE[env]}/experiences/${experienceId}`, {
-    method: 'PUT',
+  const res = await fetch(`${API_BASE[env]}/experiences`, {
+    method: 'POST',
     headers: {
       'X-Algolia-Application-ID': appId,
       'X-Algolia-API-Key': apiKey,

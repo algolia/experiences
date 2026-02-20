@@ -24,7 +24,6 @@ export type ToolbarConfig = {
 export type SaveExperienceParams = {
   appId: string;
   apiKey: string;
-  experienceId: string;
   env: Environment;
   config: ExperienceApiResponse;
 };
