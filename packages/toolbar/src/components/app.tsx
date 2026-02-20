@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 
 import { saveExperience } from '../api';
-import type { ExperienceApiResponse, ToolbarConfig } from '../types';
+import type {
+  Environment,
+  ExperienceApiResponse,
+  ToolbarConfig,
+} from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 import { Panel } from './panel';
 import { Pill } from './pill';
@@ -13,12 +17,20 @@ type AppProps = {
 
 type SaveState = 'idle' | 'saving' | 'saved';
 
+const DASHBOARD_BASE: Record<Environment, string> = {
+  beta: 'https://beta-dashboard.algolia.com',
+  prod: 'https://dashboard.algolia.com',
+};
+
 export function App({ config, initialExperience }: AppProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [experience, setExperience] = useState(initialExperience);
   const [isDirty, setIsDirty] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [toast, setToast] = useState<string | null>(null);
+  const [adminApiKey, setAdminApiKey] = useState<string | null>(() =>
+    sessionStorage.getItem(`experiences.${config.experienceId}.key`)
+  );
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   const scheduleRun = useCallback((newExperience: ExperienceApiResponse) => {
@@ -62,6 +74,14 @@ export function App({ config, initialExperience }: AppProps) {
     },
     [experience]
   );
+
+  const handlePillClick = () => {
+    if (adminApiKey) {
+      setIsExpanded(true);
+    } else {
+      location.href = `${DASHBOARD_BASE[config.env || 'prod']}/apps/${config.appId}/experiences/${initialExperience.indexName}/authenticate/${config.experienceId}?previewUrl=${encodeURIComponent(location.href)}`;
+    }
+  };
 
   const onParameterChange = useCallback(
     (index: number, key: string, value: unknown) => {
@@ -200,7 +220,7 @@ export function App({ config, initialExperience }: AppProps) {
     try {
       await saveExperience({
         appId: config.appId,
-        apiKey: config.apiKey,
+        apiKey: adminApiKey ?? config.apiKey,
         experienceId: config.experienceId,
         env: config.env ?? 'prod',
         config: experience,
@@ -213,7 +233,7 @@ export function App({ config, initialExperience }: AppProps) {
       setSaveState('idle');
       setToast(err instanceof Error ? err.message : 'Failed to save.');
     }
-  }, [config, experience]);
+  }, [adminApiKey, config, experience]);
 
   useEffect(() => {
     if (!toast) {
@@ -224,6 +244,23 @@ export function App({ config, initialExperience }: AppProps) {
 
     return () => clearTimeout(timer);
   }, [toast]);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const algoliaExperiencesKey = url.searchParams.get('algoliaExperiencesKey');
+
+    if (algoliaExperiencesKey) {
+      setAdminApiKey(algoliaExperiencesKey);
+      sessionStorage.setItem(
+        `experiences.${config.experienceId}.key`,
+        algoliaExperiencesKey
+      );
+      setIsExpanded(true);
+
+      url.searchParams.delete('algoliaExperiencesKey');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, []);
 
   return (
     <>
@@ -240,7 +277,11 @@ export function App({ config, initialExperience }: AppProps) {
         onDeleteBlock={onDeleteBlock}
         onAddBlock={onAddBlock}
       />
-      <Pill visible={!isExpanded} onClick={() => setIsExpanded(true)} />
+      <Pill
+        visible={!isExpanded}
+        locked={!adminApiKey}
+        onClick={handlePillClick}
+      />
 
       {toast && (
         <div

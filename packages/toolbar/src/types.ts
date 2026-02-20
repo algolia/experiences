@@ -11,6 +11,7 @@ export type ExperienceApiResponse = {
     type: string;
     parameters: ExperienceApiBlockParameters;
   }>;
+  indexName: string;
 };
 
 export type ToolbarConfig = {
