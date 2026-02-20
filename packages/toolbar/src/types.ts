@@ -1,8 +1,10 @@
 export type Environment = 'prod' | 'beta';
 
+export type Placement = 'inside' | 'before' | 'after' | 'replace' | 'body';
+
 export type ExperienceApiBlockParameters = {
   container: string;
-  placement?: 'inside' | 'before' | 'after' | 'replace' | 'body';
+  placement?: Placement;
   cssVariables?: Record<string, string>;
   indexName?: string;
 } & Record<string, unknown>;

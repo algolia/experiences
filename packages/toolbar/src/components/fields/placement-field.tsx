@@ -1,21 +1,22 @@
 import { useId } from 'preact/hooks';
 
+import type { Placement } from '../../types';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
-const PLACEMENT_OPTIONS = [
+const PLACEMENT_OPTIONS: Array<{ value: Placement; label: string }> = [
   { value: 'inside', label: 'Inside' },
   { value: 'before', label: 'Before' },
   { value: 'after', label: 'After' },
   { value: 'replace', label: 'Replace' },
   { value: 'body', label: 'Append to body' },
-] as const;
+];
 
 type PlacementFieldProps = {
   container: string;
-  placement: string | undefined;
+  placement: Placement | undefined;
   onContainerChange: (value: string) => void;
-  onPlacementChange: (value: string) => void;
+  onPlacementChange: (value: Placement) => void;
   onPickElement: (callback: (selector: string) => void) => void;
 };
 
@@ -40,7 +41,8 @@ export function PlacementField({
             id={placementId}
             value={currentPlacement}
             onChange={(event) => {
-              const value = (event.target as HTMLSelectElement).value;
+              const value = (event.target as HTMLSelectElement)
+                .value as Placement;
               onPlacementChange(value);
 
               if (value === 'body') {

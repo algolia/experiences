@@ -1,4 +1,4 @@
-import type { ExperienceApiBlockParameters } from '../types';
+import type { ExperienceApiBlockParameters, Placement } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 import { CssVariablesEditor } from './fields/css-variables-editor';
 import { ObjectField } from './fields/object-field';
@@ -59,7 +59,7 @@ export function BlockEditor({
                   ? parameters.container
                   : ''
               }
-              placement={parameters.placement as string | undefined}
+              placement={parameters.placement as Placement | undefined}
               onContainerChange={(v) => onParameterChange('container', v)}
               onPlacementChange={(v) => onParameterChange('placement', v)}
               onPickElement={onPickElement}

@@ -1,7 +1,7 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 
-import type { ExperienceApiResponse } from '../types';
+import type { ExperienceApiResponse, Placement } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 
 export type ToolCallbacks = {
@@ -68,9 +68,9 @@ export function describeExperience(experience: ExperienceApiResponse): string {
     .map((block, index) => {
       const config = WIDGET_TYPES[block.type];
       const label = config?.label ?? block.type;
-      const placement =
-        (block.parameters.placement as string | undefined) ??
-        (config?.defaultParameters.placement as string | undefined) ??
+      const placement: Placement =
+        block.parameters.placement ??
+        (config?.defaultParameters.placement as Placement | undefined) ??
         'inside';
       const container = block.parameters.container as string | undefined;
 
@@ -166,7 +166,10 @@ export function getTools(callbacks: ToolCallbacks) {
             'CSS selector for the container element (required unless placement is "body")'
           ),
         placement: z
-          .enum(['inside', 'before', 'after', 'replace', 'body'])
+          .enum<
+            Placement,
+            [Placement, ...Placement[]]
+          >(['inside', 'before', 'after', 'replace', 'body'])
           .optional()
           .describe(
             'Where to place the widget relative to the container. Uses the widget type default placement if not specified.'
@@ -187,9 +190,9 @@ export function getTools(callbacks: ToolCallbacks) {
           'placement',
         ]);
 
-        const effectivePlacement =
+        const effectivePlacement: Placement =
           placement ??
-          (config?.defaultParameters.placement as string | undefined) ??
+          (config?.defaultParameters.placement as Placement | undefined) ??
           'inside';
 
         callbacks.onAddBlock(type);
