@@ -127,7 +127,8 @@
       background: none;
       padding: 0;
     }
-    ul, ol {
+    ul,
+    ol {
       margin: 0.25em 0;
       padding-left: 1.25em;
     }
