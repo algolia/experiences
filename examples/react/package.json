@@ -2,7 +2,7 @@
   "name": "@experiences/example-react",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "PORTLESS_NAME=example-react portless example-react vite",
     "build": "vite build",
     "preview": "vite preview"
   },
