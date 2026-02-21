@@ -305,7 +305,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     enabled: true,
     icon: CONFIGURE_ICON,
     defaultParameters: {
-      container: '',
+      placement: 'body',
       searchParameters: {},
     },
     fieldOrder: ['searchParameters'],

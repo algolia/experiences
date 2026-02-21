@@ -1,6 +1,7 @@
 import { useId, useState } from 'preact/hooks';
 
 import { cn } from '../../lib/utils';
+import { parseJsonObject } from '../../utils/parse-json-object';
 import { Label } from '../ui/label';
 
 type JsonFieldProps = {
@@ -19,22 +20,15 @@ export function JsonField({ label, value, onChange }: JsonFieldProps) {
   function onInput(newText: string) {
     setText(newText);
 
-    try {
-      const parsed = JSON.parse(newText);
+    const result = parseJsonObject(newText);
 
-      if (
-        typeof parsed !== 'object' ||
-        parsed === null ||
-        Array.isArray(parsed)
-      ) {
-        setError('Must be a JSON object');
-        return;
-      }
-      setError(null);
-      onChange(parsed);
-    } catch {
-      setError('Invalid JSON');
+    if (!result.success) {
+      setError(result.error);
+      return;
     }
+
+    setError(null);
+    onChange(result.value);
   }
 
   return (
