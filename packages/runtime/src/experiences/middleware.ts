@@ -126,16 +126,21 @@ export function createExperienceMiddleware(
             }
 
             const { placement, ...widgetParams } = parameters;
-            const resolved = resolveContainer(
-              widgetParams.container,
-              placement as Placement | undefined
-            );
+            const isHeadless = supportedWidget.headless;
+            const resolved = isHeadless
+              ? null
+              : resolveContainer(
+                  widgetParams.container,
+                  placement as Placement | undefined
+                );
 
-            if (!resolved) {
+            if (!isHeadless && !resolved) {
               return;
             }
 
-            cleanups.push(resolved.cleanup);
+            if (resolved) {
+              cleanups.push(resolved.cleanup);
+            }
 
             const newWidget = supportedWidget.widget;
             supportedWidget
@@ -144,7 +149,7 @@ export function createExperienceMiddleware(
                 if (newWidget) {
                   const params = {
                     ...(transformedParams as Record<string, unknown>),
-                    container: resolved.container,
+                    ...(resolved ? { container: resolved.container } : {}),
                   };
                   const widgets = newWidget(params);
                   parent.addWidgets(
