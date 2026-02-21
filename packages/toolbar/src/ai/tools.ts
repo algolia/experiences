@@ -20,7 +20,9 @@ export type ToolCallbacks = {
 };
 
 function getEnabledTypes() {
-  return Object.entries(WIDGET_TYPES).filter(([, config]) => config.enabled);
+  return Object.entries(WIDGET_TYPES).filter(([, config]) => {
+    return config.enabled;
+  });
 }
 
 export function describeWidgetTypes(): string {
@@ -32,9 +34,9 @@ export function describeWidgetTypes(): string {
 
   return enabled
     .map(([key, config]) => {
-      const paramKeys = Object.keys(config.defaultParameters).filter(
-        (k) => k !== 'container' && k !== 'placement'
-      );
+      const paramKeys = Object.keys(config.defaultParameters).filter((k) => {
+        return k !== 'container' && k !== 'placement';
+      });
       const overrideKeys = Object.keys(config.fieldOverrides ?? {});
       const allKeys = [...new Set([...paramKeys, ...overrideKeys])];
 
@@ -113,8 +115,12 @@ function describeBlock(
   }
 
   const params = Object.entries(block.parameters)
-    .filter(([k]) => k !== 'container' && k !== 'placement')
-    .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
+    .filter(([param]) => {
+      return param !== 'container' && param !== 'placement';
+    })
+    .map(([param, val]) => {
+      return `${param}=${JSON.stringify(val)}`;
+    })
     .join(', ');
 
   const paramsSuffix = params ? `: ${params}` : '';
@@ -128,14 +134,21 @@ export function describeExperience(experience: ExperienceApiResponse): string {
   }
 
   return experience.blocks
-    .map((block, index) => describeBlock(block, String(index)))
+    .map((block, index) => {
+      return describeBlock(block, String(index));
+    })
     .join('\n');
 }
 
 function parsePath(path: string): BlockPath | null {
   if (!path || path.startsWith('.') || path.endsWith('.')) return null;
   const parts = path.split('.').map(Number);
-  if (parts.some((n) => isNaN(n) || n < 0)) return null;
+  if (
+    parts.some((num) => {
+      return isNaN(num) || num < 0;
+    })
+  )
+    return null;
   if (parts.length === 1) return [parts[0]] as BlockPath;
   if (parts.length === 2) return [parts[0], parts[1]] as BlockPath;
   return null;
@@ -195,7 +208,9 @@ function boundsError(path: string): string {
 }
 
 export function getTools(callbacks: ToolCallbacks) {
-  const enabledKeys = getEnabledTypes().map(([key]) => key);
+  const enabledKeys = getEnabledTypes().map(([key]) => {
+    return key;
+  });
   const typeEnum = z.enum(enabledKeys as [string, ...string[]]);
 
   return {

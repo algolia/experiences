@@ -15,12 +15,16 @@ function createCallbacks(
   indexCreated = false
 ): ToolCallbacks {
   return {
-    onAddBlock: vi.fn(() => ({ path: addBlockPath, indexCreated })),
+    onAddBlock: vi.fn(() => {
+      return { path: addBlockPath, indexCreated };
+    }),
     onParameterChange: vi.fn(),
     onCssVariableChange: vi.fn(),
     onDeleteBlock: vi.fn(),
     onMoveBlock: vi.fn(),
-    getExperience: vi.fn(() => experience),
+    getExperience: vi.fn(() => {
+      return experience;
+    }),
   };
 }
 
@@ -501,18 +505,18 @@ describe('getTools', () => {
 
       const result = await tools.add_widget.execute!(
         {
-          type: 'ais.searchBox',
+          type: 'ais.autocomplete',
           container: '#search',
           target_index: 0,
         },
         { toolCallId: 'tc1', messages: [] }
       );
 
-      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.searchBox', 0);
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.autocomplete', 0);
       expect(result).toMatchObject({
         success: true,
         path: '0.0',
-        type: 'ais.searchBox',
+        type: 'ais.autocomplete',
       });
     });
 
@@ -531,7 +535,7 @@ describe('getTools', () => {
 
       const result = await tools.add_widget.execute!(
         {
-          type: 'ais.searchBox',
+          type: 'ais.autocomplete',
           container: '#search',
           target_index: 0,
         },
@@ -555,7 +559,7 @@ describe('getTools', () => {
 
       const result = await tools.add_widget.execute!(
         {
-          type: 'ais.searchBox',
+          type: 'ais.autocomplete',
           container: '#search',
           target_index: 5,
         },
@@ -578,7 +582,7 @@ describe('getTools', () => {
       const tools = getTools(callbacks);
 
       const result = await tools.add_widget.execute!(
-        { type: 'ais.searchBox', container: '#search' },
+        { type: 'ais.autocomplete', container: '#search' },
         { toolCallId: 'tc1', messages: [] }
       );
 
@@ -603,7 +607,7 @@ describe('getTools', () => {
       const tools = getTools(callbacks);
 
       const result = await tools.add_widget.execute!(
-        { type: 'ais.searchBox', container: '#search' },
+        { type: 'ais.autocomplete', container: '#search' },
         { toolCallId: 'tc1', messages: [] }
       );
 
@@ -1036,7 +1040,7 @@ describe('getTools', () => {
                 parameters: { container: '#search' },
               },
               {
-                type: 'ais.searchBox',
+                type: 'ais.autocomplete',
                 parameters: { container: '#box' },
               },
             ],
@@ -1055,7 +1059,7 @@ describe('getTools', () => {
       expect(callbacks.onDeleteBlock).toHaveBeenCalledWith([0, 1]);
       expect(result).toMatchObject({
         success: true,
-        removedType: 'ais.searchBox',
+        removedType: 'ais.autocomplete',
       });
     });
 

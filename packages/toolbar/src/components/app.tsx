@@ -25,6 +25,7 @@ const DASHBOARD_BASE: Record<Environment, string> = {
   prod: 'https://dashboard.algolia.com',
 };
 
+// oxlint-disable-next-line id-length
 function findLastIndex<T>(arr: T[], predicate: (item: T) => boolean): number {
   for (let i = arr.length - 1; i >= 0; i--) {
     if (predicate(arr[i]!)) return i;
@@ -38,19 +39,21 @@ function updateBlockAtPath(
   updater: (block: ExperienceApiBlock) => ExperienceApiBlock
 ): ExperienceApiBlock[] {
   if (path.length === 1) {
-    return blocks.map((b, i) => (i === path[0] ? updater(b) : b));
+    return blocks.map((block, idx) => {
+      return idx === path[0] ? updater(block) : block;
+    });
   }
   const [parentIdx, childIdx] = path;
-  return blocks.map((b, i) =>
-    i === parentIdx
+  return blocks.map((block, idx) => {
+    return idx === parentIdx
       ? {
-          ...b,
-          blocks: (b.blocks ?? []).map((child, j) =>
-            j === childIdx ? updater(child) : child
-          ),
+          ...block,
+          blocks: (block.blocks ?? []).map((child, ci) => {
+            return ci === childIdx ? updater(child) : child;
+          }),
         }
-      : b
-  );
+      : block;
+  });
 }
 
 function deleteBlockAtPath(
@@ -58,14 +61,21 @@ function deleteBlockAtPath(
   path: BlockPath
 ): ExperienceApiBlock[] {
   if (path.length === 1) {
-    return blocks.filter((_, i) => i !== path[0]);
+    return blocks.filter((_, idx) => {
+      return idx !== path[0];
+    });
   }
   const [parentIdx, childIdx] = path;
-  return blocks.map((b, i) =>
-    i === parentIdx
-      ? { ...b, blocks: (b.blocks ?? []).filter((_, j) => j !== childIdx) }
-      : b
-  );
+  return blocks.map((block, idx) => {
+    return idx === parentIdx
+      ? {
+          ...block,
+          blocks: (block.blocks ?? []).filter((_, ci) => {
+            return ci !== childIdx;
+          }),
+        }
+      : block;
+  });
 }
 
 export function App({ config, initialExperience }: AppProps) {
@@ -74,9 +84,9 @@ export function App({ config, initialExperience }: AppProps) {
   const [isDirty, setIsDirty] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [toast, setToast] = useState<string | null>(null);
-  const [adminApiKey, setAdminApiKey] = useState<string | null>(() =>
-    sessionStorage.getItem(`experiences.${config.experienceId}.key`)
-  );
+  const [adminApiKey, setAdminApiKey] = useState<string | null>(() => {
+    return sessionStorage.getItem(`experiences.${config.experienceId}.key`);
+  });
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const picker = useElementPicker();
 
@@ -112,13 +122,15 @@ export function App({ config, initialExperience }: AppProps) {
           const vars = block.parameters.cssVariables ?? {};
           const isTarget =
             currentPath.length === path.length &&
-            currentPath.every((v, idx) => v === path[idx]);
+            currentPath.every((val, idx) => {
+              return val === path[idx];
+            });
 
-          Object.entries(vars).forEach(([k, v]) => {
-            if (isTarget && k === key) {
-              allVars[`--ais-${k}`] = value;
+          Object.entries(vars).forEach(([varName, varValue]) => {
+            if (isTarget && varName === key) {
+              allVars[`--ais-${varName}`] = value;
             } else {
-              allVars[`--ais-${k}`] = v;
+              allVars[`--ais-${varName}`] = varValue;
             }
           });
 
@@ -131,7 +143,9 @@ export function App({ config, initialExperience }: AppProps) {
       collectVars(experience.blocks);
 
       style.textContent = `:root { ${Object.entries(allVars)
-        .map(([k, v]) => `${k}: ${v}`)
+        .map(([prop, val]) => {
+          return `${prop}: ${val}`;
+        })
         .join('; ')} }`;
     },
     []
@@ -150,10 +164,12 @@ export function App({ config, initialExperience }: AppProps) {
       setExperience((prev) => {
         const updated = {
           ...prev,
-          blocks: updateBlockAtPath(prev.blocks, path, (block) => ({
-            ...block,
-            parameters: { ...block.parameters, [key]: value },
-          })),
+          blocks: updateBlockAtPath(prev.blocks, path, (block) => {
+            return {
+              ...block,
+              parameters: { ...block.parameters, [key]: value },
+            };
+          }),
         };
 
         scheduleRun(updated);
@@ -169,19 +185,23 @@ export function App({ config, initialExperience }: AppProps) {
     (path: BlockPath, key: string, value: string) => {
       updateCssVariablesOnPage(path, key, value);
 
-      setExperience((prev) => ({
-        ...prev,
-        blocks: updateBlockAtPath(prev.blocks, path, (block) => ({
-          ...block,
-          parameters: {
-            ...block.parameters,
-            cssVariables: {
-              ...(block.parameters.cssVariables ?? {}),
-              [key]: value,
-            },
-          },
-        })),
-      }));
+      setExperience((prev) => {
+        return {
+          ...prev,
+          blocks: updateBlockAtPath(prev.blocks, path, (block) => {
+            return {
+              ...block,
+              parameters: {
+                ...block.parameters,
+                cssVariables: {
+                  ...block.parameters.cssVariables,
+                  [key]: value,
+                },
+              },
+            };
+          }),
+        };
+      });
 
       setIsDirty(true);
     },
@@ -226,7 +246,9 @@ export function App({ config, initialExperience }: AppProps) {
         overlay.style.cssText = `position:fixed;top:${target.top}px;left:${target.left}px;width:${target.width}px;height:${target.height}px;border:2px solid #003dff;background:rgba(0,61,255,0.08);border-radius:4px;pointer-events:none;z-index:2147483646`;
         document.body.appendChild(overlay);
 
-        const removeOverlay = () => overlay.remove();
+        const removeOverlay = () => {
+          return overlay.remove();
+        };
         const animation = overlay.animate(
           [
             { opacity: 1, offset: 0 },
@@ -290,17 +312,16 @@ export function App({ config, initialExperience }: AppProps) {
           };
           updated = {
             ...prev,
-            blocks: prev.blocks.map((block, i) =>
-              i === targetParentIndex
+            blocks: prev.blocks.map((block, i) => {
+              return i === targetParentIndex
                 ? { ...block, blocks: [...(block.blocks ?? []), newBlock] }
-                : block
-            ),
+                : block;
+            }),
           };
         } else {
-          const lastIndexIdx = findLastIndex(
-            prev.blocks,
-            (b) => b.type === 'ais.index'
-          );
+          const lastIndexIdx = findLastIndex(prev.blocks, (bl) => {
+            return bl.type === 'ais.index';
+          });
 
           if (lastIndexIdx === -1) {
             result = {
@@ -326,11 +347,11 @@ export function App({ config, initialExperience }: AppProps) {
             };
             updated = {
               ...prev,
-              blocks: prev.blocks.map((block, i) =>
-                i === lastIndexIdx
+              blocks: prev.blocks.map((block, i) => {
+                return i === lastIndexIdx
                   ? { ...block, blocks: [...(block.blocks ?? []), newBlock] }
-                  : block
-              ),
+                  : block;
+              }),
             };
           }
         }
@@ -360,11 +381,11 @@ export function App({ config, initialExperience }: AppProps) {
         const withRemoved = deleteBlockAtPath(prev.blocks, fromPath);
         const updated = {
           ...prev,
-          blocks: withRemoved.map((b, i) =>
-            i === toParentIndex
-              ? { ...b, blocks: [...(b.blocks ?? []), block] }
-              : b
-          ),
+          blocks: withRemoved.map((bl, idx) => {
+            return idx === toParentIndex
+              ? { ...bl, blocks: [...(bl.blocks ?? []), block] }
+              : bl;
+          }),
         };
 
         scheduleRun(updated);
@@ -389,7 +410,9 @@ export function App({ config, initialExperience }: AppProps) {
 
       setIsDirty(false);
       setSaveState('saved');
-      setTimeout(() => setSaveState('idle'), 2000);
+      setTimeout(() => {
+        return setSaveState('idle');
+      }, 2000);
     } catch (err) {
       setSaveState('idle');
       setToast(err instanceof Error ? err.message : 'Failed to save.');
@@ -401,9 +424,13 @@ export function App({ config, initialExperience }: AppProps) {
       return;
     }
 
-    const timer = setTimeout(() => setToast(null), 4000);
+    const timer = setTimeout(() => {
+      return setToast(null);
+    }, 4000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      return clearTimeout(timer);
+    };
   }, [toast]);
 
   useEffect(() => {
@@ -430,7 +457,9 @@ export function App({ config, initialExperience }: AppProps) {
         dirty={isDirty}
         saveState={saveState}
         open={isExpanded}
-        onClose={() => setIsExpanded(false)}
+        onClose={() => {
+          return setIsExpanded(false);
+        }}
         onSave={onSave}
         onParameterChange={onParameterChange}
         onCssVariableChange={onCssVariableChange}

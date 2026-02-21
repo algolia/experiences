@@ -40,7 +40,9 @@ export function AddWidgetPopover({ onSelect, filter }: AddWidgetPopoverProps) {
       <CollapsibleContent open={open}>
         <div class="rounded-xl border p-1">
           {Object.entries(WIDGET_TYPES)
-            .filter(([type, config]) => !filter || filter(type, config))
+            .filter(([type, config]) => {
+              return !filter || filter(type, config);
+            })
             .map(([type, config]) => {
               if (!config.enabled) {
                 return (
