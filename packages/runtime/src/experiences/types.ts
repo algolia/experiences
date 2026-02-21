@@ -4,6 +4,7 @@ import type {
   Widget,
 } from 'instantsearch.js/es/types';
 import type { ChatWidget } from 'instantsearch.js/es/widgets/chat/chat';
+import type { ConfigureWidget } from 'instantsearch.js/es/widgets/configure/configure';
 
 export type Environment = 'prod' | 'beta';
 
@@ -30,6 +31,7 @@ type SupportedWidget<
   TApiParameters = ExperienceApiBlockParameters,
 > = {
   widget: (...args: any[]) => Widget | Array<IndexWidget | Widget>;
+  headless?: boolean;
   transformParams: (
     params: TApiParameters,
     options: {
@@ -43,6 +45,10 @@ export type ExperienceWidget = Widget & {
   $$widgetParams: ExperienceWidgetParams;
   $$supportedWidgets: {
     'ais.chat': SupportedWidget<Parameters<ChatWidget>[0]>;
+    'ais.configure': SupportedWidget<Parameters<ConfigureWidget>[0]>;
     'ais.autocomplete': SupportedWidget;
-  } & Record<'ais.chat' | 'ais.autocomplete' | (string & {}), SupportedWidget>;
+  } & Record<
+    'ais.chat' | 'ais.configure' | 'ais.autocomplete' | (string & {}),
+    SupportedWidget
+  >;
 };

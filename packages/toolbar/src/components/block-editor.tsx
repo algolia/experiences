@@ -1,6 +1,7 @@
 import type { ExperienceApiBlockParameters, Placement } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 import { CssVariablesEditor } from './fields/css-variables-editor';
+import { JsonField } from './fields/json-field';
 import { ObjectField } from './fields/object-field';
 import { PlacementField } from './fields/placement-field';
 import { SwitchField } from './fields/switch-field';
@@ -98,6 +99,21 @@ export function BlockEditor({
                 checked={Boolean(value)}
                 onToggle={(checked) => {
                   return onParameterChange(key, checked);
+                }}
+              />
+            );
+          case 'json':
+            return (
+              <JsonField
+                key={key}
+                label={override.label}
+                value={
+                  typeof value === 'object' && value !== null
+                    ? (value as Record<string, unknown>)
+                    : {}
+                }
+                onChange={(newValue) => {
+                  return onParameterChange(key, newValue);
                 }}
               />
             );
