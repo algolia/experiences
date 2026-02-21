@@ -225,6 +225,369 @@ describe('toolbar', () => {
       });
     });
 
+    describe('block cards', () => {
+      beforeEach(() => {
+        sessionStorage.setItem('experiences.exp-123.key', 'ADMIN_KEY');
+      });
+
+      afterEach(() => {
+        sessionStorage.clear();
+      });
+
+      async function openToolbar() {
+        await import('../src/index');
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        const host = document.getElementById('algolia-experiences-toolbar');
+        const pill = host?.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Open Algolia Experiences toolbar"]'
+        );
+        pill?.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        return host!;
+      }
+
+      it('shows the correct widget count', async () => {
+        const host = await openToolbar();
+        const text = host.shadowRoot?.innerHTML ?? '';
+        expect(text).toContain('2 widgets configured');
+      });
+
+      it('uses singular "widget" for a single block', async () => {
+        server.use(
+          http.get(
+            'https://experiences.algolia.com/1/experiences/exp-123',
+            () => {
+              return HttpResponse.json({
+                blocks: [MOCK_EXPERIENCE.blocks[0]],
+              });
+            }
+          )
+        );
+
+        const host = await openToolbar();
+        const text = host.shadowRoot?.innerHTML ?? '';
+        expect(text).toContain('1 widget configured');
+        expect(text).not.toContain('1 widgets');
+      });
+
+      it('expands a block card when clicking its header', async () => {
+        const host = await openToolbar();
+
+        const triggers =
+          host.shadowRoot?.querySelectorAll<HTMLButtonElement>(
+            '[aria-expanded]'
+          );
+        expect(triggers!.length).toBeGreaterThanOrEqual(2);
+
+        // All collapsed initially
+        const firstTrigger = triggers![0]!;
+        expect(firstTrigger.getAttribute('aria-expanded')).toBe('false');
+
+        firstTrigger.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        expect(firstTrigger.getAttribute('aria-expanded')).toBe('true');
+      });
+
+      it('collapses a block card when clicking its header again', async () => {
+        const host = await openToolbar();
+
+        const trigger =
+          host.shadowRoot?.querySelector<HTMLButtonElement>('[aria-expanded]')!;
+
+        // Expand
+        trigger.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+        expect(trigger.getAttribute('aria-expanded')).toBe('true');
+
+        // Collapse
+        trigger.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+        expect(trigger.getAttribute('aria-expanded')).toBe('false');
+      });
+
+      it('collapses the previous block when expanding another', async () => {
+        const host = await openToolbar();
+
+        const triggers = Array.from(
+          host.shadowRoot?.querySelectorAll<HTMLButtonElement>(
+            '[aria-expanded]'
+          ) ?? []
+        );
+
+        // Expand first block
+        triggers[0]!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+        expect(triggers[0]!.getAttribute('aria-expanded')).toBe('true');
+
+        // Expand second block
+        triggers[1]!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+        expect(triggers[0]!.getAttribute('aria-expanded')).toBe('false');
+        expect(triggers[1]!.getAttribute('aria-expanded')).toBe('true');
+      });
+
+      it('removes a block card when clicking delete', async () => {
+        const host = await openToolbar();
+
+        const cardsBefore =
+          host.shadowRoot?.querySelectorAll('[data-slot="card"]') ?? [];
+        expect(cardsBefore.length).toBe(2);
+
+        const deleteButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Delete block"]'
+        );
+        expect(deleteButton).not.toBeNull();
+        deleteButton!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        const cardsAfter =
+          host.shadowRoot?.querySelectorAll('[data-slot="card"]') ?? [];
+        expect(cardsAfter.length).toBe(1);
+      });
+
+      it('updates widget count after deleting a block', async () => {
+        const host = await openToolbar();
+
+        const deleteButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Delete block"]'
+        );
+        deleteButton!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        const text = host.shadowRoot?.innerHTML ?? '';
+        expect(text).toContain('1 widget configured');
+      });
+    });
+
+    describe('close button', () => {
+      beforeEach(() => {
+        sessionStorage.setItem('experiences.exp-123.key', 'ADMIN_KEY');
+      });
+
+      afterEach(() => {
+        sessionStorage.clear();
+      });
+
+      async function openToolbar() {
+        await import('../src/index');
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        const host = document.getElementById('algolia-experiences-toolbar');
+        const pill = host?.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Open Algolia Experiences toolbar"]'
+        );
+        pill?.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        return host!;
+      }
+
+      it('closes the panel and shows the pill again', async () => {
+        const host = await openToolbar();
+
+        // Panel should be open (not aria-hidden)
+        const panel = host.shadowRoot?.querySelector('[aria-hidden]');
+        expect(panel).toBeNull();
+
+        const closeButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Close toolbar"]'
+        );
+        expect(closeButton).not.toBeNull();
+        closeButton!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        // Panel should now have aria-hidden
+        const hiddenPanel = host.shadowRoot?.querySelector(
+          '[aria-hidden="true"]'
+        );
+        expect(hiddenPanel).not.toBeNull();
+
+        // Pill should be visible again
+        const pill = host.shadowRoot?.querySelector(
+          'button[aria-label="Open Algolia Experiences toolbar"]'
+        );
+        expect(pill).not.toBeNull();
+      });
+    });
+
+    describe('save flow', () => {
+      beforeEach(() => {
+        sessionStorage.setItem('experiences.exp-123.key', 'ADMIN_KEY');
+      });
+
+      afterEach(() => {
+        sessionStorage.clear();
+      });
+
+      async function openToolbar() {
+        await import('../src/index');
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        const host = document.getElementById('algolia-experiences-toolbar');
+        const pill = host?.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Open Algolia Experiences toolbar"]'
+        );
+        pill?.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        return host!;
+      }
+
+      function findSaveButton(host: HTMLElement) {
+        const buttons = Array.from(
+          host.shadowRoot?.querySelectorAll('button') ?? []
+        );
+        return buttons.find((btn) => {
+          return btn.textContent?.trim() === 'Save';
+        });
+      }
+
+      it('disables the save button when there are no changes', async () => {
+        const host = await openToolbar();
+        const saveButton = findSaveButton(host);
+        expect(saveButton).not.toBeUndefined();
+        expect(saveButton!.disabled).toBe(true);
+      });
+
+      it('enables the save button after deleting a block', async () => {
+        const host = await openToolbar();
+
+        // Delete a block to make the experience dirty
+        const deleteButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Delete block"]'
+        );
+        deleteButton!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        const saveButton = findSaveButton(host);
+        expect(saveButton!.disabled).toBe(false);
+      });
+
+      it('sends the updated experience to the API on save', async () => {
+        let savedBody: unknown;
+
+        server.use(
+          http.post(
+            'https://experiences.algolia.com/1/experiences',
+            async ({ request }) => {
+              savedBody = await request.json();
+              return HttpResponse.json({});
+            }
+          )
+        );
+
+        const host = await openToolbar();
+
+        // Delete first block to make dirty
+        const deleteButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Delete block"]'
+        );
+        deleteButton!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        const saveButton = findSaveButton(host)!;
+        saveButton.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 100);
+        });
+
+        // Should have sent only the remaining block
+        expect(savedBody).toEqual({
+          blocks: [MOCK_EXPERIENCE.blocks[1]],
+        });
+      });
+
+      it('shows "Saved" text after successful save', async () => {
+        server.use(
+          http.post('https://experiences.algolia.com/1/experiences', () => {
+            return HttpResponse.json({});
+          })
+        );
+
+        const host = await openToolbar();
+
+        // Make dirty
+        const deleteButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Delete block"]'
+        );
+        deleteButton!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        findSaveButton(host)!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 100);
+        });
+
+        const text = host.shadowRoot?.innerHTML ?? '';
+        expect(text).toContain('Saved');
+      });
+
+      it('shows an error toast when save fails', async () => {
+        server.use(
+          http.post('https://experiences.algolia.com/1/experiences', () => {
+            return HttpResponse.json(null, { status: 500 });
+          })
+        );
+
+        const host = await openToolbar();
+
+        // Make dirty
+        const deleteButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Delete block"]'
+        );
+        deleteButton!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        findSaveButton(host)!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 100);
+        });
+
+        const toast = host.shadowRoot?.querySelector('[role="alert"]');
+        expect(toast).not.toBeNull();
+        expect(toast?.textContent).toContain('Failed to save experience');
+      });
+    });
+
     describe('locate button', () => {
       beforeEach(() => {
         // jsdom does not implement Web Animations API
