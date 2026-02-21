@@ -118,6 +118,73 @@ describe('describeExperience', () => {
     expect(result).not.toContain('[before ]');
   });
 
+  it('renders ais.index blocks with fallback label and indexName parameter', () => {
+    const experience: ExperienceApiResponse = {
+      blocks: [
+        {
+          type: 'ais.index',
+          parameters: { container: '', indexName: 'products' },
+        },
+      ],
+    };
+
+    const result = describeExperience(experience);
+    expect(result).toContain('[0] ais.index (ais.index)');
+    expect(result).toContain('indexName="products"');
+  });
+
+  it('does not describe nested blocks inside ais.index', () => {
+    // The toolbar type does not support nested blocks, so describeExperience
+    // only iterates top-level blocks. Nested children inside ais.index are
+    // invisible to the AI tools layer. This documents the current gap.
+    const experience = {
+      blocks: [
+        {
+          type: 'ais.index',
+          parameters: { container: '', indexName: 'products' },
+          blocks: [
+            {
+              type: 'ais.hits',
+              parameters: { container: '#hits' },
+            },
+          ],
+        },
+      ],
+    } as ExperienceApiResponse;
+
+    const result = describeExperience(experience);
+    // Only the top-level ais.index block is described
+    expect(result).toContain('[0] ais.index (ais.index)');
+    // The nested ais.hits block is not described
+    expect(result).not.toContain('ais.hits');
+    expect(result).not.toContain('#hits');
+  });
+
+  it('renders ais.index alongside regular widgets', () => {
+    const experience: ExperienceApiResponse = {
+      blocks: [
+        {
+          type: 'ais.autocomplete',
+          parameters: { container: '#search' },
+        },
+        {
+          type: 'ais.index',
+          parameters: { container: '', indexName: 'suggestions' },
+        },
+        {
+          type: 'ais.chat',
+          parameters: { container: '#chat', placement: 'body' },
+        },
+      ],
+    };
+
+    const result = describeExperience(experience);
+    expect(result).toContain('[0] Autocomplete (ais.autocomplete)');
+    expect(result).toContain('[1] ais.index (ais.index)');
+    expect(result).toContain('indexName="suggestions"');
+    expect(result).toContain('[2] Chat (ais.chat)');
+  });
+
   it('uses default placement from widget config when not in parameters', () => {
     const experience: ExperienceApiResponse = {
       blocks: [
@@ -380,7 +447,11 @@ describe('getTools', () => {
           type: 'ais.autocomplete',
           container: '#search',
           placement: 'before',
-          parameters: { container: '#other', placement: 'after', showRecent: true },
+          parameters: {
+            container: '#other',
+            placement: 'after',
+            showRecent: true,
+          },
         },
         { toolCallId: 'tc1', messages: [] }
       );
@@ -656,7 +727,10 @@ describe('getTools', () => {
 
       expect(result).toMatchObject({
         success: true,
-        applied: ['cssVariables.primary-color-rgb', 'cssVariables.secondary-color'],
+        applied: [
+          'cssVariables.primary-color-rgb',
+          'cssVariables.secondary-color',
+        ],
       });
       expect(callbacks.onCssVariableChange).toHaveBeenCalledTimes(2);
     });
