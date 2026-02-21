@@ -192,21 +192,23 @@ export function BlockCard({
                     <select
                       class="mt-1 block w-full rounded-md border bg-transparent px-2 py-1.5 text-sm font-normal outline-none focus:ring-2 focus:ring-ring/50"
                       value={parentIndex}
-                      onChange={(e) => {
+                      onChange={(event) => {
                         const target = Number(
-                          (e.target as HTMLSelectElement).value
+                          (event.target as HTMLSelectElement).value
                         );
                         if (target !== parentIndex) {
                           onMoveToIndex(target);
                         }
                       }}
                     >
-                      {indexBlocks.map(({ index, block }) => (
-                        <option key={index} value={index}>
-                          {(block.parameters.indexName as string) ||
-                            `Index ${index}`}
-                        </option>
-                      ))}
+                      {indexBlocks.map(({ index, block }) => {
+                        return (
+                          <option key={index} value={index}>
+                            {(block.parameters.indexName as string) ||
+                              `Index ${index}`}
+                          </option>
+                        );
+                      })}
                     </select>
                   </label>
                 </div>

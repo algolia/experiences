@@ -51,7 +51,9 @@ export function IndexBlockGroup({
       <Collapsible open={isOpen}>
         <CollapsibleTrigger
           class="w-full"
-          onClick={() => onToggleExpand(groupKey)}
+          onClick={() => {
+            return onToggleExpand(groupKey);
+          }}
           aria-expanded={isOpen}
         >
           <div class="group flex w-full items-center justify-between px-4 py-3">
@@ -80,8 +82,8 @@ export function IndexBlockGroup({
                   class="text-muted-foreground hover:text-destructive rounded p-0.5 transition-colors outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px]"
                   aria-label="Delete index block"
                   title="Delete index block"
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={(event) => {
+                    event.stopPropagation();
                     onDeleteBlock([parentIndex]);
                   }}
                 >
@@ -121,50 +123,71 @@ export function IndexBlockGroup({
               <BlockEditor
                 type="ais.index"
                 parameters={block.parameters}
-                onParameterChange={(key, value) =>
-                  onParameterChange([parentIndex], key, value)
-                }
-                onCssVariableChange={(key, value) =>
-                  onCssVariableChange([parentIndex], key, value)
-                }
+                onParameterChange={(key, value) => {
+                  return onParameterChange([parentIndex], key, value);
+                }}
+                onCssVariableChange={(key, value) => {
+                  return onCssVariableChange([parentIndex], key, value);
+                }}
                 onPickElement={onPickElement}
               />
             </div>
 
             {/* Child widgets */}
-            {(block.blocks ?? []).map((child, childIndex) => (
-              <BlockCard
-                key={childIndex}
-                type={child.type}
-                parameters={child.parameters}
-                open={expandedBlock === `${parentIndex}.${childIndex}`}
-                onToggle={() => onToggleExpand(`${parentIndex}.${childIndex}`)}
-                onParameterChange={(key, value) =>
-                  onParameterChange([parentIndex, childIndex], key, value)
-                }
-                onCssVariableChange={(key, value) =>
-                  onCssVariableChange([parentIndex, childIndex], key, value)
-                }
-                onLocate={() =>
-                  onLocate(
-                    child.parameters.container ?? '',
-                    child.parameters.placement as string | undefined
-                  )
-                }
-                onDeleteBlock={() => onDeleteBlock([parentIndex, childIndex])}
-                onPickElement={onPickElement}
-                indexBlocks={indexBlocks}
-                parentIndex={parentIndex}
-                onMoveToIndex={(toParentIndex) =>
-                  onMoveBlock([parentIndex, childIndex], toParentIndex)
-                }
-              />
-            ))}
+            {(block.blocks ?? []).map((child, childIndex) => {
+              return (
+                <BlockCard
+                  key={childIndex}
+                  type={child.type}
+                  parameters={child.parameters}
+                  open={expandedBlock === `${parentIndex}.${childIndex}`}
+                  onToggle={() => {
+                    return onToggleExpand(`${parentIndex}.${childIndex}`);
+                  }}
+                  onParameterChange={(key, value) => {
+                    return onParameterChange(
+                      [parentIndex, childIndex],
+                      key,
+                      value
+                    );
+                  }}
+                  onCssVariableChange={(key, value) => {
+                    return onCssVariableChange(
+                      [parentIndex, childIndex],
+                      key,
+                      value
+                    );
+                  }}
+                  onLocate={() => {
+                    return onLocate(
+                      child.parameters.container ?? '',
+                      child.parameters.placement as string | undefined
+                    );
+                  }}
+                  onDeleteBlock={() => {
+                    return onDeleteBlock([parentIndex, childIndex]);
+                  }}
+                  onPickElement={onPickElement}
+                  indexBlocks={indexBlocks}
+                  parentIndex={parentIndex}
+                  onMoveToIndex={(toParentIndex) => {
+                    return onMoveBlock(
+                      [parentIndex, childIndex],
+                      toParentIndex
+                    );
+                  }}
+                />
+              );
+            })}
 
             {/* Scoped add widget */}
             <AddWidgetPopover
-              onSelect={(type) => onAddBlock(type, parentIndex)}
-              filter={(type) => type !== 'ais.index'}
+              onSelect={(type) => {
+                return onAddBlock(type, parentIndex);
+              }}
+              filter={(type) => {
+                return type !== 'ais.index';
+              }}
             />
           </div>
         </CollapsibleContent>

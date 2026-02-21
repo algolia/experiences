@@ -266,6 +266,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       showSuggestions: {
         type: 'object',
         label: 'Suggestions',
+        // oxlint-disable-next-line id-length
         defaultValue: { indexName: '', searchPageUrl: '', q: 'q' },
         fields: [
           { key: 'indexName', label: 'Index Name' },
@@ -342,7 +343,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   },
   'ais.searchBox': {
     label: 'Search Box',
-    enabled: true,
+    enabled: false,
     icon: SEARCH_ICON,
     defaultParameters: {
       container: '',

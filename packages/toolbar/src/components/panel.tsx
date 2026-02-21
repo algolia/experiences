@@ -50,21 +50,21 @@ export function Panel({
   const [expandedBlock, setExpandedBlock] = useState<string | null>(null);
   const prevBlocksRef = useRef(experience.blocks);
 
-  const widgetCount = experience.blocks.reduce(
-    (count, block) =>
-      block.type === 'ais.index'
-        ? count + (block.blocks?.length ?? 0)
-        : count + 1,
-    0
-  );
+  const widgetCount = experience.blocks.reduce((count, block) => {
+    return block.type === 'ais.index'
+      ? count + (block.blocks?.length ?? 0)
+      : count + 1;
+  }, 0);
 
-  const indexBlocks = useMemo(
-    () =>
-      experience.blocks
-        .map((block, index) => ({ index, block }))
-        .filter(({ block }) => block.type === 'ais.index'),
-    [experience.blocks]
-  );
+  const indexBlocks = useMemo(() => {
+    return experience.blocks
+      .map((block, index) => {
+        return { index, block };
+      })
+      .filter(({ block }) => {
+        return block.type === 'ais.index';
+      });
+  }, [experience.blocks]);
 
   useEffect(() => {
     const prev = prevBlocksRef.current;
@@ -216,7 +216,9 @@ export function Panel({
         <TabsList>
           <TabsTrigger
             active={tab === 'manual'}
-            onClick={() => setTab('manual')}
+            onClick={() => {
+              return setTab('manual');
+            }}
           >
             <svg
               class="size-4"
@@ -232,7 +234,12 @@ export function Panel({
             </svg>
             Manual
           </TabsTrigger>
-          <TabsTrigger active={tab === 'ai'} onClick={() => setTab('ai')}>
+          <TabsTrigger
+            active={tab === 'ai'}
+            onClick={() => {
+              return setTab('ai');
+            }}
+          >
             <svg
               class="size-4"
               viewBox="0 0 24 24"
@@ -285,20 +292,24 @@ export function Panel({
                   type={block.type}
                   parameters={block.parameters}
                   open={expandedBlock === String(index)}
-                  onToggle={() => handleToggleExpand(String(index))}
-                  onParameterChange={(key, value) =>
-                    onParameterChange([index], key, value)
-                  }
-                  onCssVariableChange={(key, value) =>
-                    onCssVariableChange([index], key, value)
-                  }
-                  onLocate={() =>
-                    onLocate(
+                  onToggle={() => {
+                    return handleToggleExpand(String(index));
+                  }}
+                  onParameterChange={(key, value) => {
+                    return onParameterChange([index], key, value);
+                  }}
+                  onCssVariableChange={(key, value) => {
+                    return onCssVariableChange([index], key, value);
+                  }}
+                  onLocate={() => {
+                    return onLocate(
                       block.parameters.container ?? '',
                       block.parameters.placement as string | undefined
-                    )
-                  }
-                  onDeleteBlock={() => onDeleteBlock([index])}
+                    );
+                  }}
+                  onDeleteBlock={() => {
+                    return onDeleteBlock([index]);
+                  }}
                   onPickElement={onPickElement}
                 />
               );
