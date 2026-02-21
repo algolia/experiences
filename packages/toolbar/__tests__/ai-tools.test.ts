@@ -380,7 +380,11 @@ describe('getTools', () => {
           type: 'ais.autocomplete',
           container: '#search',
           placement: 'before',
-          parameters: { container: '#other', placement: 'after', showRecent: true },
+          parameters: {
+            container: '#other',
+            placement: 'after',
+            showRecent: true,
+          },
         },
         { toolCallId: 'tc1', messages: [] }
       );
@@ -656,7 +660,10 @@ describe('getTools', () => {
 
       expect(result).toMatchObject({
         success: true,
-        applied: ['cssVariables.primary-color-rgb', 'cssVariables.secondary-color'],
+        applied: [
+          'cssVariables.primary-color-rgb',
+          'cssVariables.secondary-color',
+        ],
       });
       expect(callbacks.onCssVariableChange).toHaveBeenCalledTimes(2);
     });
