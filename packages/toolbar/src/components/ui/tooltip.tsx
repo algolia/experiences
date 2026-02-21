@@ -2,6 +2,7 @@ import type { ComponentChildren } from 'preact';
 import { useCallback, useId, useRef, useState } from 'preact/hooks';
 
 import { cn } from '../../lib/utils';
+import { computeTooltipPosition } from '../../utils/compute-tooltip-position';
 
 type TooltipProps = {
   content: ComponentChildren;
@@ -27,28 +28,17 @@ function Tooltip({ content, children, class: className }: TooltipProps) {
     // the viewport width if rendered outside a Shadow DOM (e.g., in tests).
     const root = trigger.getRootNode();
     const host = root instanceof ShadowRoot ? (root.host as HTMLElement) : null;
-    const hostRect = host?.getBoundingClientRect();
+    const hostRect = host?.getBoundingClientRect() ?? null;
     const triggerRect = trigger.getBoundingClientRect();
-    const tooltipWidth = tooltip.offsetWidth;
-    const tooltipHeight = tooltip.offsetHeight;
 
-    const gap = 6;
-    const padding = 8;
-    const minLeft = (hostRect?.left ?? 0) + padding;
-    const maxRight = (hostRect?.right ?? window.innerWidth) - padding;
-
-    // Center horizontally on trigger, clamp within host
-    const idealLeft =
-      triggerRect.left + triggerRect.width / 2 - tooltipWidth / 2;
-    const clampedLeft = Math.max(
-      minLeft,
-      Math.min(idealLeft, maxRight - tooltipWidth)
+    setPosition(
+      computeTooltipPosition({
+        triggerRect,
+        tooltipWidth: tooltip.offsetWidth,
+        tooltipHeight: tooltip.offsetHeight,
+        hostRect,
+      })
     );
-
-    setPosition({
-      top: triggerRect.top - tooltipHeight - gap,
-      left: clampedLeft,
-    });
   }, []);
 
   const show = useCallback(() => {
