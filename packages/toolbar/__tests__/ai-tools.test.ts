@@ -38,6 +38,8 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('ais.index');
     expect(result).toContain('Index');
     expect(result).toContain('ais.searchBox');
+    expect(result).toContain('ais.configure');
+    expect(result).toContain('Configure');
   });
 
   it('includes widget descriptions and parameter descriptions', () => {
@@ -785,6 +787,45 @@ describe('getTools', () => {
 
       expect(result).toMatchObject({ success: true });
       expect(result).not.toHaveProperty('note');
+    });
+
+    it('adds configure widget with body placement and no container', async () => {
+      const experience: ExperienceApiResponse = { blocks: [] };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.configure',
+          parameters: { searchParameters: { hitsPerPage: 20 } },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        index: 0,
+        type: 'ais.configure',
+        placement: 'body',
+        applied: expect.arrayContaining(['placement', 'searchParameters']),
+        rejected: [],
+      });
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.configure');
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        0,
+        'placement',
+        'body'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        0,
+        'searchParameters',
+        { hitsPerPage: 20 }
+      );
+      expect(callbacks.onParameterChange).not.toHaveBeenCalledWith(
+        0,
+        'container',
+        expect.anything()
+      );
     });
   });
 
