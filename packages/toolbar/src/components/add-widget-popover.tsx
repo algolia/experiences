@@ -39,8 +39,6 @@ export function AddWidgetPopover({ onSelect }: AddWidgetPopoverProps) {
       <CollapsibleContent open={open}>
         <div class="rounded-xl border p-1">
           {Object.entries(WIDGET_TYPES).map(([type, config]) => {
-            const Icon = config.icon;
-
             if (!config.enabled) {
               return (
                 <div
@@ -48,7 +46,7 @@ export function AddWidgetPopover({ onSelect }: AddWidgetPopoverProps) {
                   class="flex cursor-not-allowed items-center gap-2.5 rounded-lg px-2 py-1.5 opacity-40"
                 >
                   <div class="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
-                    <Icon />
+                    {config.icon}
                   </div>
                   <span class="text-muted-foreground text-sm">
                     {config.label}
@@ -71,7 +69,7 @@ export function AddWidgetPopover({ onSelect }: AddWidgetPopoverProps) {
                 }}
               >
                 <div class="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors group-hover/item:bg-background">
-                  <Icon />
+                  {config.icon}
                 </div>
                 <span class="text-sm font-semibold">{config.label}</span>
               </button>

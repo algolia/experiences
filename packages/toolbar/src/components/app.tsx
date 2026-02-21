@@ -5,6 +5,7 @@ import { useElementPicker } from '../hooks/use-element-picker';
 import type {
   Environment,
   ExperienceApiResponse,
+  SaveState,
   ToolbarConfig,
 } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
@@ -15,8 +16,6 @@ type AppProps = {
   config: ToolbarConfig;
   initialExperience: ExperienceApiResponse;
 };
-
-type SaveState = 'idle' | 'saving' | 'saved';
 
 const DASHBOARD_BASE: Record<Environment, string> = {
   beta: 'https://beta-dashboard.algolia.com',
@@ -44,7 +43,12 @@ export function App({ config, initialExperience }: AppProps) {
   }, []);
 
   const updateCssVariablesOnPage = useCallback(
-    (blockIndex: number, key: string, value: string) => {
+    (
+      blocks: ExperienceApiResponse['blocks'],
+      blockIndex: number,
+      key: string,
+      value: string
+    ) => {
       const existingStyle = document.querySelector(
         'style[data-algolia-experiences-toolbar]'
       );
@@ -55,27 +59,21 @@ export function App({ config, initialExperience }: AppProps) {
         document.head.appendChild(style);
       }
 
-      const allVars: Record<string, string> = {};
+      const declarations: string[] = [];
 
-      experience.blocks.forEach((block, blockIdx) => {
-        const vars = block.parameters.cssVariables ?? {};
+      for (let blockIdx = 0; blockIdx < blocks.length; blockIdx++) {
+        const vars = blocks[blockIdx]!.parameters.cssVariables ?? {};
 
-        Object.entries(vars).forEach(([varName, varValue]) => {
-          if (blockIdx === blockIndex && varName === key) {
-            allVars[`--ais-${varName}`] = value;
-          } else {
-            allVars[`--ais-${varName}`] = varValue;
-          }
-        });
-      });
+        for (const [varName, varValue] of Object.entries(vars)) {
+          const resolved =
+            blockIdx === blockIndex && varName === key ? value : varValue;
+          declarations.push(`--ais-${varName}: ${resolved}`);
+        }
+      }
 
-      style.textContent = `:root { ${Object.entries(allVars)
-        .map(([prop, val]) => {
-          return `${prop}: ${val}`;
-        })
-        .join('; ')} }`;
+      style.textContent = `:root { ${declarations.join('; ')} }`;
     },
-    [experience]
+    []
   );
 
   const onPillClick = () => {
@@ -112,9 +110,9 @@ export function App({ config, initialExperience }: AppProps) {
 
   const onCssVariableChange = useCallback(
     (index: number, key: string, value: string) => {
-      updateCssVariablesOnPage(index, key, value);
-
       setExperience((prev) => {
+        updateCssVariablesOnPage(prev.blocks, index, key, value);
+
         return {
           ...prev,
           blocks: prev.blocks.map((block, blockIdx) => {

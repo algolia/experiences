@@ -64,7 +64,7 @@ export function BlockCard({
 }: BlockCardProps) {
   const widgetType = WIDGET_TYPES[type];
   const label = widgetType?.label ?? type;
-  const Icon = widgetType?.icon;
+  const icon = widgetType?.icon;
   const badge = getBadgeInfo(parameters);
 
   return (
@@ -77,11 +77,11 @@ export function BlockCard({
         >
           <CardHeader class="group w-full justify-between rounded-t-xl px-4 py-3">
             <div class="flex min-w-0 items-center gap-2.5">
-              {Icon && (
+              {icon && (
                 <div
                   class={`flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors ${open ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'}`}
                 >
-                  <Icon />
+                  {icon}
                 </div>
               )}
               <span class="shrink-0 text-sm font-semibold">{label}</span>

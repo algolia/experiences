@@ -27,6 +27,141 @@ const MODELS = [
   { id: 'gpt-4.1-nano', label: 'GPT-4.1 Nano' },
 ];
 
+type ToolCallDetailsProps = {
+  toolName: string;
+  input: Record<string, unknown> | undefined;
+  output: Record<string, unknown>;
+};
+
+function ToolCallDetails({ toolName, input, output }: ToolCallDetailsProps) {
+  return (
+    <details class="text-muted-foreground border-border rounded-md border px-3 py-2 text-xs group">
+      <summary class="flex cursor-pointer select-none list-none items-center gap-1.5">
+        <svg
+          class="size-3 shrink-0 transition-transform group-open:rotate-90"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+        <svg
+          class="size-3 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+        {describeToolAction(toolName, input, output)}
+      </summary>
+      <pre class="mt-2 overflow-x-auto whitespace-pre-wrap border-t pt-2 text-[11px] opacity-70">
+        {JSON.stringify(output, null, 2)}
+      </pre>
+    </details>
+  );
+}
+
+type ModelPickerProps = {
+  model: string;
+  open: boolean;
+  disabled: boolean;
+  onToggle: () => void;
+  onSelect: (id: string) => void;
+  onClose: () => void;
+};
+
+function ModelPicker({
+  model,
+  open,
+  disabled,
+  onToggle,
+  onSelect,
+  onClose,
+}: ModelPickerProps) {
+  return (
+    <div class="relative flex items-center">
+      <button
+        type="button"
+        class="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        onClick={onToggle}
+        disabled={disabled}
+      >
+        <svg
+          class="size-3 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 8V4H8" />
+          <rect width="16" height="12" x="4" y="8" rx="2" />
+          <path d="M2 14h2" />
+          <path d="M20 14h2" />
+          <path d="M15 13v2" />
+          <path d="M9 13v2" />
+        </svg>
+        {MODELS.find((entry) => {
+          return entry.id === model;
+        })?.label ?? model}
+        <svg
+          class="size-3 shrink-0 opacity-50"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <>
+          <div class="fixed inset-0 z-40" onClick={onClose} />
+          <div class="absolute bottom-full left-0 z-50 mb-1 min-w-[160px] rounded-lg border bg-background p-1 shadow-md">
+            {MODELS.map((entry) => {
+              return (
+                <button
+                  key={entry.id}
+                  type="button"
+                  class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted"
+                  onClick={() => {
+                    return onSelect(entry.id);
+                  }}
+                >
+                  <span class="flex-1">{entry.label}</span>
+                  {entry.id === model && (
+                    <svg
+                      class="size-3 shrink-0"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 type AiChatProps = {
   experience: ExperienceApiResponse;
   onAddBlock: (type: string) => void;
@@ -255,42 +390,14 @@ export function AiChat({
                       'input' in part
                         ? (part.input as Record<string, unknown>)
                         : undefined;
-                    const output = part.output as Record<string, unknown>;
 
                     return (
-                      <details
+                      <ToolCallDetails
                         key={index}
-                        class="text-muted-foreground border-border rounded-md border px-3 py-2 text-xs group"
-                      >
-                        <summary class="flex cursor-pointer select-none list-none items-center gap-1.5">
-                          <svg
-                            class="size-3 shrink-0 transition-transform group-open:rotate-90"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          >
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                          <svg
-                            class="size-3 shrink-0"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          >
-                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-                          </svg>
-                          {describeToolAction(toolName, input, output)}
-                        </summary>
-                        <pre class="mt-2 overflow-x-auto whitespace-pre-wrap border-t pt-2 text-[11px] opacity-70">
-                          {JSON.stringify(output, null, 2)}
-                        </pre>
-                      </details>
+                        toolName={toolName}
+                        input={input}
+                        output={part.output as Record<string, unknown>}
+                      />
                     );
                   }
 
@@ -348,87 +455,23 @@ export function AiChat({
             autoComplete="off"
           />
           <div class="mt-1 flex items-center justify-between">
-            <div class="relative flex items-center gap-1">
-              <button
-                type="button"
-                class="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                onClick={() => {
+            <div class="flex items-center gap-1">
+              <ModelPicker
+                model={model}
+                open={modelPickerOpen}
+                disabled={isStreaming}
+                onToggle={() => {
                   return setModelPickerOpen(!modelPickerOpen);
                 }}
-                disabled={isStreaming}
-              >
-                <svg
-                  class="size-3 shrink-0"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M12 8V4H8" />
-                  <rect width="16" height="12" x="4" y="8" rx="2" />
-                  <path d="M2 14h2" />
-                  <path d="M20 14h2" />
-                  <path d="M15 13v2" />
-                  <path d="M9 13v2" />
-                </svg>
-                {MODELS.find((entry) => {
-                  return entry.id === model;
-                })?.label ?? model}
-                <svg
-                  class="size-3 shrink-0 opacity-50"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </button>
-              {modelPickerOpen && (
-                <>
-                  <div
-                    class="fixed inset-0 z-40"
-                    onClick={() => {
-                      return setModelPickerOpen(false);
-                    }}
-                  />
-                  <div class="absolute bottom-full left-0 z-50 mb-1 min-w-[160px] rounded-lg border bg-background p-1 shadow-md">
-                    {MODELS.map((entry) => {
-                      return (
-                        <button
-                          key={entry.id}
-                          type="button"
-                          class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted"
-                          onClick={() => {
-                            setModel(entry.id);
-                            localStorage.setItem(MODEL_STORAGE_KEY, entry.id);
-                            setModelPickerOpen(false);
-                          }}
-                        >
-                          <span class="flex-1">{entry.label}</span>
-                          {entry.id === model && (
-                            <svg
-                              class="size-3 shrink-0"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            >
-                              <path d="M20 6 9 17l-5-5" />
-                            </svg>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
+                onSelect={(id) => {
+                  setModel(id);
+                  localStorage.setItem(MODEL_STORAGE_KEY, id);
+                  setModelPickerOpen(false);
+                }}
+                onClose={() => {
+                  return setModelPickerOpen(false);
+                }}
+              />
               {messages.length > 0 && (
                 <button
                   type="button"

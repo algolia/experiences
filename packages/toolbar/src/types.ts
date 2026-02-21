@@ -2,6 +2,8 @@ export type Environment = 'prod' | 'beta';
 
 export type Placement = 'inside' | 'before' | 'after' | 'replace' | 'body';
 
+export type SaveState = 'idle' | 'saving' | 'saved';
+
 export type ExperienceApiBlockParameters = {
   container: string;
   placement?: Placement;

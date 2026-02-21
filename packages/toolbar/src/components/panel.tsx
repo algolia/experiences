@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import type { ExperienceApiResponse } from '../types';
+import type { ExperienceApiResponse, SaveState } from '../types';
 import { AddWidgetPopover } from './add-widget-popover';
 import { AiChat } from './ai-chat';
 import { BlockCard } from './block-card';
 import { Button } from './ui/button';
 import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
-
-type SaveState = 'idle' | 'saving' | 'saved';
 
 type PanelProps = {
   experience: ExperienceApiResponse;
@@ -44,12 +42,10 @@ export function Panel({
   const [expandedBlock, setExpandedBlock] = useState<number | null>(null);
   const prevBlockCount = useRef(experience.blocks.length);
 
-  useEffect(() => {
-    if (experience.blocks.length > prevBlockCount.current) {
-      setExpandedBlock(experience.blocks.length - 1);
-    }
-    prevBlockCount.current = experience.blocks.length;
-  }, [experience.blocks.length]);
+  if (experience.blocks.length > prevBlockCount.current) {
+    setExpandedBlock(experience.blocks.length - 1);
+  }
+  prevBlockCount.current = experience.blocks.length;
 
   useEffect(() => {
     if (tab === 'ai') {
