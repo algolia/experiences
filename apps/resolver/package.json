@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "portless resolver sh -c 'wrangler dev --port $PORT'",
     "deploy": "wrangler deploy",
     "test": "vitest run",
     "test:watch": "vitest"
