@@ -124,6 +124,14 @@ describe('toolbar', () => {
     });
 
     describe('add widget', () => {
+      beforeEach(() => {
+        sessionStorage.setItem('experiences.exp-123.key', 'ADMIN_KEY');
+      });
+
+      afterEach(() => {
+        sessionStorage.clear();
+      });
+
       async function openToolbar() {
         await import('../src/index');
         await new Promise((resolve) => {
@@ -590,6 +598,8 @@ describe('toolbar', () => {
 
     describe('locate button', () => {
       beforeEach(() => {
+        sessionStorage.setItem('experiences.exp-123.key', 'ADMIN_KEY');
+
         // jsdom does not implement Web Animations API
         Element.prototype.animate = vi.fn(() => {
           return {
@@ -598,6 +608,10 @@ describe('toolbar', () => {
             finished: Promise.resolve(),
           };
         }) as unknown as typeof Element.prototype.animate;
+      });
+
+      afterEach(() => {
+        sessionStorage.clear();
       });
 
       async function openToolbar() {
