@@ -12,13 +12,20 @@ type ExperienceApiBlockParameters = {
   placement?: 'inside' | 'before' | 'after' | 'replace' | 'body';
   cssVariables?: Record<string, string>;
   indexName?: string;
-} & Record<'container' | 'cssVariables' | 'indexName' | (string & {}), unknown>;
+  indexId?: string;
+} & Record<
+  'container' | 'cssVariables' | 'indexName' | 'indexId' | (string & {}),
+  unknown
+>;
+
+type ExperienceApiBlock = {
+  type: string;
+  parameters: ExperienceApiBlockParameters;
+  blocks?: ExperienceApiBlock[];
+};
 
 export type ExperienceApiResponse = {
-  blocks: Array<{
-    type: string;
-    parameters: ExperienceApiBlockParameters;
-  }>;
+  blocks: ExperienceApiBlock[];
 };
 
 export type ExperienceWidgetParams = {
