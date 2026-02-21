@@ -6,9 +6,10 @@ import { CollapsibleContent } from './ui/collapsible';
 
 type AddWidgetPopoverProps = {
   onSelect: (type: string) => void;
+  filter?: (type: string, config: (typeof WIDGET_TYPES)[string]) => boolean;
 };
 
-export function AddWidgetPopover({ onSelect }: AddWidgetPopoverProps) {
+export function AddWidgetPopover({ onSelect, filter }: AddWidgetPopoverProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -38,43 +39,45 @@ export function AddWidgetPopover({ onSelect }: AddWidgetPopoverProps) {
 
       <CollapsibleContent open={open}>
         <div class="rounded-xl border p-1">
-          {Object.entries(WIDGET_TYPES).map(([type, config]) => {
-            if (!config.enabled) {
+          {Object.entries(WIDGET_TYPES)
+            .filter(([type, config]) => !filter || filter(type, config))
+            .map(([type, config]) => {
+              if (!config.enabled) {
+                return (
+                  <div
+                    key={type}
+                    class="flex cursor-not-allowed items-center gap-2.5 rounded-lg px-2 py-1.5 opacity-40"
+                  >
+                    <div class="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
+                      {config.icon}
+                    </div>
+                    <span class="text-muted-foreground text-sm">
+                      {config.label}
+                    </span>
+                    <Badge variant="secondary" class="ml-auto text-[10px]">
+                      Coming Soon
+                    </Badge>
+                  </div>
+                );
+              }
+
               return (
-                <div
+                <button
                   key={type}
-                  class="flex cursor-not-allowed items-center gap-2.5 rounded-lg px-2 py-1.5 opacity-40"
+                  type="button"
+                  class="group/item flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-accent"
+                  onClick={() => {
+                    onSelect(type);
+                    setOpen(false);
+                  }}
                 >
-                  <div class="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
+                  <div class="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors group-hover/item:bg-background">
                     {config.icon}
                   </div>
-                  <span class="text-muted-foreground text-sm">
-                    {config.label}
-                  </span>
-                  <Badge variant="secondary" class="ml-auto text-[10px]">
-                    Coming Soon
-                  </Badge>
-                </div>
+                  <span class="text-sm font-semibold">{config.label}</span>
+                </button>
               );
-            }
-
-            return (
-              <button
-                key={type}
-                type="button"
-                class="group/item flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-accent"
-                onClick={() => {
-                  onSelect(type);
-                  setOpen(false);
-                }}
-              >
-                <div class="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors group-hover/item:bg-background">
-                  {config.icon}
-                </div>
-                <span class="text-sm font-semibold">{config.label}</span>
-              </button>
-            );
-          })}
+            })}
         </div>
       </CollapsibleContent>
     </div>

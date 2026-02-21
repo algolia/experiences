@@ -20,10 +20,10 @@ Each widget type has a default placement listed above. When placement is \`body\
 
 ## Rules
 
-- When calling add_widget or edit_widget, widget-specific settings (like \`agentId\`, \`showRecent\`, \`cssVariables\`) MUST go inside the \`parameters\` field as key-value pairs, NOT as top-level arguments. Only \`type\`, \`container\`, and \`placement\` are top-level for add_widget, only \`index\` is top-level for edit_widget. When adding a widget, include all known parameters in the same call.
+- When calling add_widget or edit_widget, widget-specific settings (like \`agentId\`, \`showRecent\`, \`cssVariables\`) MUST go inside the \`parameters\` field as key-value pairs, NOT as top-level arguments. Only \`type\`, \`container\`, \`placement\`, and \`target_index\` are top-level for add_widget, only \`path\` is top-level for edit_widget. When adding a widget, include all known parameters in the same call.
 - Only modify parameters that are listed as editable for each widget type.
-- Keep responses concise and confirm what you did after each action.
-- Before editing or removing, ALWAYS call get_experience first to verify current widget indices and state.
-- Refer to widgets by their index number from get_experience results.
+- Keep responses concise and confirm what you did after each action. Do not explain internal mechanics (index blocks, placements, paths) unless the user asks. Just ask for what you need in plain language (e.g., "Where should I place it? (CSS selector)" instead of explaining the placement system).
+- Before editing or removing, ALWAYS call get_experience first to verify current widget paths and state.
+- Refer to widgets by their path from get_experience results.
 - If the user's request is ambiguous, ask for clarification.`;
 }

@@ -1,21 +1,26 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 
-import type { ExperienceApiResponse, Placement } from '../types';
+import type {
+  AddBlockResult,
+  BlockPath,
+  ExperienceApiBlock,
+  ExperienceApiResponse,
+  Placement,
+} from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 
 export type ToolCallbacks = {
-  onAddBlock: (type: string) => void;
-  onParameterChange: (index: number, key: string, value: unknown) => void;
-  onCssVariableChange: (index: number, key: string, value: string) => void;
-  onDeleteBlock: (index: number) => void;
+  onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
+  onParameterChange: (path: BlockPath, key: string, value: unknown) => void;
+  onCssVariableChange: (path: BlockPath, key: string, value: string) => void;
+  onDeleteBlock: (path: BlockPath) => void;
+  onMoveBlock: (fromPath: BlockPath, toParentIndex: number) => void;
   getExperience: () => ExperienceApiResponse;
 };
 
 function getEnabledTypes() {
-  return Object.entries(WIDGET_TYPES).filter(([, config]) => {
-    return config.enabled;
-  });
+  return Object.entries(WIDGET_TYPES).filter(([, config]) => config.enabled);
 }
 
 export function describeWidgetTypes(): string {
@@ -27,9 +32,9 @@ export function describeWidgetTypes(): string {
 
   return enabled
     .map(([key, config]) => {
-      const paramKeys = Object.keys(config.defaultParameters).filter((k) => {
-        return k !== 'container' && k !== 'placement';
-      });
+      const paramKeys = Object.keys(config.defaultParameters).filter(
+        (k) => k !== 'container' && k !== 'placement'
+      );
       const overrideKeys = Object.keys(config.fieldOverrides ?? {});
       const allKeys = [...new Set([...paramKeys, ...overrideKeys])];
 
@@ -37,6 +42,9 @@ export function describeWidgetTypes(): string {
       let desc = `- ${key} ("${config.label}", default placement: ${defaultPlacement})`;
       if (config.description) {
         desc += `: ${config.description}`;
+      }
+      if (config.indexIndependent) {
+        desc += ' [index-independent]';
       }
 
       if (allKeys.length > 0) {
@@ -61,44 +69,87 @@ export function describeWidgetTypes(): string {
     .join('\n');
 }
 
+function describeBlock(
+  block: ExperienceApiBlock,
+  path: string,
+  indent: string = ''
+): string {
+  const config = WIDGET_TYPES[block.type];
+  const label = config?.label ?? block.type;
+
+  if (block.type === 'ais.index') {
+    const indexName = block.parameters.indexName || '(unnamed)';
+    const indexId = block.parameters.indexId;
+    const children = block.blocks ?? [];
+    let desc = `${indent}[${path}] Index (ais.index) — indexName: ${indexName}`;
+    if (indexId) {
+      desc += `, indexId: ${indexId}`;
+    }
+
+    if (children.length === 0) {
+      desc += ' (empty)';
+    } else {
+      children.forEach((child, j) => {
+        desc += '\n' + describeBlock(child, `${path}.${j}`, indent + '  ');
+      });
+    }
+
+    return desc;
+  }
+
+  const placement: Placement =
+    block.parameters.placement ??
+    (config?.defaultParameters.placement as Placement | undefined) ??
+    'inside';
+  const container = block.parameters.container as string | undefined;
+
+  let placementDesc: string;
+  if (placement === 'body') {
+    placementDesc = 'body';
+  } else if (container) {
+    placementDesc = `${placement} ${container}`;
+  } else {
+    placementDesc = placement;
+  }
+
+  const params = Object.entries(block.parameters)
+    .filter(([k]) => k !== 'container' && k !== 'placement')
+    .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
+    .join(', ');
+
+  const paramsSuffix = params ? `: ${params}` : '';
+
+  return `${indent}[${path}] ${label} (${block.type}) [${placementDesc}]${paramsSuffix}`;
+}
+
 export function describeExperience(experience: ExperienceApiResponse): string {
   if (experience.blocks.length === 0) {
     return 'The experience has no widgets yet.';
   }
 
   return experience.blocks
-    .map((block, index) => {
-      const config = WIDGET_TYPES[block.type];
-      const label = config?.label ?? block.type;
-      const placement: Placement =
-        block.parameters.placement ??
-        (config?.defaultParameters.placement as Placement | undefined) ??
-        'inside';
-      const container = block.parameters.container as string | undefined;
-
-      let placementDesc: string;
-      if (placement === 'body') {
-        placementDesc = 'body';
-      } else if (container) {
-        placementDesc = `${placement} ${container}`;
-      } else {
-        placementDesc = placement;
-      }
-
-      const params = Object.entries(block.parameters)
-        .filter(([param]) => {
-          return param !== 'container' && param !== 'placement';
-        })
-        .map(([param, val]) => {
-          return `${param}=${JSON.stringify(val)}`;
-        })
-        .join(', ');
-
-      const paramsSuffix = params ? `: ${params}` : '';
-
-      return `[${index}] ${label} (${block.type}) [${placementDesc}]${paramsSuffix}`;
-    })
+    .map((block, index) => describeBlock(block, String(index)))
     .join('\n');
+}
+
+function parsePath(path: string): BlockPath | null {
+  if (!path || path.startsWith('.') || path.endsWith('.')) return null;
+  const parts = path.split('.').map(Number);
+  if (parts.some((n) => isNaN(n) || n < 0)) return null;
+  if (parts.length === 1) return [parts[0]] as BlockPath;
+  if (parts.length === 2) return [parts[0], parts[1]] as BlockPath;
+  return null;
+}
+
+function resolveBlock(
+  experience: ExperienceApiResponse,
+  path: BlockPath
+): ExperienceApiBlock | null {
+  if (path.length === 1) {
+    return experience.blocks[path[0]] ?? null;
+  }
+  const [parentIdx, childIdx] = path;
+  return experience.blocks[parentIdx]?.blocks?.[childIdx] ?? null;
 }
 
 export function describeToolAction(
@@ -124,37 +175,33 @@ export function describeToolAction(
     }
     case 'edit_widget': {
       const applied = output?.applied;
-      const desc = `Edited widget ${input?.index ?? ''}`;
+      const desc = `Edited widget ${input?.path ?? ''}`;
       if (Array.isArray(applied) && applied.length > 0) {
         return `${desc} — ${applied.join(', ')}`;
       }
       return desc;
     }
     case 'remove_widget':
-      return `Removed widget ${input?.index ?? ''}`;
+      return `Removed widget ${input?.path ?? ''}`;
+    case 'move_widget':
+      return `Moved widget ${input?.path ?? ''} to index ${input?.to_index ?? ''}`;
     default:
       return 'Action completed';
   }
 }
 
-function boundsError(index: number, count: number): string {
-  if (count === 0) {
-    return `Invalid index ${index}. The experience has no widgets.`;
-  }
-
-  return `Invalid index ${index}. Experience has ${count} widget(s) (indices 0–${count - 1}).`;
+function boundsError(path: string): string {
+  return `Invalid path "${path}". Use get_experience to see valid widget paths.`;
 }
 
 export function getTools(callbacks: ToolCallbacks) {
-  const enabledKeys = getEnabledTypes().map(([key]) => {
-    return key;
-  });
+  const enabledKeys = getEnabledTypes().map(([key]) => key);
   const typeEnum = z.enum(enabledKeys as [string, ...string[]]);
 
   return {
     get_experience: tool({
       description:
-        'Get the current experience state, including all widgets and their parameters.',
+        'Get the current experience state, including all widgets and their parameters. Widgets are addressed by path (e.g., "0" for top-level, "1.0" for first child of index block 1).',
       inputSchema: z.object({}),
       execute: async () => {
         const experience = callbacks.getExperience();
@@ -164,14 +211,14 @@ export function getTools(callbacks: ToolCallbacks) {
 
     add_widget: tool({
       description:
-        'Add a new widget to the experience. When placement is "body", no container is needed. For other placements, a container CSS selector is required.',
+        'Add a new widget to the experience. Index-dependent widgets (all except ais.chat, ais.autocomplete, ais.index) are automatically placed inside an ais.index block. When placement is "body", no container is needed. For other placements, a container CSS selector is required.',
       inputSchema: z.object({
         type: typeEnum.describe('The widget type to add'),
         container: z
           .string()
           .optional()
           .describe(
-            'CSS selector for the container element (required unless placement is "body")'
+            'CSS selector for the container element (required unless placement is "body" or type is "ais.index")'
           ),
         placement: z
           .enum<
@@ -186,29 +233,32 @@ export function getTools(callbacks: ToolCallbacks) {
           .record(z.unknown())
           .optional()
           .describe('Additional parameters for the widget'),
+        target_index: z
+          .number()
+          .optional()
+          .describe(
+            'Index of the ais.index block to add this widget to. Only for index-dependent widgets. If omitted, uses the last index block or auto-creates one.'
+          ),
       }),
-      execute: async ({ type, container, placement, parameters }) => {
-        const experience = callbacks.getExperience();
-        const newIndex = experience.blocks.length;
-
+      execute: async ({
+        type,
+        container,
+        placement,
+        parameters,
+        target_index,
+      }) => {
         const config = WIDGET_TYPES[type];
-        const allowedKeys = new Set([
-          ...Object.keys(config?.defaultParameters ?? {}),
-          ...Object.keys(config?.fieldOverrides ?? {}),
-          'placement',
-        ]);
 
+        // Validate container before mutating state
         const effectivePlacement: Placement =
-          placement ??
-          (config?.defaultParameters.placement as Placement | undefined) ??
-          'inside';
-
-        callbacks.onAddBlock(type);
-
-        const applied: string[] = [];
-        const rejected: string[] = [];
+          type === 'ais.index'
+            ? 'inside'
+            : (placement ??
+              (config?.defaultParameters.placement as Placement | undefined) ??
+              'inside');
 
         if (
+          type !== 'ais.index' &&
           effectivePlacement !== 'body' &&
           !container &&
           !parameters?.container
@@ -219,11 +269,44 @@ export function getTools(callbacks: ToolCallbacks) {
           };
         }
 
-        callbacks.onParameterChange(newIndex, 'placement', effectivePlacement);
+        if (target_index !== undefined) {
+          const experience = callbacks.getExperience();
+          const targetBlock = experience.blocks[target_index];
+          if (!targetBlock || targetBlock.type !== 'ais.index') {
+            return {
+              success: false,
+              error: `Target index ${target_index} is not an ais.index block.`,
+            };
+          }
+        }
+
+        const result = callbacks.onAddBlock(type, target_index);
+        const newPath = result.path;
+
+        if (type === 'ais.index') {
+          if (parameters) {
+            for (const [key, value] of Object.entries(parameters)) {
+              callbacks.onParameterChange(newPath, key, value);
+            }
+          }
+
+          return { success: true, path: newPath.join('.'), type };
+        }
+
+        const allowedKeys = new Set([
+          ...Object.keys(config?.defaultParameters ?? {}),
+          ...Object.keys(config?.fieldOverrides ?? {}),
+          'placement',
+        ]);
+
+        const applied: string[] = [];
+        const rejected: string[] = [];
+
+        callbacks.onParameterChange(newPath, 'placement', effectivePlacement);
         applied.push('placement');
 
         if (container) {
-          callbacks.onParameterChange(newIndex, 'container', container);
+          callbacks.onParameterChange(newPath, 'container', container);
           applied.push('container');
         }
 
@@ -231,7 +314,7 @@ export function getTools(callbacks: ToolCallbacks) {
           for (const [key, value] of Object.entries(parameters)) {
             if (key === 'container' || key === 'placement') continue;
             if (allowedKeys.has(key)) {
-              callbacks.onParameterChange(newIndex, key, value);
+              callbacks.onParameterChange(newPath, key, value);
               applied.push(key);
             } else {
               rejected.push(key);
@@ -241,36 +324,43 @@ export function getTools(callbacks: ToolCallbacks) {
 
         return {
           success: true,
-          index: newIndex,
+          path: newPath.join('.'),
           type,
           placement: effectivePlacement,
           container,
           applied,
           rejected,
+          ...(result.indexCreated && {
+            note: `An ais.index block was auto-created at path ${newPath[0]} but has no indexName. Ask the user which Algolia index to target, then use edit_widget to set it.`,
+          }),
         };
       },
     }),
 
     edit_widget: tool({
       description:
-        'Edit parameters of an existing widget. Only modify allowed parameters.',
+        'Edit parameters of an existing widget. Address widgets by path (e.g., "0" for top-level, "1.0" for first child of index block 1).',
       inputSchema: z.object({
-        index: z.number().describe('The index of the widget to edit'),
+        path: z
+          .string()
+          .describe('The path of the widget to edit (e.g., "0", "1.0")'),
         parameters: z
           .record(z.unknown())
           .describe('Parameters to update (key-value pairs)'),
       }),
-      execute: async ({ index, parameters }) => {
+      execute: async ({ path, parameters }) => {
         const experience = callbacks.getExperience();
+        const blockPath = parsePath(path);
 
-        if (index < 0 || index >= experience.blocks.length) {
-          return {
-            success: false,
-            error: boundsError(index, experience.blocks.length),
-          };
+        if (!blockPath) {
+          return { success: false, error: boundsError(path) };
         }
 
-        const block = experience.blocks[index]!;
+        const block = resolveBlock(experience, blockPath);
+        if (!block) {
+          return { success: false, error: boundsError(path) };
+        }
+
         const config = WIDGET_TYPES[block.type];
         const allowedKeys = new Set([
           ...Object.keys(config?.defaultParameters ?? {}),
@@ -290,40 +380,90 @@ export function getTools(callbacks: ToolCallbacks) {
             for (const [cssKey, cssValue] of Object.entries(
               value as Record<string, string>
             )) {
-              callbacks.onCssVariableChange(index, cssKey, cssValue);
+              callbacks.onCssVariableChange(blockPath, cssKey, cssValue);
               applied.push(`cssVariables.${cssKey}`);
             }
           } else if (allowedKeys.has(key)) {
-            callbacks.onParameterChange(index, key, value);
+            callbacks.onParameterChange(blockPath, key, value);
             applied.push(key);
           } else {
             rejected.push(key);
           }
         }
 
-        return { success: true, index, applied, rejected };
+        return { success: true, path, applied, rejected };
       },
     }),
 
     remove_widget: tool({
-      description: 'Remove a widget from the experience by its index.',
+      description:
+        'Remove a widget from the experience by its path (e.g., "0" for top-level, "1.0" for first child of index block 1).',
       inputSchema: z.object({
-        index: z.number().describe('The index of the widget to remove'),
+        path: z
+          .string()
+          .describe('The path of the widget to remove (e.g., "0", "1.0")'),
       }),
-      execute: async ({ index }) => {
+      execute: async ({ path }) => {
         const experience = callbacks.getExperience();
+        const blockPath = parsePath(path);
 
-        if (index < 0 || index >= experience.blocks.length) {
+        if (!blockPath) {
+          return { success: false, error: boundsError(path) };
+        }
+
+        const block = resolveBlock(experience, blockPath);
+        if (!block) {
+          return { success: false, error: boundsError(path) };
+        }
+
+        callbacks.onDeleteBlock(blockPath);
+
+        return { success: true, removedType: block.type, removedPath: path };
+      },
+    }),
+
+    move_widget: tool({
+      description:
+        'Move a widget from one ais.index block to another. The widget must be inside an index block (path has two parts, e.g., "1.0").',
+      inputSchema: z.object({
+        path: z
+          .string()
+          .describe(
+            'The path of the widget to move (e.g., "1.0" for first child of index block 1)'
+          ),
+        to_index: z
+          .number()
+          .describe(
+            'The top-level index of the target ais.index block to move the widget to'
+          ),
+      }),
+      execute: async ({ path, to_index }) => {
+        const experience = callbacks.getExperience();
+        const blockPath = parsePath(path);
+
+        if (!blockPath || blockPath.length !== 2) {
           return {
             success: false,
-            error: boundsError(index, experience.blocks.length),
+            error: `Invalid path "${path}". Only nested widgets (e.g., "1.0") can be moved between index blocks.`,
           };
         }
 
-        const block = experience.blocks[index]!;
-        callbacks.onDeleteBlock(index);
+        const block = resolveBlock(experience, blockPath);
+        if (!block) {
+          return { success: false, error: boundsError(path) };
+        }
 
-        return { success: true, removedType: block.type, removedIndex: index };
+        const targetBlock = experience.blocks[to_index];
+        if (!targetBlock || targetBlock.type !== 'ais.index') {
+          return {
+            success: false,
+            error: `Target index ${to_index} is not an ais.index block.`,
+          };
+        }
+
+        callbacks.onMoveBlock(blockPath, to_index);
+
+        return { success: true, movedType: block.type, from: path, to_index };
       },
     }),
   };

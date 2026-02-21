@@ -5,17 +5,28 @@ export type Placement = 'inside' | 'before' | 'after' | 'replace' | 'body';
 export type SaveState = 'idle' | 'saving' | 'saved';
 
 export type ExperienceApiBlockParameters = {
-  container: string;
+  container?: string;
   placement?: Placement;
   cssVariables?: Record<string, string>;
   indexName?: string;
+  indexId?: string;
 } & Record<string, unknown>;
 
+export type ExperienceApiBlock = {
+  type: string;
+  parameters: ExperienceApiBlockParameters;
+  blocks?: ExperienceApiBlock[];
+};
+
+export type BlockPath = [number] | [number, number];
+
+export type AddBlockResult = {
+  path: BlockPath;
+  indexCreated: boolean;
+};
+
 export type ExperienceApiResponse = {
-  blocks: Array<{
-    type: string;
-    parameters: ExperienceApiBlockParameters;
-  }>;
+  blocks: ExperienceApiBlock[];
   indexName: string;
 };
 
