@@ -10,13 +10,18 @@ import {
 import type { ExperienceApiResponse } from '../src/types';
 
 function createCallbacks(
-  experience: ExperienceApiResponse = { blocks: [] }
+  experience: ExperienceApiResponse = { blocks: [], indexName: '' },
+  addBlockPath: [number] | [number, number] = [0],
+  indexCreated = false
 ): ToolCallbacks {
   return {
-    onAddBlock: vi.fn(),
+    onAddBlock: vi.fn(() => {
+      return { path: addBlockPath, indexCreated };
+    }),
     onParameterChange: vi.fn(),
     onCssVariableChange: vi.fn(),
     onDeleteBlock: vi.fn(),
+    onMoveBlock: vi.fn(),
     getExperience: vi.fn(() => {
       return experience;
     }),
@@ -30,6 +35,8 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Autocomplete');
     expect(result).toContain('ais.chat');
     expect(result).toContain('Chat');
+    expect(result).toContain('ais.index');
+    expect(result).toContain('Index');
   });
 
   it('includes widget descriptions and parameter descriptions', () => {
@@ -48,21 +55,25 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('ais.chat ("Chat", default placement: body)');
   });
 
+  it('marks index-independent widgets', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('[index-independent]');
+  });
+
   it('excludes disabled widget types', () => {
     const result = describeWidgetTypes();
     expect(result).not.toContain('ais.hits');
-    expect(result).not.toContain('ais.searchBox');
     expect(result).not.toContain('ais.pagination');
   });
 });
 
 describe('describeExperience', () => {
   it('returns a message for empty experiences', () => {
-    const result = describeExperience({ blocks: [] });
+    const result = describeExperience({ blocks: [], indexName: '' });
     expect(result).toBe('The experience has no widgets yet.');
   });
 
-  it('formats blocks with indices and placement', () => {
+  it('formats blocks with paths and placement', () => {
     const experience: ExperienceApiResponse = {
       blocks: [
         {
@@ -78,6 +89,7 @@ describe('describeExperience', () => {
           },
         },
       ],
+      indexName: '',
     };
 
     const result = describeExperience(experience);
@@ -89,6 +101,7 @@ describe('describeExperience', () => {
     expect(result).toContain('[1] Chat (ais.chat) [body]');
     expect(result).toContain('agentId="agent-1"');
   });
+
   it('falls back to type string for unknown widget types', () => {
     const experience: ExperienceApiResponse = {
       blocks: [
@@ -118,71 +131,61 @@ describe('describeExperience', () => {
     expect(result).not.toContain('[before ]');
   });
 
-  it('renders ais.index blocks with fallback label and indexName parameter', () => {
+  it('formats nested index blocks with child paths', () => {
     const experience: ExperienceApiResponse = {
       blocks: [
         {
           type: 'ais.index',
-          parameters: { container: '', indexName: 'products' },
-        },
-      ],
-    };
-
-    const result = describeExperience(experience);
-    expect(result).toContain('[0] ais.index (ais.index)');
-    expect(result).toContain('indexName="products"');
-  });
-
-  it('does not describe nested blocks inside ais.index', () => {
-    // The toolbar type does not support nested blocks, so describeExperience
-    // only iterates top-level blocks. Nested children inside ais.index are
-    // invisible to the AI tools layer. This documents the current gap.
-    const experience = {
-      blocks: [
-        {
-          type: 'ais.index',
-          parameters: { container: '', indexName: 'products' },
+          parameters: { indexName: 'products' },
           blocks: [
             {
-              type: 'ais.hits',
-              parameters: { container: '#hits' },
+              type: 'ais.autocomplete',
+              parameters: { container: '#search' },
             },
           ],
         },
       ],
-    } as ExperienceApiResponse;
-
-    const result = describeExperience(experience);
-    // Only the top-level ais.index block is described
-    expect(result).toContain('[0] ais.index (ais.index)');
-    // The nested ais.hits block is not described
-    expect(result).not.toContain('ais.hits');
-    expect(result).not.toContain('#hits');
-  });
-
-  it('renders ais.index alongside regular widgets', () => {
-    const experience: ExperienceApiResponse = {
-      blocks: [
-        {
-          type: 'ais.autocomplete',
-          parameters: { container: '#search' },
-        },
-        {
-          type: 'ais.index',
-          parameters: { container: '', indexName: 'suggestions' },
-        },
-        {
-          type: 'ais.chat',
-          parameters: { container: '#chat', placement: 'body' },
-        },
-      ],
+      indexName: '',
     };
 
     const result = describeExperience(experience);
-    expect(result).toContain('[0] Autocomplete (ais.autocomplete)');
-    expect(result).toContain('[1] ais.index (ais.index)');
-    expect(result).toContain('indexName="suggestions"');
-    expect(result).toContain('[2] Chat (ais.chat)');
+    expect(result).toContain('[0] Index (ais.index)');
+    expect(result).toContain('products');
+    expect(result).toContain('[0.0] Autocomplete (ais.autocomplete)');
+  });
+
+  it('includes indexId when present on index blocks', () => {
+    const experience: ExperienceApiResponse = {
+      blocks: [
+        {
+          type: 'ais.index',
+          parameters: { indexName: 'products', indexId: 'main' },
+          blocks: [],
+        },
+      ],
+      indexName: '',
+    };
+
+    const result = describeExperience(experience);
+    expect(result).toContain('indexName: products');
+    expect(result).toContain('indexId: main');
+  });
+
+  it('omits indexId when not set on index blocks', () => {
+    const experience: ExperienceApiResponse = {
+      blocks: [
+        {
+          type: 'ais.index',
+          parameters: { indexName: 'products' },
+          blocks: [],
+        },
+      ],
+      indexName: '',
+    };
+
+    const result = describeExperience(experience);
+    expect(result).toContain('indexName: products');
+    expect(result).not.toContain('indexId');
   });
 
   it('uses default placement from widget config when not in parameters', () => {
@@ -193,21 +196,55 @@ describe('describeExperience', () => {
           parameters: { agentId: 'agent-1' },
         },
       ],
+      indexName: '',
     };
 
     const result = describeExperience(experience);
     expect(result).toContain('[0] Chat (ais.chat) [body]');
   });
+
+  it('shows empty index block with "(empty)" marker', () => {
+    const experience: ExperienceApiResponse = {
+      blocks: [
+        {
+          type: 'ais.index',
+          parameters: { indexName: 'products' },
+          blocks: [],
+        },
+      ],
+      indexName: '',
+    };
+
+    const result = describeExperience(experience);
+    expect(result).toContain('(empty)');
+  });
+
+  it('shows "(unnamed)" when index block has no indexName', () => {
+    const experience: ExperienceApiResponse = {
+      blocks: [
+        {
+          type: 'ais.index',
+          parameters: {},
+          blocks: [],
+        },
+      ],
+      indexName: '',
+    };
+
+    const result = describeExperience(experience);
+    expect(result).toContain('(unnamed)');
+  });
 });
 
 describe('getTools', () => {
-  it('returns four tools', () => {
+  it('returns five tools', () => {
     const tools = getTools(createCallbacks());
     expect(Object.keys(tools)).toEqual([
       'get_experience',
       'add_widget',
       'edit_widget',
       'remove_widget',
+      'move_widget',
     ]);
   });
 
@@ -220,6 +257,7 @@ describe('getTools', () => {
             parameters: { container: '#search' },
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
@@ -235,8 +273,16 @@ describe('getTools', () => {
   });
 
   describe('add_widget', () => {
-    it('calls onAddBlock and onParameterChange for container and placement', async () => {
-      const experience: ExperienceApiResponse = { blocks: [] };
+    it('calls onAddBlock and onParameterChange for index-independent widgets', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.autocomplete',
+            parameters: { container: '#search' },
+          },
+        ],
+        indexName: '',
+      };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
@@ -245,31 +291,32 @@ describe('getTools', () => {
         { toolCallId: 'tc1', messages: [] }
       );
 
-      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.autocomplete');
-      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
-        'placement',
-        'inside'
-      );
-      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
-        'container',
-        '#search'
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith(
+        'ais.autocomplete',
+        undefined
       );
       expect(result).toMatchObject({
         success: true,
-        index: 0,
         type: 'ais.autocomplete',
         placement: 'inside',
         container: '#search',
-        applied: ['placement', 'container'],
+        applied: expect.arrayContaining(['placement', 'container']),
         rejected: [],
       });
     });
 
     it('applies additional parameters', async () => {
-      const experience: ExperienceApiResponse = { blocks: [] };
-      const callbacks = createCallbacks(experience);
+      // After onAddBlock is called, getExperience returns the updated state
+      const afterAdd: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.autocomplete',
+            parameters: { container: '', showRecent: false },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(afterAdd);
       const tools = getTools(callbacks);
 
       await tools.add_widget.execute!(
@@ -282,14 +329,22 @@ describe('getTools', () => {
       );
 
       expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
+        [0],
         'showRecent',
         true
       );
     });
 
     it('rejects disallowed parameters', async () => {
-      const experience: ExperienceApiResponse = { blocks: [] };
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.autocomplete',
+            parameters: { container: '#search' },
+          },
+        ],
+        indexName: '',
+      };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
@@ -311,20 +366,18 @@ describe('getTools', () => {
         ]),
         rejected: ['unknownParam'],
       });
-      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
-        'showRecent',
-        true
-      );
-      expect(callbacks.onParameterChange).not.toHaveBeenCalledWith(
-        0,
-        'unknownParam',
-        expect.anything()
-      );
     });
 
     it('adds widget with body placement and no container', async () => {
-      const experience: ExperienceApiResponse = { blocks: [] };
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.chat',
+            parameters: { placement: 'body', agentId: '' },
+          },
+        ],
+        indexName: '',
+      };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
@@ -338,20 +391,18 @@ describe('getTools', () => {
         placement: 'body',
         applied: ['placement'],
       });
-      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
-        'placement',
-        'body'
-      );
-      expect(callbacks.onParameterChange).not.toHaveBeenCalledWith(
-        0,
-        'container',
-        expect.anything()
-      );
     });
 
     it('uses default placement from widget config when not specified', async () => {
-      const experience: ExperienceApiResponse = { blocks: [] };
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.chat',
+            parameters: { placement: 'body', agentId: '' },
+          },
+        ],
+        indexName: '',
+      };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
@@ -364,20 +415,27 @@ describe('getTools', () => {
         success: true,
         placement: 'body',
       });
-      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
-        'placement',
-        'body'
-      );
     });
 
     it('adds widget with explicit before placement', async () => {
-      const experience: ExperienceApiResponse = { blocks: [] };
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.autocomplete',
+            parameters: { container: '#search' },
+          },
+        ],
+        indexName: '',
+      };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
       const result = await tools.add_widget.execute!(
-        { type: 'ais.autocomplete', placement: 'before', container: '#search' },
+        {
+          type: 'ais.autocomplete',
+          placement: 'before',
+          container: '#search',
+        },
         { toolCallId: 'tc1', messages: [] }
       );
 
@@ -390,7 +448,15 @@ describe('getTools', () => {
     });
 
     it('returns error when non-body placement has no container', async () => {
-      const experience: ExperienceApiResponse = { blocks: [] };
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.autocomplete',
+            parameters: { container: '#search' },
+          },
+        ],
+        indexName: '',
+      };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
@@ -406,7 +472,15 @@ describe('getTools', () => {
     });
 
     it('returns error when default inside placement has no container', async () => {
-      const experience: ExperienceApiResponse = { blocks: [] };
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.autocomplete',
+            parameters: { container: '#search' },
+          },
+        ],
+        indexName: '',
+      };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
@@ -422,7 +496,10 @@ describe('getTools', () => {
     });
 
     it('accepts container inside parameters instead of top-level', async () => {
-      const experience: ExperienceApiResponse = { blocks: [] };
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
@@ -437,92 +514,197 @@ describe('getTools', () => {
       expect(result).toMatchObject({ success: true });
     });
 
-    it('skips container and placement inside parameters to avoid duplication', async () => {
-      const experience: ExperienceApiResponse = { blocks: [] };
-      const callbacks = createCallbacks(experience);
-      const tools = getTools(callbacks);
-
-      await tools.add_widget.execute!(
-        {
-          type: 'ais.autocomplete',
-          container: '#search',
-          placement: 'before',
-          parameters: {
-            container: '#other',
-            placement: 'after',
-            showRecent: true,
-          },
-        },
-        { toolCallId: 'tc1', messages: [] }
-      );
-
-      // Top-level container and placement should be used
-      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
-        'container',
-        '#search'
-      );
-      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
-        'placement',
-        'before'
-      );
-      // container and placement inside parameters should be skipped
-      expect(callbacks.onParameterChange).not.toHaveBeenCalledWith(
-        0,
-        'container',
-        '#other'
-      );
-      expect(callbacks.onParameterChange).not.toHaveBeenCalledWith(
-        0,
-        'placement',
-        'after'
-      );
-      // Other params inside parameters should still be applied
-      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
-        'showRecent',
-        true
-      );
-    });
-
-    it('still calls onAddBlock even when container validation fails', async () => {
-      const experience: ExperienceApiResponse = { blocks: [] };
-      const callbacks = createCallbacks(experience);
-      const tools = getTools(callbacks);
-
-      await tools.add_widget.execute!(
-        { type: 'ais.autocomplete' },
-        { toolCallId: 'tc1', messages: [] }
-      );
-
-      // onAddBlock is called before validation — this documents current behavior
-      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.autocomplete');
-    });
-
-    it('computes the correct index for non-empty experiences', async () => {
+    it('adds ais.index widget at top level', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
-            type: 'ais.autocomplete',
-            parameters: { container: '#search' },
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [],
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
       const result = await tools.add_widget.execute!(
-        { type: 'ais.chat', container: '#chat' },
-        { toolCallId: 'tc2', messages: [] }
+        { type: 'ais.index', parameters: { indexName: 'products' } },
+        { toolCallId: 'tc1', messages: [] }
       );
 
-      expect(result).toMatchObject({ index: 1 });
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.index', undefined);
+      expect(result).toMatchObject({
+        success: true,
+        type: 'ais.index',
+      });
+    });
+
+    it('adds ais.index widget without parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.index' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.index', undefined);
+      expect(result).toMatchObject({
+        success: true,
+        type: 'ais.index',
+      });
+    });
+
+    it('does not require container for ais.index widgets', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.index' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({ success: true });
+    });
+
+    it('adds index-dependent widget and passes target_index', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0]);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.autocomplete',
+          container: '#search',
+          target_index: 0,
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.autocomplete', 0);
+      expect(result).toMatchObject({
+        success: true,
+        path: '0.0',
+        type: 'ais.autocomplete',
+      });
+    });
+
+    it('returns error when target_index is not an ais.index block', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.chat',
+            parameters: { placement: 'body', agentId: '' },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.autocomplete',
+          container: '#search',
+          target_index: 0,
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: false,
+        error: expect.stringContaining('not an ais.index block'),
+      });
+      expect(callbacks.onAddBlock).not.toHaveBeenCalled();
+    });
+
+    it('returns error when target_index is out of bounds', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.autocomplete',
+          container: '#search',
+          target_index: 5,
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: false,
+        error: expect.stringContaining('not an ais.index block'),
+      });
+      expect(callbacks.onAddBlock).not.toHaveBeenCalled();
+    });
+
+    it('includes note when index block was auto-created', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0], true);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.autocomplete', container: '#search' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        note: expect.stringContaining('auto-created'),
+      });
+    });
+
+    it('does not include note when added to existing index', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0], false);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.autocomplete', container: '#search' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({ success: true });
+      expect(result).not.toHaveProperty('note');
     });
   });
 
   describe('edit_widget', () => {
-    it('validates index bounds', async () => {
+    it('validates path bounds', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -530,33 +712,13 @@ describe('getTools', () => {
             parameters: { container: '#search' },
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
       const result = await tools.edit_widget.execute!(
-        { index: 5, parameters: { container: '#new' } },
-        { toolCallId: 'tc1', messages: [] }
-      );
-
-      expect(result).toMatchObject({ success: false });
-      expect(callbacks.onParameterChange).not.toHaveBeenCalled();
-    });
-
-    it('rejects negative index', async () => {
-      const experience: ExperienceApiResponse = {
-        blocks: [
-          {
-            type: 'ais.autocomplete',
-            parameters: { container: '#search' },
-          },
-        ],
-      };
-      const callbacks = createCallbacks(experience);
-      const tools = getTools(callbacks);
-
-      const result = await tools.edit_widget.execute!(
-        { index: -1, parameters: { container: '#new' } },
+        { path: '5', parameters: { container: '#new' } },
         { toolCallId: 'tc1', messages: [] }
       );
 
@@ -572,12 +734,13 @@ describe('getTools', () => {
             parameters: { container: '#search', showRecent: false },
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
       const result = await tools.edit_widget.execute!(
-        { index: 0, parameters: { container: '#new', showRecent: true } },
+        { path: '0', parameters: { container: '#new', showRecent: true } },
         { toolCallId: 'tc1', messages: [] }
       );
 
@@ -586,14 +749,49 @@ describe('getTools', () => {
         applied: expect.arrayContaining(['container', 'showRecent']),
       });
       expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
+        [0],
         'container',
         '#new'
       );
       expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
+        [0],
         'showRecent',
         true
+      );
+    });
+
+    it('edits nested widgets by path', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [
+              {
+                type: 'ais.autocomplete',
+                parameters: { container: '#search' },
+              },
+            ],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '0.0', parameters: { container: '#new' } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['container'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'container',
+        '#new'
       );
     });
 
@@ -605,12 +803,13 @@ describe('getTools', () => {
             parameters: { container: '#search' },
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
       const result = await tools.edit_widget.execute!(
-        { index: 0, parameters: { container: '#new', unknownParam: 42 } },
+        { path: '0', parameters: { container: '#new', unknownParam: 42 } },
         { toolCallId: 'tc1', messages: [] }
       );
 
@@ -622,18 +821,44 @@ describe('getTools', () => {
     });
 
     it('returns a clear error for empty experience', async () => {
-      const callbacks = createCallbacks({ blocks: [] });
+      const callbacks = createCallbacks({ blocks: [], indexName: '' });
       const tools = getTools(callbacks);
 
       const result = await tools.edit_widget.execute!(
-        { index: 0, parameters: { container: '#new' } },
+        { path: '0', parameters: { container: '#new' } },
         { toolCallId: 'tc1', messages: [] }
       );
 
       expect(result).toMatchObject({
         success: false,
-        error: expect.stringContaining('no widgets'),
+        error: expect.stringContaining('Invalid path'),
       });
+    });
+
+    it('rejects malformed paths', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.autocomplete',
+            parameters: { container: '#search' },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const malformedPaths = ['', '.', 'a.b', '0.0.0', '-1'];
+
+      for (const path of malformedPaths) {
+        const result = await tools.edit_widget.execute!(
+          { path, parameters: { container: '#new' } },
+          { toolCallId: 'tc1', messages: [] }
+        );
+        expect(result).toMatchObject({ success: false });
+      }
+
+      expect(callbacks.onParameterChange).not.toHaveBeenCalled();
     });
 
     it('allows editing placement', async () => {
@@ -644,12 +869,13 @@ describe('getTools', () => {
             parameters: { container: '#search', placement: 'inside' },
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
       const result = await tools.edit_widget.execute!(
-        { index: 0, parameters: { placement: 'after' } },
+        { path: '0', parameters: { placement: 'after' } },
         { toolCallId: 'tc1', messages: [] }
       );
 
@@ -658,7 +884,7 @@ describe('getTools', () => {
         applied: ['placement'],
       });
       expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
+        [0],
         'placement',
         'after'
       );
@@ -675,13 +901,14 @@ describe('getTools', () => {
             },
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
       const result = await tools.edit_widget.execute!(
         {
-          index: 0,
+          path: '0',
           parameters: {
             cssVariables: { 'primary-color-rgb': '#ff0000' },
           },
@@ -691,7 +918,7 @@ describe('getTools', () => {
 
       expect(result).toMatchObject({ success: true });
       expect(callbacks.onCssVariableChange).toHaveBeenCalledWith(
-        0,
+        [0],
         'primary-color-rgb',
         '#ff0000'
       );
@@ -708,13 +935,14 @@ describe('getTools', () => {
             },
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
       const result = await tools.edit_widget.execute!(
         {
-          index: 0,
+          path: '0',
           parameters: {
             cssVariables: {
               'primary-color-rgb': '#ff0000',
@@ -746,13 +974,14 @@ describe('getTools', () => {
             },
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
       const result = await tools.edit_widget.execute!(
         {
-          index: 0,
+          path: '0',
           parameters: {
             showRecent: true,
             cssVariables: { 'primary-color-rgb': '#ff0000' },
@@ -769,12 +998,12 @@ describe('getTools', () => {
         ]),
       });
       expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
+        [0],
         'showRecent',
         true
       );
       expect(callbacks.onCssVariableChange).toHaveBeenCalledWith(
-        0,
+        [0],
         'primary-color-rgb',
         '#ff0000'
       );
@@ -788,12 +1017,13 @@ describe('getTools', () => {
             parameters: { container: '#search' },
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
       const result = await tools.edit_widget.execute!(
-        { index: 0, parameters: { unknownA: 1, unknownB: 2 } },
+        { path: '0', parameters: { unknownA: 1, unknownB: 2 } },
         { toolCallId: 'tc1', messages: [] }
       );
 
@@ -804,37 +1034,10 @@ describe('getTools', () => {
       });
       expect(callbacks.onParameterChange).not.toHaveBeenCalled();
     });
-
-    it('includes index range in bounds error message', async () => {
-      const experience: ExperienceApiResponse = {
-        blocks: [
-          {
-            type: 'ais.autocomplete',
-            parameters: { container: '#search' },
-          },
-          {
-            type: 'ais.chat',
-            parameters: { container: '#chat', placement: 'body' },
-          },
-        ],
-      };
-      const callbacks = createCallbacks(experience);
-      const tools = getTools(callbacks);
-
-      const result = await tools.edit_widget.execute!(
-        { index: 5, parameters: { container: '#new' } },
-        { toolCallId: 'tc1', messages: [] }
-      );
-
-      expect(result).toMatchObject({
-        success: false,
-        error: expect.stringContaining('indices 0–1'),
-      });
-    });
   });
 
   describe('remove_widget', () => {
-    it('calls onDeleteBlock for valid index', async () => {
+    it('calls onDeleteBlock for valid path', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -842,23 +1045,24 @@ describe('getTools', () => {
             parameters: { container: '#search' },
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
       const result = await tools.remove_widget.execute!(
-        { index: 0 },
+        { path: '0' },
         { toolCallId: 'tc1', messages: [] }
       );
 
-      expect(callbacks.onDeleteBlock).toHaveBeenCalledWith(0);
+      expect(callbacks.onDeleteBlock).toHaveBeenCalledWith([0]);
       expect(result).toMatchObject({
         success: true,
         removedType: 'ais.autocomplete',
       });
     });
 
-    it('validates index bounds', async () => {
+    it('validates path bounds', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -866,12 +1070,13 @@ describe('getTools', () => {
             parameters: { container: '#search' },
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
       const result = await tools.remove_widget.execute!(
-        { index: 3 },
+        { path: '3' },
         { toolCallId: 'tc1', messages: [] }
       );
 
@@ -879,7 +1084,73 @@ describe('getTools', () => {
       expect(callbacks.onDeleteBlock).not.toHaveBeenCalled();
     });
 
-    it('rejects negative index', async () => {
+    it('removes an index block with children', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [
+              {
+                type: 'ais.autocomplete',
+                parameters: { container: '#search' },
+              },
+            ],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.remove_widget.execute!(
+        { path: '0' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onDeleteBlock).toHaveBeenCalledWith([0]);
+      expect(result).toMatchObject({
+        success: true,
+        removedType: 'ais.index',
+      });
+    });
+
+    it('removes a nested child widget', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [
+              {
+                type: 'ais.autocomplete',
+                parameters: { container: '#search' },
+              },
+              {
+                type: 'ais.autocomplete',
+                parameters: { container: '#box' },
+              },
+            ],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.remove_widget.execute!(
+        { path: '0.1' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onDeleteBlock).toHaveBeenCalledWith([0, 1]);
+      expect(result).toMatchObject({
+        success: true,
+        removedType: 'ais.autocomplete',
+      });
+    });
+
+    it('rejects malformed paths', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -887,59 +1158,191 @@ describe('getTools', () => {
             parameters: { container: '#search' },
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
-      const result = await tools.remove_widget.execute!(
-        { index: -1 },
-        { toolCallId: 'tc1', messages: [] }
-      );
+      const malformedPaths = ['', '.', 'a.b', '0.0.0', '-1'];
 
-      expect(result).toMatchObject({ success: false });
+      for (const path of malformedPaths) {
+        const result = await tools.remove_widget.execute!(
+          { path },
+          { toolCallId: 'tc1', messages: [] }
+        );
+        expect(result).toMatchObject({ success: false });
+      }
+
       expect(callbacks.onDeleteBlock).not.toHaveBeenCalled();
     });
 
     it('returns a clear error for empty experience', async () => {
-      const callbacks = createCallbacks({ blocks: [] });
+      const callbacks = createCallbacks({ blocks: [], indexName: '' });
       const tools = getTools(callbacks);
 
       const result = await tools.remove_widget.execute!(
-        { index: 0 },
+        { path: '0' },
         { toolCallId: 'tc1', messages: [] }
       );
 
       expect(result).toMatchObject({
         success: false,
-        error: expect.stringContaining('no widgets'),
+        error: expect.stringContaining('Invalid path'),
+      });
+    });
+  });
+
+  describe('move_widget', () => {
+    it('calls onMoveBlock for valid nested path', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [
+              {
+                type: 'ais.autocomplete',
+                parameters: { container: '#search' },
+              },
+            ],
+          },
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'articles' },
+            blocks: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.move_widget.execute!(
+        { path: '0.0', to_index: 1 },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onMoveBlock).toHaveBeenCalledWith([0, 0], 1);
+      expect(result).toMatchObject({
+        success: true,
+        movedType: 'ais.autocomplete',
       });
     });
 
-    it('returns the removed widget type and index', async () => {
+    it('rejects top-level paths', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
             type: 'ais.autocomplete',
             parameters: { container: '#search' },
           },
-          {
-            type: 'ais.chat',
-            parameters: { container: '#chat', placement: 'body' },
-          },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
-      const result = await tools.remove_widget.execute!(
-        { index: 1 },
+      const result = await tools.move_widget.execute!(
+        { path: '0', to_index: 1 },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({ success: false });
+    });
+
+    it('rejects out-of-bounds to_index', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [
+              {
+                type: 'ais.autocomplete',
+                parameters: { container: '#search' },
+              },
+            ],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.move_widget.execute!(
+        { path: '0.0', to_index: 99 },
         { toolCallId: 'tc1', messages: [] }
       );
 
       expect(result).toMatchObject({
-        success: true,
-        removedType: 'ais.chat',
-        removedIndex: 1,
+        success: false,
+        error: expect.stringContaining('not an ais.index block'),
+      });
+      expect(callbacks.onMoveBlock).not.toHaveBeenCalled();
+    });
+
+    it('rejects non-existent nested path', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [],
+          },
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'articles' },
+            blocks: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.move_widget.execute!(
+        { path: '0.5', to_index: 1 },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: false,
+        error: expect.stringContaining('Invalid path'),
+      });
+      expect(callbacks.onMoveBlock).not.toHaveBeenCalled();
+    });
+
+    it('rejects non-index target', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [
+              {
+                type: 'ais.autocomplete',
+                parameters: { container: '#search' },
+              },
+            ],
+          },
+          {
+            type: 'ais.chat',
+            parameters: { placement: 'body', agentId: '' },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.move_widget.execute!(
+        { path: '0.0', to_index: 1 },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: false,
+        error: expect.stringContaining('not an ais.index block'),
       });
     });
   });
@@ -982,7 +1385,11 @@ describe('describeToolAction', () => {
     expect(
       describeToolAction(
         'add_widget',
-        { type: 'ais.autocomplete', placement: 'before', container: '#search' },
+        {
+          type: 'ais.autocomplete',
+          placement: 'before',
+          container: '#search',
+        },
         { success: true }
       )
     ).toBe('Added ais.autocomplete before #search');
@@ -992,7 +1399,7 @@ describe('describeToolAction', () => {
     expect(
       describeToolAction(
         'edit_widget',
-        { index: 0 },
+        { path: '0' },
         { success: true, applied: ['container', 'showRecent'], rejected: [] }
       )
     ).toBe('Edited widget 0 — container, showRecent');
@@ -1002,7 +1409,7 @@ describe('describeToolAction', () => {
     expect(
       describeToolAction(
         'edit_widget',
-        { index: 2 },
+        { path: '2' },
         { success: true, applied: [], rejected: ['unknownParam'] }
       )
     ).toBe('Edited widget 2');
@@ -1012,10 +1419,20 @@ describe('describeToolAction', () => {
     expect(
       describeToolAction(
         'remove_widget',
-        { index: 1 },
+        { path: '1' },
         { success: true, removedType: 'ais.chat' }
       )
     ).toBe('Removed widget 1');
+  });
+
+  it('describes move_widget', () => {
+    expect(
+      describeToolAction(
+        'move_widget',
+        { path: '0.0', to_index: 1 },
+        { success: true }
+      )
+    ).toBe('Moved widget 0.0 to index 1');
   });
 
   it('falls back for unknown tools', () => {

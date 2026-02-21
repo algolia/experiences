@@ -5,7 +5,11 @@ import { Marked } from 'marked';
 import { Fragment } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
-import type { ExperienceApiResponse } from '../types';
+import type {
+  AddBlockResult,
+  BlockPath,
+  ExperienceApiResponse,
+} from '../types';
 import { buildSystemPrompt } from '../ai/system-prompt';
 import { describeToolAction, getTools, type ToolCallbacks } from '../ai/tools';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
@@ -164,10 +168,11 @@ function ModelPicker({
 
 type AiChatProps = {
   experience: ExperienceApiResponse;
-  onAddBlock: (type: string) => void;
-  onParameterChange: (index: number, key: string, value: unknown) => void;
-  onCssVariableChange: (index: number, key: string, value: string) => void;
-  onDeleteBlock: (index: number) => void;
+  onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
+  onParameterChange: (path: BlockPath, key: string, value: unknown) => void;
+  onCssVariableChange: (path: BlockPath, key: string, value: string) => void;
+  onDeleteBlock: (path: BlockPath) => void;
+  onMoveBlock: (fromPath: BlockPath, toParentIndex: number) => void;
 };
 
 export function AiChat({
@@ -176,6 +181,7 @@ export function AiChat({
   onParameterChange,
   onCssVariableChange,
   onDeleteBlock,
+  onMoveBlock,
 }: AiChatProps) {
   const apiKey = window.__OPENAI_API_KEY__;
   const [model, setModel] = useState(() => {
@@ -203,6 +209,8 @@ export function AiChat({
   onCssVariableChangeRef.current = onCssVariableChange;
   const onDeleteBlockRef = useRef(onDeleteBlock);
   onDeleteBlockRef.current = onDeleteBlock;
+  const onMoveBlockRef = useRef(onMoveBlock);
+  onMoveBlockRef.current = onMoveBlock;
 
   const callbacks: ToolCallbacks = useMemo(() => {
     return {
@@ -217,6 +225,9 @@ export function AiChat({
       },
       onDeleteBlock: (...args) => {
         return onDeleteBlockRef.current(...args);
+      },
+      onMoveBlock: (...args) => {
+        return onMoveBlockRef.current(...args);
       },
       getExperience: () => {
         return experienceRef.current;
