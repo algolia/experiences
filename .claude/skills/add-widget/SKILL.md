@@ -58,7 +58,12 @@ The widget likely already exists in `WIDGET_TYPES` with `enabled: false`. Update
 - Add `paramDescriptions` for all bucket 1 parameters and `cssClasses` (one sentence each, shown as info tooltips next to field labels in the toolbar UI and used by the AI assistant, so write them for end users).
 - Keep the existing `icon` as-is.
 
-### 4. Verify
+### 4. Add tests
+
+Follow the "Widget tests" guidelines in `CLAUDE.md`. Update existing tests in `packages/toolbar/__tests__/ai-tools.test.ts` and `packages/toolbar/__tests__/toolbar.test.ts` as described there.
+
+### 5. Verify
 
 - Run `npm run build` and confirm no errors.
 - Run `npx tsc --noEmit -p packages/runtime/tsconfig.json` and confirm no type errors.
+- Run `npm run test --workspace=packages/toolbar` and confirm all tests pass.
