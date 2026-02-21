@@ -4,6 +4,7 @@ import type {
   Widget,
 } from 'instantsearch.js/es/types';
 import type { ChatWidget } from 'instantsearch.js/es/widgets/chat/chat';
+import type { HitsWidget } from 'instantsearch.js/es/widgets/hits/hits';
 
 export type Environment = 'prod' | 'beta';
 
@@ -44,5 +45,9 @@ export type ExperienceWidget = Widget & {
   $$supportedWidgets: {
     'ais.chat': SupportedWidget<Parameters<ChatWidget>[0]>;
     'ais.autocomplete': SupportedWidget;
-  } & Record<'ais.chat' | 'ais.autocomplete' | (string & {}), SupportedWidget>;
+    'ais.hits': SupportedWidget<Parameters<HitsWidget>[0]>;
+  } & Record<
+    'ais.chat' | 'ais.autocomplete' | 'ais.hits' | (string & {}),
+    SupportedWidget
+  >;
 };

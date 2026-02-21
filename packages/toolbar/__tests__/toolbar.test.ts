@@ -218,18 +218,18 @@ describe('toolbar', () => {
         });
 
         // Disabled items are rendered as <div> elements, not <button>
-        // Check that "Hits" is not a button
+        // Check that "Search Box" is not a button
         const buttons = Array.from(
           host.shadowRoot?.querySelectorAll('button') ?? []
         );
-        const recommendationsButton = buttons.find((btn) => {
-          return btn.textContent?.includes('Hits') && btn !== addButton;
+        const disabledButton = buttons.find((btn) => {
+          return btn.textContent?.includes('Search Box') && btn !== addButton;
         });
-        expect(recommendationsButton).toBeUndefined();
+        expect(disabledButton).toBeUndefined();
 
         // Verify the text is still rendered (as a div)
         const popoverText = host.shadowRoot?.innerHTML ?? '';
-        expect(popoverText).toContain('Hits');
+        expect(popoverText).toContain('Search Box');
       });
     });
 
