@@ -15,12 +15,16 @@ import { RESOLVER_URL } from '../src/core/constants';
 
 const server = setupServer();
 
-beforeAll(() => server.listen());
+beforeAll(() => {
+  return server.listen();
+});
 afterEach(() => {
   server.resetHandlers();
   vi.resetModules();
 });
-afterAll(() => server.close());
+afterAll(() => {
+  return server.close();
+});
 
 const BUNDLE_URL =
   'https://github.com/algolia/experiences/releases/download/canary/runtime.js';
@@ -40,9 +44,9 @@ describe('preview loader', () => {
 
   afterEach(() => {
     script.remove();
-    document.head
-      .querySelectorAll('script')
-      .forEach((script) => script.remove());
+    document.head.querySelectorAll('script').forEach((script) => {
+      return script.remove();
+    });
     delete window.AlgoliaExperiences;
     Object.defineProperty(window, 'location', {
       value: originalLocation,
@@ -67,9 +71,9 @@ describe('preview loader', () => {
     });
 
     server.use(
-      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
-        HttpResponse.json({ bundleUrl: BUNDLE_URL })
-      )
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => {
+        return HttpResponse.json({ bundleUrl: BUNDLE_URL });
+      })
     );
 
     const runSpy = vi.fn();
@@ -95,9 +99,9 @@ describe('preview loader', () => {
     });
 
     server.use(
-      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
-        HttpResponse.json({ bundleUrl: BUNDLE_URL })
-      )
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => {
+        return HttpResponse.json({ bundleUrl: BUNDLE_URL });
+      })
     );
 
     const runSpy = vi.fn();
@@ -128,9 +132,9 @@ describe('preview loader', () => {
     });
 
     server.use(
-      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
-        HttpResponse.json({ bundleUrl: BUNDLE_URL })
-      )
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => {
+        return HttpResponse.json({ bundleUrl: BUNDLE_URL });
+      })
     );
 
     const runSpy = vi.fn();

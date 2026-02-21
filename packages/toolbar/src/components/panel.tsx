@@ -153,7 +153,9 @@ export function Panel({
         <TabsList>
           <TabsTrigger
             active={tab === 'manual'}
-            onClick={() => setTab('manual')}
+            onClick={() => {
+              return setTab('manual');
+            }}
           >
             <svg
               class="size-4"
@@ -169,7 +171,12 @@ export function Panel({
             </svg>
             Manual
           </TabsTrigger>
-          <TabsTrigger active={tab === 'ai'} onClick={() => setTab('ai')}>
+          <TabsTrigger
+            active={tab === 'ai'}
+            onClick={() => {
+              return setTab('ai');
+            }}
+          >
             <svg
               class="size-4"
               viewBox="0 0 24 24"
@@ -195,31 +202,37 @@ export function Panel({
         {/* Block list */}
         <div class="flex-1 overflow-y-auto p-4">
           <div class="space-y-3">
-            {experience.blocks.map((block, index) => (
-              <BlockCard
-                key={index}
-                type={block.type}
-                parameters={block.parameters}
-                open={expandedBlock === index}
-                onToggle={() =>
-                  setExpandedBlock(expandedBlock === index ? null : index)
-                }
-                onParameterChange={(key, value) =>
-                  onParameterChange(index, key, value)
-                }
-                onCssVariableChange={(key, value) =>
-                  onCssVariableChange(index, key, value)
-                }
-                onLocate={() =>
-                  onLocate(
-                    block.parameters.container,
-                    block.parameters.placement as string | undefined
-                  )
-                }
-                onDeleteBlock={() => onDeleteBlock(index)}
-                onPickElement={onPickElement}
-              />
-            ))}
+            {experience.blocks.map((block, index) => {
+              return (
+                <BlockCard
+                  key={index}
+                  type={block.type}
+                  parameters={block.parameters}
+                  open={expandedBlock === index}
+                  onToggle={() => {
+                    return setExpandedBlock(
+                      expandedBlock === index ? null : index
+                    );
+                  }}
+                  onParameterChange={(key, value) => {
+                    return onParameterChange(index, key, value);
+                  }}
+                  onCssVariableChange={(key, value) => {
+                    return onCssVariableChange(index, key, value);
+                  }}
+                  onLocate={() => {
+                    return onLocate(
+                      block.parameters.container,
+                      block.parameters.placement as string | undefined
+                    );
+                  }}
+                  onDeleteBlock={() => {
+                    return onDeleteBlock(index);
+                  }}
+                  onPickElement={onPickElement}
+                />
+              );
+            })}
             <AddWidgetPopover onSelect={onAddBlock} />
           </div>
         </div>

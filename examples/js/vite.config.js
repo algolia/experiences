@@ -41,7 +41,7 @@ export default {
   build: {
     rollupOptions: {
       input: Object.fromEntries(
-        pages.map((page) => [page.replace('.html', ''), resolve(__dirname, page)])
+        pages.map((page) => {return [page.replace('.html', ''), resolve(__dirname, page)]})
       ),
     },
   },

@@ -15,10 +15,10 @@ function isRgbTriplet(value: string): boolean {
 
   return (
     parts.length === 3 &&
-    parts.every((s) => {
-      const n = Number(s.trim());
+    parts.every((part) => {
+      const num = Number(part.trim());
 
-      return !isNaN(n) && n >= 0 && n <= 255;
+      return !isNaN(num) && num >= 0 && num <= 255;
     })
   );
 }
@@ -28,11 +28,11 @@ function rgbTripletToHex(triplet: string): string {
     '#' +
     triplet
       .split(',')
-      .map((s) =>
-        Math.max(0, Math.min(255, Number(s.trim())))
+      .map((part) => {
+        return Math.max(0, Math.min(255, Number(part.trim())))
           .toString(16)
-          .padStart(2, '0')
-      )
+          .padStart(2, '0');
+      })
       .join('')
   );
 }
@@ -72,7 +72,9 @@ export function CssVariablesEditor({
               key={key}
               label={key}
               value={value}
-              onInput={(v) => onChange(key, v)}
+              onInput={(color) => {
+                return onChange(key, color);
+              }}
             />
           );
         }
@@ -83,7 +85,9 @@ export function CssVariablesEditor({
               key={key}
               label={key}
               value={rgbTripletToHex(value)}
-              onInput={(v) => onChange(key, hexToRgbTriplet(v))}
+              onInput={(color) => {
+                return onChange(key, hexToRgbTriplet(color));
+              }}
             />
           );
         }
@@ -93,7 +97,9 @@ export function CssVariablesEditor({
             key={key}
             label={key}
             value={value}
-            onInput={(v) => onChange(key, v)}
+            onInput={(text) => {
+              return onChange(key, text);
+            }}
           />
         );
       })}

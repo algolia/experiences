@@ -109,8 +109,8 @@ export function BlockCard({
                     class="text-muted-foreground hover:text-foreground rounded p-0.5 transition-colors outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px]"
                     aria-label={`Locate ${parameters.container}`}
                     title={`Locate ${parameters.container}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onClick={(event) => {
+                      event.stopPropagation();
                       onLocate();
                     }}
                   >
@@ -137,8 +137,8 @@ export function BlockCard({
                   class="text-muted-foreground hover:text-destructive rounded p-0.5 transition-colors outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px]"
                   aria-label="Delete block"
                   title="Delete block"
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={(event) => {
+                    event.stopPropagation();
                     onDeleteBlock();
                   }}
                 >

@@ -16,7 +16,9 @@ export function AddWidgetPopover({ onSelect }: AddWidgetPopoverProps) {
       <button
         type="button"
         aria-label="Add widget"
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          return setOpen(!open);
+        }}
         class="group flex w-full items-center justify-center gap-2 rounded-xl border border-dashed p-4 text-xs font-medium text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
       >
         <svg

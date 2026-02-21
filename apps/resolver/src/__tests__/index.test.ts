@@ -8,11 +8,15 @@ type ResponseBody = {
 };
 
 const mockGetApiKey = vi.fn();
-vi.mock('algoliasearch', () => ({
-  algoliasearch: vi.fn(() => ({
-    getApiKey: mockGetApiKey,
-  })),
-}));
+vi.mock('algoliasearch', () => {
+  return {
+    algoliasearch: vi.fn(() => {
+      return {
+        getApiKey: mockGetApiKey,
+      };
+    }),
+  };
+});
 
 describe('/{experienceId}', () => {
   const CREDENTIALS_HEADERS = {

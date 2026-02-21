@@ -45,7 +45,7 @@ export type TemplateChild =
 const tagNames = new Map<string, string>(
   Object.entries({
     paragraph: 'p',
-    p: 'p',
+    p: 'p', // oxlint-disable-line id-length
     span: 'span',
     h2: 'h2',
     div: 'div',
@@ -108,32 +108,41 @@ export function renderTemplate(
 
     let children: ComponentChildren = null;
     if ('text' in child.parameters) {
-      children = child.parameters.text.map((text) =>
-        renderText(text, hit, components)
-      );
+      children = child.parameters.text.map((text) => {
+        return renderText(text, hit, components);
+      });
     } else if ('children' in child) {
-      children = child.children.map((grandChild) =>
-        renderChild(grandChild, hit, components)
-      );
+      children = child.children.map((grandChild) => {
+        return renderChild(grandChild, hit, components);
+      });
     }
 
     const attributes = Object.fromEntries(
       Object.entries(child.parameters)
-        .filter(
-          (tuple): tuple is [string, TemplateAttribute] => tuple[0] !== 'text'
-        )
-        .map(([key, value]) => [
-          key,
-          value.map((item) => renderAttribute(item, hit)).join(''),
-        ])
+        .filter((tuple): tuple is [string, TemplateAttribute] => {
+          return tuple[0] !== 'text';
+        })
+        .map(([key, value]) => {
+          return [
+            key,
+            value
+              .map((item) => {
+                return renderAttribute(item, hit);
+              })
+              .join(''),
+          ];
+        })
     );
 
     // @ts-expect-error -- dynamic tag name
     return <Tag {...attributes}>{children}</Tag>;
   }
 
-  return (hit, params) =>
-    template.map((child) => renderChild(child, hit, params?.components));
+  return (hit, params) => {
+    return template.map((child) => {
+      return renderChild(child, hit, params?.components);
+    });
+  };
 }
 
 type RenderToolParams = {
@@ -176,20 +185,22 @@ export function renderTool({ name, experience }: RenderToolParams) {
           },
           body: JSON.stringify(input),
         })
-          .then((res) => res.json())
-          .then((data) =>
-            addToolResult({
+          .then((res) => {
+            return res.json();
+          })
+          .then((data) => {
+            return addToolResult({
               output: {
                 success: true,
                 ...data,
               },
-            })
-          )
-          .catch(() =>
-            addToolResult({
+            });
+          })
+          .catch(() => {
+            return addToolResult({
               output: { success: false, error: 'Webhook call failed' },
-            })
-          );
+            });
+          });
       },
     },
   } satisfies { [key: string]: Tool };

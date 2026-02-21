@@ -19,7 +19,9 @@ export function TextField({ label, value, onInput, readOnly }: TextFieldProps) {
       <Input
         id={id}
         value={value}
-        onInput={(e) => onInput((e.target as HTMLInputElement).value)}
+        onInput={(event) => {
+          return onInput((event.target as HTMLInputElement).value);
+        }}
         readOnly={readOnly}
         class={readOnly ? 'bg-muted text-muted-foreground' : ''}
       />

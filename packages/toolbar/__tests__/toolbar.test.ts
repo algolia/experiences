@@ -13,16 +13,22 @@ import {
 
 const server = setupServer();
 
-beforeAll(() => server.listen());
+beforeAll(() => {
+  return server.listen();
+});
 afterEach(() => {
   server.resetHandlers();
   vi.resetModules();
 
   delete window.__ALGOLIA_EXPERIENCES_TOOLBAR_CONFIG__;
   document.body.innerHTML = '';
-  document.head.querySelectorAll('style').forEach((el) => el.remove());
+  document.head.querySelectorAll('style').forEach((el) => {
+    return el.remove();
+  });
 });
-afterAll(() => server.close());
+afterAll(() => {
+  return server.close();
+});
 
 const MOCK_EXPERIENCE = {
   blocks: [
@@ -71,8 +77,11 @@ describe('toolbar', () => {
       };
 
       server.use(
-        http.get('https://experiences.algolia.com/1/experiences/exp-123', () =>
-          HttpResponse.json(MOCK_EXPERIENCE)
+        http.get(
+          'https://experiences.algolia.com/1/experiences/exp-123',
+          () => {
+            return HttpResponse.json(MOCK_EXPERIENCE);
+          }
         )
       );
     });
@@ -81,7 +90,9 @@ describe('toolbar', () => {
       await import('../src/index');
 
       // Wait for async mount
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => {
+        return setTimeout(resolve, 50);
+      });
 
       const host = document.getElementById('algolia-experiences-toolbar');
       expect(host).not.toBeNull();
@@ -90,7 +101,9 @@ describe('toolbar', () => {
 
     it('injects CSS into the shadow root', async () => {
       await import('../src/index');
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => {
+        return setTimeout(resolve, 50);
+      });
 
       const host = document.getElementById('algolia-experiences-toolbar');
       const style = host?.shadowRoot?.querySelector('style');
@@ -99,7 +112,9 @@ describe('toolbar', () => {
 
     it('renders the pill (collapsed state) by default', async () => {
       await import('../src/index');
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => {
+        return setTimeout(resolve, 50);
+      });
 
       const host = document.getElementById('algolia-experiences-toolbar');
       const pill = host?.shadowRoot?.querySelector(
@@ -111,14 +126,18 @@ describe('toolbar', () => {
     describe('add widget', () => {
       async function openToolbar() {
         await import('../src/index');
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
 
         const host = document.getElementById('algolia-experiences-toolbar');
         const pill = host?.shadowRoot?.querySelector<HTMLButtonElement>(
           'button[aria-label="Open Algolia Experiences toolbar"]'
         );
         pill?.click();
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
 
         return host!;
       }
@@ -131,7 +150,9 @@ describe('toolbar', () => {
         );
         expect(addButton).not.toBeNull();
         addButton!.click();
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
 
         const popoverText = host.shadowRoot?.innerHTML ?? '';
         expect(popoverText).toContain('Autocomplete');
@@ -147,7 +168,9 @@ describe('toolbar', () => {
           'button[aria-label="Add widget"]'
         );
         addButton!.click();
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
 
         // The popover renders enabled items as buttons directly inside the
         // popover container (the div with the border/shadow). These buttons
@@ -158,13 +181,16 @@ describe('toolbar', () => {
         const buttons = Array.from(
           host.shadowRoot?.querySelectorAll('button') ?? []
         );
-        const autocompleteOption = buttons.find(
-          (btn) =>
+        const autocompleteOption = buttons.find((btn) => {
+          return (
             btn.textContent?.trim() === 'Autocomplete' && btn !== addButton
-        );
+          );
+        });
         expect(autocompleteOption).not.toBeUndefined();
         autocompleteOption!.click();
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 100);
+        });
 
         // There should be 3 block cards (2 original + 1 new)
         const cards =
@@ -179,16 +205,18 @@ describe('toolbar', () => {
           'button[aria-label="Add widget"]'
         );
         addButton!.click();
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
 
         // Disabled items are rendered as <div> elements, not <button>
         // Check that "Hits" is not a button
         const buttons = Array.from(
           host.shadowRoot?.querySelectorAll('button') ?? []
         );
-        const recommendationsButton = buttons.find(
-          (btn) => btn.textContent?.includes('Hits') && btn !== addButton
-        );
+        const recommendationsButton = buttons.find((btn) => {
+          return btn.textContent?.includes('Hits') && btn !== addButton;
+        });
         expect(recommendationsButton).toBeUndefined();
 
         // Verify the text is still rendered (as a div)
@@ -200,23 +228,29 @@ describe('toolbar', () => {
     describe('locate button', () => {
       beforeEach(() => {
         // jsdom does not implement Web Animations API
-        Element.prototype.animate = vi.fn(() => ({
-          onfinish: null,
-          cancel: vi.fn(),
-          finished: Promise.resolve(),
-        })) as unknown as typeof Element.prototype.animate;
+        Element.prototype.animate = vi.fn(() => {
+          return {
+            onfinish: null,
+            cancel: vi.fn(),
+            finished: Promise.resolve(),
+          };
+        }) as unknown as typeof Element.prototype.animate;
       });
 
       async function openToolbar() {
         await import('../src/index');
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
 
         const host = document.getElementById('algolia-experiences-toolbar');
         const pill = host?.shadowRoot?.querySelector<HTMLButtonElement>(
           'button[aria-label="Open Algolia Experiences toolbar"]'
         );
         pill?.click();
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
 
         return host!;
       }
@@ -235,7 +269,9 @@ describe('toolbar', () => {
         expect(locateButton).not.toBeNull();
         locateButton!.click();
 
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
 
         expect(container.scrollIntoView).toHaveBeenCalledWith({
           behavior: 'instant',
@@ -253,7 +289,9 @@ describe('toolbar', () => {
         locateButton!.click();
 
         // Wait for Preact to re-render after setToast
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 100);
+        });
 
         const allText = host.shadowRoot?.innerHTML ?? '';
         expect(allText).toContain('Container "#chat" not found on page.');

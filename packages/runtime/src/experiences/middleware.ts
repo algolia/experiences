@@ -26,7 +26,12 @@ function resolveContainer(
   if (placement === 'body') {
     const div = document.createElement('div');
     document.body.appendChild(div);
-    return { container: div, cleanup: () => div.remove() };
+    return {
+      container: div,
+      cleanup: () => {
+        return div.remove();
+      },
+    };
   }
 
   if (!selector) {
@@ -158,7 +163,9 @@ export function createExperienceMiddleware(
       },
       started: () => {},
       unsubscribe: () => {
-        cleanups.forEach((cleanup) => cleanup());
+        cleanups.forEach((cleanup) => {
+          return cleanup();
+        });
         cleanups.length = 0;
       },
     };

@@ -45,7 +45,13 @@ export function AiChat({
   const apiKey = window.__OPENAI_API_KEY__;
   const [model, setModel] = useState(() => {
     const stored = localStorage.getItem(MODEL_STORAGE_KEY);
-    if (stored && MODELS.some((m) => m.id === stored)) return stored;
+    if (
+      stored &&
+      MODELS.some((entry) => {
+        return entry.id === stored;
+      })
+    )
+      return stored;
     return DEFAULT_MODEL;
   });
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
@@ -63,16 +69,25 @@ export function AiChat({
   const onDeleteBlockRef = useRef(onDeleteBlock);
   onDeleteBlockRef.current = onDeleteBlock;
 
-  const callbacks: ToolCallbacks = useMemo(
-    () => ({
-      onAddBlock: (...args) => onAddBlockRef.current(...args),
-      onParameterChange: (...args) => onParameterChangeRef.current(...args),
-      onCssVariableChange: (...args) => onCssVariableChangeRef.current(...args),
-      onDeleteBlock: (...args) => onDeleteBlockRef.current(...args),
-      getExperience: () => experienceRef.current,
-    }),
-    []
-  );
+  const callbacks: ToolCallbacks = useMemo(() => {
+    return {
+      onAddBlock: (...args) => {
+        return onAddBlockRef.current(...args);
+      },
+      onParameterChange: (...args) => {
+        return onParameterChangeRef.current(...args);
+      },
+      onCssVariableChange: (...args) => {
+        return onCssVariableChangeRef.current(...args);
+      },
+      onDeleteBlock: (...args) => {
+        return onDeleteBlockRef.current(...args);
+      },
+      getExperience: () => {
+        return experienceRef.current;
+      },
+    };
+  }, []);
 
   const transport = useMemo(() => {
     if (!apiKey) {
@@ -102,15 +117,16 @@ export function AiChat({
       const parsed = JSON.parse(stored);
       if (
         !Array.isArray(parsed) ||
-        !parsed.every(
-          (m: unknown) =>
-            typeof m === 'object' &&
-            m !== null &&
-            'id' in m &&
-            'role' in m &&
-            'parts' in m &&
-            Array.isArray((m as { parts: unknown }).parts)
-        )
+        !parsed.every((msg: unknown) => {
+          return (
+            typeof msg === 'object' &&
+            msg !== null &&
+            'id' in msg &&
+            'role' in msg &&
+            'parts' in msg &&
+            Array.isArray((msg as { parts: unknown }).parts)
+          );
+        })
       ) {
         sessionStorage.removeItem(STORAGE_KEY);
 
@@ -192,15 +208,15 @@ export function AiChat({
               Ask me to add, edit, or remove widgets from your experience.
             </div>
           )}
-          {messages.map((message) =>
-            message.role === 'user' ? (
+          {messages.map((message) => {
+            return message.role === 'user' ? (
               <div key={message.id} class="flex justify-end">
                 <div class="bg-primary text-primary-foreground max-w-[85%] overflow-hidden break-words rounded-lg px-3 py-2 text-sm">
-                  {message.parts.map((part, index) =>
-                    part.type === 'text' ? (
+                  {message.parts.map((part, index) => {
+                    return part.type === 'text' ? (
                       <div key={index}>{part.text}</div>
-                    ) : null
-                  )}
+                    ) : null;
+                  })}
                 </div>
               </div>
             ) : (
@@ -281,8 +297,8 @@ export function AiChat({
                   return null;
                 })}
               </Fragment>
-            )
-          )}
+            );
+          })}
           {isStreaming && (
             <div class="flex justify-start">
               <div class="bg-muted rounded-lg px-3 py-2">
@@ -307,9 +323,9 @@ export function AiChat({
       {/* Input */}
       <div class="border-t p-3">
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const form = e.currentTarget;
+          onSubmit={(event) => {
+            event.preventDefault();
+            const form = event.currentTarget;
             const input = form.elements.namedItem(
               'message'
             ) as HTMLInputElement;
@@ -317,7 +333,9 @@ export function AiChat({
             if (!text || isStreaming) return;
             chat.sendMessage({ text });
             input.value = '';
-            requestAnimationFrame(() => inputRef.current?.focus());
+            requestAnimationFrame(() => {
+              return inputRef.current?.focus();
+            });
           }}
         >
           <input
@@ -334,7 +352,9 @@ export function AiChat({
               <button
                 type="button"
                 class="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                onClick={() => setModelPickerOpen(!modelPickerOpen)}
+                onClick={() => {
+                  return setModelPickerOpen(!modelPickerOpen);
+                }}
                 disabled={isStreaming}
               >
                 <svg
@@ -353,7 +373,9 @@ export function AiChat({
                   <path d="M15 13v2" />
                   <path d="M9 13v2" />
                 </svg>
-                {MODELS.find((m) => m.id === model)?.label ?? model}
+                {MODELS.find((entry) => {
+                  return entry.id === model;
+                })?.label ?? model}
                 <svg
                   class="size-3 shrink-0 opacity-50"
                   viewBox="0 0 24 24"
@@ -370,36 +392,40 @@ export function AiChat({
                 <>
                   <div
                     class="fixed inset-0 z-40"
-                    onClick={() => setModelPickerOpen(false)}
+                    onClick={() => {
+                      return setModelPickerOpen(false);
+                    }}
                   />
                   <div class="absolute bottom-full left-0 z-50 mb-1 min-w-[160px] rounded-lg border bg-background p-1 shadow-md">
-                    {MODELS.map((m) => (
-                      <button
-                        key={m.id}
-                        type="button"
-                        class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted"
-                        onClick={() => {
-                          setModel(m.id);
-                          localStorage.setItem(MODEL_STORAGE_KEY, m.id);
-                          setModelPickerOpen(false);
-                        }}
-                      >
-                        <span class="flex-1">{m.label}</span>
-                        {m.id === model && (
-                          <svg
-                            class="size-3 shrink-0"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          >
-                            <path d="M20 6 9 17l-5-5" />
-                          </svg>
-                        )}
-                      </button>
-                    ))}
+                    {MODELS.map((entry) => {
+                      return (
+                        <button
+                          key={entry.id}
+                          type="button"
+                          class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted"
+                          onClick={() => {
+                            setModel(entry.id);
+                            localStorage.setItem(MODEL_STORAGE_KEY, entry.id);
+                            setModelPickerOpen(false);
+                          }}
+                        >
+                          <span class="flex-1">{entry.label}</span>
+                          {entry.id === model && (
+                            <svg
+                              class="size-3 shrink-0"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </>
               )}

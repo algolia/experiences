@@ -26,7 +26,9 @@ export function BlockEditor({
   const paramLabels = widgetType?.paramLabels ?? {};
 
   const paramKeys = widgetType?.fieldOrder
-    ? widgetType.fieldOrder.filter((key) => key in parameters)
+    ? widgetType.fieldOrder.filter((key) => {
+        return key in parameters;
+      })
     : Object.keys(parameters);
 
   return (
@@ -60,8 +62,12 @@ export function BlockEditor({
                   : ''
               }
               placement={parameters.placement as Placement | undefined}
-              onContainerChange={(v) => onParameterChange('container', v)}
-              onPlacementChange={(v) => onParameterChange('placement', v)}
+              onContainerChange={(selector) => {
+                return onParameterChange('container', selector);
+              }}
+              onPlacementChange={(placement) => {
+                return onParameterChange('placement', placement);
+              }}
               onPickElement={onPickElement}
             />
           );
@@ -76,7 +82,9 @@ export function BlockEditor({
               key={key}
               label={paramLabels[key] ?? key}
               value={typeof value === 'string' ? value : JSON.stringify(value)}
-              onInput={(v) => onParameterChange(key, v)}
+              onInput={(text) => {
+                return onParameterChange(key, text);
+              }}
             />
           );
         }
@@ -88,7 +96,9 @@ export function BlockEditor({
                 key={key}
                 label={override.label}
                 checked={Boolean(value)}
-                onToggle={(v) => onParameterChange(key, v)}
+                onToggle={(checked) => {
+                  return onParameterChange(key, checked);
+                }}
               />
             );
           case 'object': {
@@ -104,13 +114,15 @@ export function BlockEditor({
                 value={objectValue}
                 defaultValue={override.defaultValue}
                 fields={override.fields}
-                onToggle={(v) => onParameterChange(key, v)}
-                onFieldChange={(subKey, subValue) =>
-                  onParameterChange(key, {
+                onToggle={(toggled) => {
+                  return onParameterChange(key, toggled);
+                }}
+                onFieldChange={(subKey, subValue) => {
+                  return onParameterChange(key, {
                     ...objectValue,
                     [subKey]: subValue,
-                  })
-                }
+                  });
+                }}
               />
             );
           }

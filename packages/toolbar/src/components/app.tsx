@@ -29,9 +29,9 @@ export function App({ config, initialExperience }: AppProps) {
   const [isDirty, setIsDirty] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [toast, setToast] = useState<string | null>(null);
-  const [adminApiKey, setAdminApiKey] = useState<string | null>(() =>
-    sessionStorage.getItem(`experiences.${config.experienceId}.key`)
-  );
+  const [adminApiKey, setAdminApiKey] = useState<string | null>(() => {
+    return sessionStorage.getItem(`experiences.${config.experienceId}.key`);
+  });
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const picker = useElementPicker();
 
@@ -57,26 +57,28 @@ export function App({ config, initialExperience }: AppProps) {
 
       const allVars: Record<string, string> = {};
 
-      experience.blocks.forEach((block, i) => {
+      experience.blocks.forEach((block, blockIdx) => {
         const vars = block.parameters.cssVariables ?? {};
 
-        Object.entries(vars).forEach(([k, v]) => {
-          if (i === blockIndex && k === key) {
-            allVars[`--ais-${k}`] = value;
+        Object.entries(vars).forEach(([varName, varValue]) => {
+          if (blockIdx === blockIndex && varName === key) {
+            allVars[`--ais-${varName}`] = value;
           } else {
-            allVars[`--ais-${k}`] = v;
+            allVars[`--ais-${varName}`] = varValue;
           }
         });
       });
 
       style.textContent = `:root { ${Object.entries(allVars)
-        .map(([k, v]) => `${k}: ${v}`)
+        .map(([prop, val]) => {
+          return `${prop}: ${val}`;
+        })
         .join('; ')} }`;
     },
     [experience]
   );
 
-  const handlePillClick = () => {
+  const onPillClick = () => {
     if (adminApiKey) {
       setIsExpanded(true);
     } else {
@@ -89,14 +91,14 @@ export function App({ config, initialExperience }: AppProps) {
       setExperience((prev) => {
         const updated = {
           ...prev,
-          blocks: prev.blocks.map((block, i) =>
-            i === index
+          blocks: prev.blocks.map((block, blockIdx) => {
+            return blockIdx === index
               ? {
                   ...block,
                   parameters: { ...block.parameters, [key]: value },
                 }
-              : block
-          ),
+              : block;
+          }),
         };
 
         scheduleRun(updated);
@@ -112,23 +114,25 @@ export function App({ config, initialExperience }: AppProps) {
     (index: number, key: string, value: string) => {
       updateCssVariablesOnPage(index, key, value);
 
-      setExperience((prev) => ({
-        ...prev,
-        blocks: prev.blocks.map((block, i) =>
-          i === index
-            ? {
-                ...block,
-                parameters: {
-                  ...block.parameters,
-                  cssVariables: {
-                    ...(block.parameters.cssVariables ?? {}),
-                    [key]: value,
+      setExperience((prev) => {
+        return {
+          ...prev,
+          blocks: prev.blocks.map((block, blockIdx) => {
+            return blockIdx === index
+              ? {
+                  ...block,
+                  parameters: {
+                    ...block.parameters,
+                    cssVariables: {
+                      ...block.parameters.cssVariables,
+                      [key]: value,
+                    },
                   },
-                },
-              }
-            : block
-        ),
-      }));
+                }
+              : block;
+          }),
+        };
+      });
 
       setIsDirty(true);
     },
@@ -173,7 +177,9 @@ export function App({ config, initialExperience }: AppProps) {
         overlay.style.cssText = `position:fixed;top:${target.top}px;left:${target.left}px;width:${target.width}px;height:${target.height}px;border:2px solid #003dff;background:rgba(0,61,255,0.08);border-radius:4px;pointer-events:none;z-index:2147483646`;
         document.body.appendChild(overlay);
 
-        const removeOverlay = () => overlay.remove();
+        const removeOverlay = () => {
+          return overlay.remove();
+        };
         const animation = overlay.animate(
           [
             { opacity: 1, offset: 0 },
@@ -194,7 +200,9 @@ export function App({ config, initialExperience }: AppProps) {
       setExperience((value) => {
         const updated = {
           ...value,
-          blocks: value.blocks.filter((_, i) => i !== index),
+          blocks: value.blocks.filter((_, i) => {
+            return i !== index;
+          }),
         };
 
         scheduleRun(updated);
@@ -247,7 +255,9 @@ export function App({ config, initialExperience }: AppProps) {
 
       setIsDirty(false);
       setSaveState('saved');
-      setTimeout(() => setSaveState('idle'), 2000);
+      setTimeout(() => {
+        return setSaveState('idle');
+      }, 2000);
     } catch (err) {
       setSaveState('idle');
       setToast(err instanceof Error ? err.message : 'Failed to save.');
@@ -259,9 +269,13 @@ export function App({ config, initialExperience }: AppProps) {
       return;
     }
 
-    const timer = setTimeout(() => setToast(null), 4000);
+    const timer = setTimeout(() => {
+      return setToast(null);
+    }, 4000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      return clearTimeout(timer);
+    };
   }, [toast]);
 
   useEffect(() => {
@@ -288,7 +302,9 @@ export function App({ config, initialExperience }: AppProps) {
         dirty={isDirty}
         saveState={saveState}
         open={isExpanded}
-        onClose={() => setIsExpanded(false)}
+        onClose={() => {
+          return setIsExpanded(false);
+        }}
         onSave={onSave}
         onParameterChange={onParameterChange}
         onCssVariableChange={onCssVariableChange}
@@ -297,11 +313,7 @@ export function App({ config, initialExperience }: AppProps) {
         onAddBlock={onAddBlock}
         onPickElement={picker.startPicking}
       />
-      <Pill
-        visible={!isExpanded}
-        locked={!adminApiKey}
-        onClick={handlePillClick}
-      />
+      <Pill visible={!isExpanded} locked={!adminApiKey} onClick={onPillClick} />
 
       {toast && (
         <div

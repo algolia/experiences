@@ -46,9 +46,9 @@ function buildPart(element: Element): string {
 
   const parent = element.parentElement;
   if (parent) {
-    const siblings = Array.from(parent.children).filter(
-      (child) => child.tagName === element.tagName
-    );
+    const siblings = Array.from(parent.children).filter((child) => {
+      return child.tagName === element.tagName;
+    });
     if (siblings.length > 1) {
       const index = siblings.indexOf(element) + 1;
       return `${tag}:nth-of-type(${index})`;
@@ -63,9 +63,9 @@ function buildNthPart(element: Element): string {
   const parent = element.parentElement;
 
   if (parent) {
-    const siblings = Array.from(parent.children).filter(
-      (child) => child.tagName === element.tagName
-    );
+    const siblings = Array.from(parent.children).filter((child) => {
+      return child.tagName === element.tagName;
+    });
     if (siblings.length > 1) {
       const index = siblings.indexOf(element) + 1;
       return `${tag}:nth-of-type(${index})`;
@@ -81,9 +81,9 @@ function buildClassSelector(element: Element): string | null {
   }
 
   const tag = element.tagName.toLowerCase();
-  const className = Array.from(element.classList).find(
-    (cls) => cls.length > 1 && !/^[\d_]/.test(cls)
-  );
+  const className = Array.from(element.classList).find((cls) => {
+    return cls.length > 1 && !/^[\d_]/.test(cls);
+  });
 
   if (!className) {
     return null;

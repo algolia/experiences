@@ -51,11 +51,13 @@ export function PlacementField({
             }}
             class={`border-input h-9 w-full appearance-none rounded-md border bg-transparent py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] ${isBody ? 'px-3 pr-8' : 'pl-2 pr-7'}`}
           >
-            {PLACEMENT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
+            {PLACEMENT_OPTIONS.map((option) => {
+              return (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              );
+            })}
           </select>
           <svg
             class="text-muted-foreground pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2"
@@ -73,14 +75,18 @@ export function PlacementField({
               id={containerId}
               value={container}
               placeholder='e.g. "#search"'
-              onInput={(e) =>
-                onContainerChange((e.target as HTMLInputElement).value)
-              }
+              onInput={(event) => {
+                return onContainerChange(
+                  (event.target as HTMLInputElement).value
+                );
+              }}
             />
             <button
               type="button"
               title="Pick an element"
-              onClick={() => onPickElement(onContainerChange)}
+              onClick={() => {
+                return onPickElement(onContainerChange);
+              }}
               class="border-input text-muted-foreground hover:text-foreground hover:bg-muted flex h-9 w-9 shrink-0 items-center justify-center rounded-md border transition-colors outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
             >
               <svg

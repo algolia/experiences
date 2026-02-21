@@ -17,7 +17,9 @@ function createCallbacks(
     onParameterChange: vi.fn(),
     onCssVariableChange: vi.fn(),
     onDeleteBlock: vi.fn(),
-    getExperience: vi.fn(() => experience),
+    getExperience: vi.fn(() => {
+      return experience;
+    }),
   };
 }
 

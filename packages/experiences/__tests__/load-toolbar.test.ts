@@ -4,7 +4,9 @@ import { loadToolbar } from '../src/entries/preview';
 describe('loadToolbar', () => {
   afterEach(() => {
     delete window.__ALGOLIA_EXPERIENCES_TOOLBAR_CONFIG__;
-    document.head.querySelectorAll('script').forEach((s) => s.remove());
+    document.head.querySelectorAll('script').forEach((script) => {
+      return script.remove();
+    });
   });
 
   it('sets the toolbar config on window', () => {

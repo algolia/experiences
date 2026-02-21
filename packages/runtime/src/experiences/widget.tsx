@@ -64,12 +64,17 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
                   apiKey,
                   env,
                   experienceId,
-                }).then((toolExperience) =>
-                  renderTool({ name: toolName, experience: toolExperience })
-                );
+                }).then((toolExperience) => {
+                  return renderTool({
+                    name: toolName,
+                    experience: toolExperience,
+                  });
+                });
               })
             )
-          ).reduce((acc, tool) => ({ ...acc, ...tool }), {});
+          ).reduce((acc, tool) => {
+            return { ...acc, ...tool };
+          }, {});
 
           return Promise.resolve({
             ...createAgentConfig(instantSearchInstance, env, agentId as string),

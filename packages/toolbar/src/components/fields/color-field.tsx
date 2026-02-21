@@ -20,12 +20,16 @@ export function ColorField({ label, value, onInput }: ColorFieldProps) {
           id={id}
           type="color"
           value={value}
-          onInput={(e) => onInput((e.target as HTMLInputElement).value)}
+          onInput={(event) => {
+            return onInput((event.target as HTMLInputElement).value);
+          }}
           class="size-8 shrink-0 cursor-pointer rounded border border-input p-0.5"
         />
         <Input
           value={value}
-          onInput={(e) => onInput((e.target as HTMLInputElement).value)}
+          onInput={(event) => {
+            return onInput((event.target as HTMLInputElement).value);
+          }}
           class="font-mono text-xs"
         />
       </div>

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "rules": {
+    // Require braces around arrow function bodies
+    "arrow-body-style": ["error", "always"],
+    // Minimum 2-character identifiers; allow common exceptions
+    "id-length": [
+      "error",
+      {
+        "min": 2,
+        "exceptions": ["_", "i", "j", "k"]
+      }
+    ],
+    // Enforce on* prefix for event handler props and functions
+    "react/jsx-handler-names": [
+      "error",
+      {
+        "eventHandlerPrefix": "on",
+        "eventHandlerPropPrefix": "on"
+      }
+    ]
+  }
+}

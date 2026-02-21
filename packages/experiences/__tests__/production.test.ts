@@ -15,12 +15,16 @@ import { RESOLVER_URL } from '../src/core/constants';
 
 const server = setupServer();
 
-beforeAll(() => server.listen());
+beforeAll(() => {
+  return server.listen();
+});
 afterEach(() => {
   server.resetHandlers();
   vi.resetModules();
 });
-afterAll(() => server.close());
+afterAll(() => {
+  return server.close();
+});
 
 const BUNDLE_URL =
   'https://github.com/algolia/experiences/releases/download/canary/runtime.js';
@@ -39,12 +43,12 @@ describe('production loader', () => {
 
   afterEach(() => {
     script.remove();
-    document.head
-      .querySelectorAll('script')
-      .forEach((script) => script.remove());
-    document.head
-      .querySelectorAll('link[rel="stylesheet"]')
-      .forEach((link) => link.remove());
+    document.head.querySelectorAll('script').forEach((script) => {
+      return script.remove();
+    });
+    document.head.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
+      return link.remove();
+    });
     delete window.AlgoliaExperiences;
   });
 
@@ -53,9 +57,9 @@ describe('production loader', () => {
       '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     server.use(
-      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
-        HttpResponse.json({ bundleUrl: BUNDLE_URL })
-      )
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => {
+        return HttpResponse.json({ bundleUrl: BUNDLE_URL });
+      })
     );
 
     await (
@@ -72,9 +76,9 @@ describe('production loader', () => {
       '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     server.use(
-      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
-        HttpResponse.json({ bundleUrl: BUNDLE_URL })
-      )
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => {
+        return HttpResponse.json({ bundleUrl: BUNDLE_URL });
+      })
     );
 
     await (
@@ -168,11 +172,12 @@ describe('production loader', () => {
       '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     server.use(
-      http.get(
-        `${RESOLVER_URL}/YOUR_EXPERIENCE_ID`,
-        () =>
-          new HttpResponse(null, { status: 500, statusText: 'Server Error' })
-      )
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => {
+        return new HttpResponse(null, {
+          status: 500,
+          statusText: 'Server Error',
+        });
+      })
     );
 
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -193,9 +198,9 @@ describe('production loader', () => {
       '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     server.use(
-      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
-        HttpResponse.json({ bundleUrl: BUNDLE_URL })
-      )
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => {
+        return HttpResponse.json({ bundleUrl: BUNDLE_URL });
+      })
     );
 
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -221,7 +226,9 @@ describe('production loader', () => {
       '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     server.use(
-      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => HttpResponse.error())
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => {
+        return HttpResponse.error();
+      })
     );
 
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -244,13 +251,11 @@ describe('production loader', () => {
       '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     server.use(
-      http.get(
-        `${RESOLVER_URL}/YOUR_EXPERIENCE_ID`,
-        () =>
-          new HttpResponse('not json', {
-            headers: { 'Content-Type': 'text/html' },
-          })
-      )
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => {
+        return new HttpResponse('not json', {
+          headers: { 'Content-Type': 'text/html' },
+        });
+      })
     );
 
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -271,9 +276,9 @@ describe('production loader', () => {
       '../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
 
     server.use(
-      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
-        HttpResponse.json({ bundleUrl: BUNDLE_URL })
-      )
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => {
+        return HttpResponse.json({ bundleUrl: BUNDLE_URL });
+      })
     );
 
     const runSpy = vi.fn();
@@ -297,9 +302,9 @@ describe('production loader', () => {
     script.src = `../src/entries/production.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID&algolia_experiences_config=${encodedConfig}`;
 
     server.use(
-      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () =>
-        HttpResponse.json({ bundleUrl: BUNDLE_URL })
-      )
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => {
+        return HttpResponse.json({ bundleUrl: BUNDLE_URL });
+      })
     );
 
     const runSpy = vi.fn();

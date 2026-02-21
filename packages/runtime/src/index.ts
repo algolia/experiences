@@ -47,8 +47,12 @@ export async function run(options?: RunOptions | ExperienceApiResponse) {
     (await getExperience({ appId, apiKey, env, experienceId }));
 
   const indexName = experienceConfig.blocks
-    .map((block) => block.parameters.indexName)
-    .find((name): name is string => typeof name === 'string');
+    .map((block) => {
+      return block.parameters.indexName;
+    })
+    .find((name): name is string => {
+      return typeof name === 'string';
+    });
 
   if (search) {
     search.dispose();

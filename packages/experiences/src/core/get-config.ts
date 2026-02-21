@@ -23,8 +23,12 @@ export function getConfig(): LoaderConfiguration {
   };
 
   const missingParams = Object.entries(config)
-    .filter(([, value]) => !value)
-    .map(([key]) => key);
+    .filter(([, value]) => {
+      return !value;
+    })
+    .map(([key]) => {
+      return key;
+    });
 
   if (missingParams.length > 0) {
     throw new Error(

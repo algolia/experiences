@@ -6,9 +6,15 @@ import { fetchExperience, saveExperience } from '../src/api';
 
 const server = setupServer();
 
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+beforeAll(() => {
+  return server.listen();
+});
+afterEach(() => {
+  return server.resetHandlers();
+});
+afterAll(() => {
+  return server.close();
+});
 
 describe('fetchExperience', () => {
   it('fetches experience config from the API', async () => {
@@ -22,9 +28,9 @@ describe('fetchExperience', () => {
     };
 
     server.use(
-      http.get('https://experiences.algolia.com/1/experiences/exp-123', () =>
-        HttpResponse.json(mockResponse)
-      )
+      http.get('https://experiences.algolia.com/1/experiences/exp-123', () => {
+        return HttpResponse.json(mockResponse);
+      })
     );
 
     const result = await fetchExperience({
@@ -86,10 +92,9 @@ describe('fetchExperience', () => {
 
   it('throws when the API responds with an error', async () => {
     server.use(
-      http.get(
-        'https://experiences.algolia.com/1/experiences/exp-123',
-        () => new HttpResponse(null, { status: 404, statusText: 'Not Found' })
-      )
+      http.get('https://experiences.algolia.com/1/experiences/exp-123', () => {
+        return new HttpResponse(null, { status: 404, statusText: 'Not Found' });
+      })
     );
 
     await expect(
@@ -194,10 +199,9 @@ describe('saveExperience', () => {
 
   it('throws when the API responds with an error', async () => {
     server.use(
-      http.post(
-        'https://experiences.algolia.com/1/experiences',
-        () => new HttpResponse(null, { status: 403, statusText: 'Forbidden' })
-      )
+      http.post('https://experiences.algolia.com/1/experiences', () => {
+        return new HttpResponse(null, { status: 403, statusText: 'Forbidden' });
+      })
     );
 
     await expect(

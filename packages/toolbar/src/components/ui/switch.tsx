@@ -25,7 +25,9 @@ function Switch({
         checked ? 'bg-primary' : 'bg-input',
         className
       )}
-      onClick={() => onCheckedChange(!checked)}
+      onClick={() => {
+        return onCheckedChange(!checked);
+      }}
       {...props}
     >
       <span

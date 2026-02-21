@@ -86,20 +86,22 @@ export function HomePage() {
               price: '$275.00',
             },
             { name: 'Denim Jacket', image: 'denim-jacket', price: '$165.00' },
-          ].map((product) => (
-            <Link to="/product" className="product-card" key={product.name}>
-              <div className="product-card-image">
-                <img
-                  src={`/images/products/${product.image}.jpg`}
-                  alt={product.name}
-                />
-              </div>
-              <div className="product-card-info">
-                <div className="product-card-name">{product.name}</div>
-                <div className="product-card-price">{product.price}</div>
-              </div>
-            </Link>
-          ))}
+          ].map((product) => {
+            return (
+              <Link to="/product" className="product-card" key={product.name}>
+                <div className="product-card-image">
+                  <img
+                    src={`/images/products/${product.image}.jpg`}
+                    alt={product.name}
+                  />
+                </div>
+                <div className="product-card-info">
+                  <div className="product-card-name">{product.name}</div>
+                  <div className="product-card-price">{product.price}</div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
@@ -114,17 +116,19 @@ export function HomePage() {
             { label: 'Men', image: 'men', alt: "Men's fashion" },
             { label: 'Accessories', image: 'accessories', alt: 'Accessories' },
             { label: 'Sale', image: 'sale', alt: 'Sale items' },
-          ].map((category) => (
-            <Link to="/search" className="category-card" key={category.label}>
-              <img
-                src={`/images/categories/${category.image}.jpg`}
-                alt={category.alt}
-              />
-              <div className="category-card-overlay">
-                <span className="category-card-label">{category.label}</span>
-              </div>
-            </Link>
-          ))}
+          ].map((category) => {
+            return (
+              <Link to="/search" className="category-card" key={category.label}>
+                <img
+                  src={`/images/categories/${category.image}.jpg`}
+                  alt={category.alt}
+                />
+                <div className="category-card-overlay">
+                  <span className="category-card-label">{category.label}</span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
     </>

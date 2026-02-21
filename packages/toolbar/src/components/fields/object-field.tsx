@@ -34,15 +34,17 @@ export function ObjectField({
         <Switch
           id={id}
           checked={enabled}
-          onCheckedChange={(checked) =>
-            onToggle(checked ? { ...defaultValue, ...value } : false)
-          }
+          onCheckedChange={(checked) => {
+            return onToggle(checked ? { ...defaultValue, ...value } : false);
+          }}
         />
       </div>
       <CollapsibleContent open={enabled}>
         <CollapsibleTrigger
           class="mt-2 w-full justify-between py-1"
-          onClick={() => setOpen(!open)}
+          onClick={() => {
+            return setOpen(!open);
+          }}
           aria-expanded={open}
         >
           <span class="text-muted-foreground text-xs">Configuration</span>
@@ -66,7 +68,9 @@ export function ObjectField({
                   key={field.key}
                   label={field.label}
                   value={typeof raw === 'string' ? raw : String(raw ?? '')}
-                  onInput={(v) => onFieldChange(field.key, v)}
+                  onInput={(text) => {
+                    return onFieldChange(field.key, text);
+                  }}
                 />
               );
             })}
