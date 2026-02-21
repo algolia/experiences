@@ -3,7 +3,10 @@ import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { saveExperience } from '../api';
 import { useElementPicker } from '../hooks/use-element-picker';
 import type {
+  AddBlockResult,
+  BlockPath,
   Environment,
+  ExperienceApiBlock,
   ExperienceApiResponse,
   SaveState,
   ToolbarConfig,
@@ -22,15 +25,58 @@ const DASHBOARD_BASE: Record<Environment, string> = {
   prod: 'https://dashboard.algolia.com',
 };
 
+function findLastIndex<T>(arr: T[], predicate: (item: T) => boolean): number {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (predicate(arr[i]!)) return i;
+  }
+  return -1;
+}
+
+function updateBlockAtPath(
+  blocks: ExperienceApiBlock[],
+  path: BlockPath,
+  updater: (block: ExperienceApiBlock) => ExperienceApiBlock
+): ExperienceApiBlock[] {
+  if (path.length === 1) {
+    return blocks.map((b, i) => (i === path[0] ? updater(b) : b));
+  }
+  const [parentIdx, childIdx] = path;
+  return blocks.map((b, i) =>
+    i === parentIdx
+      ? {
+          ...b,
+          blocks: (b.blocks ?? []).map((child, j) =>
+            j === childIdx ? updater(child) : child
+          ),
+        }
+      : b
+  );
+}
+
+function deleteBlockAtPath(
+  blocks: ExperienceApiBlock[],
+  path: BlockPath
+): ExperienceApiBlock[] {
+  if (path.length === 1) {
+    return blocks.filter((_, i) => i !== path[0]);
+  }
+  const [parentIdx, childIdx] = path;
+  return blocks.map((b, i) =>
+    i === parentIdx
+      ? { ...b, blocks: (b.blocks ?? []).filter((_, j) => j !== childIdx) }
+      : b
+  );
+}
+
 export function App({ config, initialExperience }: AppProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [experience, setExperience] = useState(initialExperience);
   const [isDirty, setIsDirty] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [toast, setToast] = useState<string | null>(null);
-  const [adminApiKey, setAdminApiKey] = useState<string | null>(() => {
-    return sessionStorage.getItem(`experiences.${config.experienceId}.key`);
-  });
+  const [adminApiKey, setAdminApiKey] = useState<string | null>(() =>
+    sessionStorage.getItem(`experiences.${config.experienceId}.key`)
+  );
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const picker = useElementPicker();
 
@@ -43,12 +89,7 @@ export function App({ config, initialExperience }: AppProps) {
   }, []);
 
   const updateCssVariablesOnPage = useCallback(
-    (
-      blocks: ExperienceApiResponse['blocks'],
-      blockIndex: number,
-      key: string,
-      value: string
-    ) => {
+    (path: BlockPath, key: string, value: string) => {
       const existingStyle = document.querySelector(
         'style[data-algolia-experiences-toolbar]'
       );
@@ -59,24 +100,44 @@ export function App({ config, initialExperience }: AppProps) {
         document.head.appendChild(style);
       }
 
-      const declarations: string[] = [];
+      const allVars: Record<string, string> = {};
 
-      for (let blockIdx = 0; blockIdx < blocks.length; blockIdx++) {
-        const vars = blocks[blockIdx]!.parameters.cssVariables ?? {};
+      const collectVars = (
+        blocks: ExperienceApiBlock[],
+        parentIdx?: number
+      ) => {
+        blocks.forEach((block, i) => {
+          const currentPath: BlockPath =
+            parentIdx !== undefined ? [parentIdx, i] : [i];
+          const vars = block.parameters.cssVariables ?? {};
+          const isTarget =
+            currentPath.length === path.length &&
+            currentPath.every((v, idx) => v === path[idx]);
 
-        for (const [varName, varValue] of Object.entries(vars)) {
-          const resolved =
-            blockIdx === blockIndex && varName === key ? value : varValue;
-          declarations.push(`--ais-${varName}: ${resolved}`);
-        }
-      }
+          Object.entries(vars).forEach(([k, v]) => {
+            if (isTarget && k === key) {
+              allVars[`--ais-${k}`] = value;
+            } else {
+              allVars[`--ais-${k}`] = v;
+            }
+          });
 
-      style.textContent = `:root { ${declarations.join('; ')} }`;
+          if (block.blocks) {
+            collectVars(block.blocks, i);
+          }
+        });
+      };
+
+      collectVars(experience.blocks);
+
+      style.textContent = `:root { ${Object.entries(allVars)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join('; ')} }`;
     },
     []
   );
 
-  const onPillClick = () => {
+  const handlePillClick = () => {
     if (adminApiKey) {
       setIsExpanded(true);
     } else {
@@ -85,18 +146,14 @@ export function App({ config, initialExperience }: AppProps) {
   };
 
   const onParameterChange = useCallback(
-    (index: number, key: string, value: unknown) => {
+    (path: BlockPath, key: string, value: unknown) => {
       setExperience((prev) => {
         const updated = {
           ...prev,
-          blocks: prev.blocks.map((block, blockIdx) => {
-            return blockIdx === index
-              ? {
-                  ...block,
-                  parameters: { ...block.parameters, [key]: value },
-                }
-              : block;
-          }),
+          blocks: updateBlockAtPath(prev.blocks, path, (block) => ({
+            ...block,
+            parameters: { ...block.parameters, [key]: value },
+          })),
         };
 
         scheduleRun(updated);
@@ -109,28 +166,22 @@ export function App({ config, initialExperience }: AppProps) {
   );
 
   const onCssVariableChange = useCallback(
-    (index: number, key: string, value: string) => {
-      setExperience((prev) => {
-        updateCssVariablesOnPage(prev.blocks, index, key, value);
+    (path: BlockPath, key: string, value: string) => {
+      updateCssVariablesOnPage(path, key, value);
 
-        return {
-          ...prev,
-          blocks: prev.blocks.map((block, blockIdx) => {
-            return blockIdx === index
-              ? {
-                  ...block,
-                  parameters: {
-                    ...block.parameters,
-                    cssVariables: {
-                      ...block.parameters.cssVariables,
-                      [key]: value,
-                    },
-                  },
-                }
-              : block;
-          }),
-        };
-      });
+      setExperience((prev) => ({
+        ...prev,
+        blocks: updateBlockAtPath(prev.blocks, path, (block) => ({
+          ...block,
+          parameters: {
+            ...block.parameters,
+            cssVariables: {
+              ...(block.parameters.cssVariables ?? {}),
+              [key]: value,
+            },
+          },
+        })),
+      }));
 
       setIsDirty(true);
     },
@@ -175,9 +226,7 @@ export function App({ config, initialExperience }: AppProps) {
         overlay.style.cssText = `position:fixed;top:${target.top}px;left:${target.left}px;width:${target.width}px;height:${target.height}px;border:2px solid #003dff;background:rgba(0,61,255,0.08);border-radius:4px;pointer-events:none;z-index:2147483646`;
         document.body.appendChild(overlay);
 
-        const removeOverlay = () => {
-          return overlay.remove();
-        };
+        const removeOverlay = () => overlay.remove();
         const animation = overlay.animate(
           [
             { opacity: 1, offset: 0 },
@@ -194,13 +243,11 @@ export function App({ config, initialExperience }: AppProps) {
   );
 
   const onDeleteBlock = useCallback(
-    (index: number) => {
+    (path: BlockPath) => {
       setExperience((value) => {
         const updated = {
           ...value,
-          blocks: value.blocks.filter((_, i) => {
-            return i !== index;
-          }),
+          blocks: deleteBlockAtPath(value.blocks, path),
         };
 
         scheduleRun(updated);
@@ -213,28 +260,117 @@ export function App({ config, initialExperience }: AppProps) {
   );
 
   const onAddBlock = useCallback(
-    (type: string) => {
-      setExperience((value) => {
-        const updated = {
-          ...value,
-          blocks: [
-            ...value.blocks,
-            {
-              type,
-              parameters: {
-                ...(WIDGET_TYPES[type]?.defaultParameters ?? {
-                  container: '',
-                }),
-              },
-            },
-          ],
+    (type: string, targetParentIndex?: number): AddBlockResult => {
+      const config = WIDGET_TYPES[type];
+      const isIndexIndependent = config?.indexIndependent ?? false;
+
+      // Compute path and indexCreated from the current state synchronously,
+      // so the return value is always correct even in async contexts where
+      // the setExperience updater may be batched.
+      let result: AddBlockResult;
+
+      setExperience((prev) => {
+        const newBlock: ExperienceApiBlock = {
+          type,
+          parameters: {
+            ...(config?.defaultParameters ?? { container: '' }),
+          },
         };
+
+        let updated: ExperienceApiResponse;
+
+        if (isIndexIndependent || type === 'ais.index') {
+          result = { path: [prev.blocks.length], indexCreated: false };
+          updated = { ...prev, blocks: [...prev.blocks, newBlock] };
+        } else if (targetParentIndex !== undefined) {
+          const childIdx = prev.blocks[targetParentIndex]?.blocks?.length ?? 0;
+          result = {
+            path: [targetParentIndex, childIdx],
+            indexCreated: false,
+          };
+          updated = {
+            ...prev,
+            blocks: prev.blocks.map((block, i) =>
+              i === targetParentIndex
+                ? { ...block, blocks: [...(block.blocks ?? []), newBlock] }
+                : block
+            ),
+          };
+        } else {
+          const lastIndexIdx = findLastIndex(
+            prev.blocks,
+            (b) => b.type === 'ais.index'
+          );
+
+          if (lastIndexIdx === -1) {
+            result = {
+              path: [prev.blocks.length, 0],
+              indexCreated: true,
+            };
+            updated = {
+              ...prev,
+              blocks: [
+                ...prev.blocks,
+                {
+                  type: 'ais.index',
+                  parameters: { indexName: '', indexId: '' },
+                  blocks: [newBlock],
+                },
+              ],
+            };
+          } else {
+            const childIdx = prev.blocks[lastIndexIdx]?.blocks?.length ?? 0;
+            result = {
+              path: [lastIndexIdx, childIdx],
+              indexCreated: false,
+            };
+            updated = {
+              ...prev,
+              blocks: prev.blocks.map((block, i) =>
+                i === lastIndexIdx
+                  ? { ...block, blocks: [...(block.blocks ?? []), newBlock] }
+                  : block
+              ),
+            };
+          }
+        }
 
         scheduleRun(updated);
 
         return updated;
       });
 
+      setIsDirty(true);
+
+      return result!;
+    },
+    [scheduleRun]
+  );
+
+  const onMoveBlock = useCallback(
+    (fromPath: BlockPath, toParentIndex: number) => {
+      setExperience((prev) => {
+        if (fromPath.length !== 2) return prev;
+        const [srcParent, srcChild] = fromPath;
+        if (srcParent === toParentIndex) return prev;
+
+        const block = prev.blocks[srcParent]?.blocks?.[srcChild];
+        if (!block) return prev;
+
+        const withRemoved = deleteBlockAtPath(prev.blocks, fromPath);
+        const updated = {
+          ...prev,
+          blocks: withRemoved.map((b, i) =>
+            i === toParentIndex
+              ? { ...b, blocks: [...(b.blocks ?? []), block] }
+              : b
+          ),
+        };
+
+        scheduleRun(updated);
+
+        return updated;
+      });
       setIsDirty(true);
     },
     [scheduleRun]
@@ -253,9 +389,7 @@ export function App({ config, initialExperience }: AppProps) {
 
       setIsDirty(false);
       setSaveState('saved');
-      setTimeout(() => {
-        return setSaveState('idle');
-      }, 2000);
+      setTimeout(() => setSaveState('idle'), 2000);
     } catch (err) {
       setSaveState('idle');
       setToast(err instanceof Error ? err.message : 'Failed to save.');
@@ -267,13 +401,9 @@ export function App({ config, initialExperience }: AppProps) {
       return;
     }
 
-    const timer = setTimeout(() => {
-      return setToast(null);
-    }, 4000);
+    const timer = setTimeout(() => setToast(null), 4000);
 
-    return () => {
-      return clearTimeout(timer);
-    };
+    return () => clearTimeout(timer);
   }, [toast]);
 
   useEffect(() => {
@@ -300,18 +430,21 @@ export function App({ config, initialExperience }: AppProps) {
         dirty={isDirty}
         saveState={saveState}
         open={isExpanded}
-        onClose={() => {
-          return setIsExpanded(false);
-        }}
+        onClose={() => setIsExpanded(false)}
         onSave={onSave}
         onParameterChange={onParameterChange}
         onCssVariableChange={onCssVariableChange}
         onLocate={onLocate}
         onDeleteBlock={onDeleteBlock}
         onAddBlock={onAddBlock}
+        onMoveBlock={onMoveBlock}
         onPickElement={picker.startPicking}
       />
-      <Pill visible={!isExpanded} locked={!adminApiKey} onClick={onPillClick} />
+      <Pill
+        visible={!isExpanded}
+        locked={!adminApiKey}
+        onClick={handlePillClick}
+      />
 
       {toast && (
         <div

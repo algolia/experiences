@@ -1,4 +1,7 @@
-import type { ExperienceApiBlockParameters } from '../types';
+import type {
+  ExperienceApiBlock,
+  ExperienceApiBlockParameters,
+} from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 import { BlockEditor } from './block-editor';
 import { Badge } from './ui/badge';
@@ -20,6 +23,9 @@ type BlockCardProps = {
   onLocate: () => void;
   onDeleteBlock: () => void;
   onPickElement: (callback: (selector: string) => void) => void;
+  indexBlocks?: Array<{ index: number; block: ExperienceApiBlock }>;
+  parentIndex?: number;
+  onMoveToIndex?: (toParentIndex: number) => void;
 };
 
 const PLACEMENT_LABELS: Record<string, string> = {
@@ -61,6 +67,9 @@ export function BlockCard({
   onLocate,
   onDeleteBlock,
   onPickElement,
+  indexBlocks,
+  parentIndex,
+  onMoveToIndex,
 }: BlockCardProps) {
   const widgetType = WIDGET_TYPES[type];
   const label = widgetType?.label ?? type;
@@ -173,6 +182,35 @@ export function BlockCard({
         </CollapsibleTrigger>
         <CollapsibleContent open={open}>
           <CardContent class="border-t px-4 py-3">
+            {indexBlocks &&
+              indexBlocks.length > 1 &&
+              onMoveToIndex &&
+              parentIndex !== undefined && (
+                <div class="mb-3">
+                  <label class="block text-xs font-medium text-foreground">
+                    Index
+                    <select
+                      class="mt-1 block w-full rounded-md border bg-transparent px-2 py-1.5 text-sm font-normal outline-none focus:ring-2 focus:ring-ring/50"
+                      value={parentIndex}
+                      onChange={(e) => {
+                        const target = Number(
+                          (e.target as HTMLSelectElement).value
+                        );
+                        if (target !== parentIndex) {
+                          onMoveToIndex(target);
+                        }
+                      }}
+                    >
+                      {indexBlocks.map(({ index, block }) => (
+                        <option key={index} value={index}>
+                          {(block.parameters.indexName as string) ||
+                            `Index ${index}`}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              )}
             <BlockEditor
               type={type}
               parameters={parameters}

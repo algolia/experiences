@@ -1,8 +1,14 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
-import type { ExperienceApiResponse, SaveState } from '../types';
+import { useMemo, useEffect, useRef, useState } from 'preact/hooks';
+import type {
+  AddBlockResult,
+  BlockPath,
+  ExperienceApiResponse,
+  SaveState,
+} from '../types';
 import { AddWidgetPopover } from './add-widget-popover';
 import { AiChat } from './ai-chat';
 import { BlockCard } from './block-card';
+import { IndexBlockGroup } from './index-block-group';
 import { Button } from './ui/button';
 import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 
@@ -13,11 +19,12 @@ type PanelProps = {
   open: boolean;
   onClose: () => void;
   onSave: () => void;
-  onParameterChange: (index: number, key: string, value: unknown) => void;
-  onCssVariableChange: (index: number, key: string, value: string) => void;
+  onParameterChange: (path: BlockPath, key: string, value: unknown) => void;
+  onCssVariableChange: (path: BlockPath, key: string, value: string) => void;
   onLocate: (container: string, placement: string | undefined) => void;
-  onDeleteBlock: (index: number) => void;
-  onAddBlock: (type: string) => void;
+  onDeleteBlock: (path: BlockPath) => void;
+  onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
+  onMoveBlock: (fromPath: BlockPath, toParentIndex: number) => void;
   onPickElement: (callback: (selector: string) => void) => void;
 };
 
@@ -35,23 +42,83 @@ export function Panel({
   onLocate,
   onDeleteBlock,
   onAddBlock,
+  onMoveBlock,
   onPickElement,
 }: PanelProps) {
   const [tab, setTab] = useState<Tab>('manual');
   const [aiMounted, setAiMounted] = useState(false);
-  const [expandedBlock, setExpandedBlock] = useState<number | null>(null);
-  const prevBlockCount = useRef(experience.blocks.length);
+  const [expandedBlock, setExpandedBlock] = useState<string | null>(null);
+  const prevBlocksRef = useRef(experience.blocks);
 
-  if (experience.blocks.length > prevBlockCount.current) {
-    setExpandedBlock(experience.blocks.length - 1);
-  }
-  prevBlockCount.current = experience.blocks.length;
+  const widgetCount = experience.blocks.reduce(
+    (count, block) =>
+      block.type === 'ais.index'
+        ? count + (block.blocks?.length ?? 0)
+        : count + 1,
+    0
+  );
+
+  const indexBlocks = useMemo(
+    () =>
+      experience.blocks
+        .map((block, index) => ({ index, block }))
+        .filter(({ block }) => block.type === 'ais.index'),
+    [experience.blocks]
+  );
+
+  useEffect(() => {
+    const prev = prevBlocksRef.current;
+    const curr = experience.blocks;
+    prevBlocksRef.current = curr;
+
+    if (curr.length > prev.length) {
+      const lastIdx = curr.length - 1;
+      const lastBlock = curr[lastIdx]!;
+
+      if (
+        lastBlock.type === 'ais.index' &&
+        (lastBlock.blocks?.length ?? 0) > 0
+      ) {
+        setExpandedBlock(`${lastIdx}.${lastBlock.blocks!.length - 1}`);
+      } else {
+        setExpandedBlock(String(lastIdx));
+      }
+    } else {
+      for (let i = 0; i < curr.length; i++) {
+        const currBlock = curr[i]!;
+        const prevBlock = prev[i];
+        if (
+          currBlock.type === 'ais.index' &&
+          prevBlock?.type === 'ais.index' &&
+          (currBlock.blocks?.length ?? 0) > (prevBlock.blocks?.length ?? 0)
+        ) {
+          const childIdx = currBlock.blocks!.length - 1;
+          setExpandedBlock(`${i}.${childIdx}`);
+          break;
+        }
+      }
+    }
+  }, [experience.blocks]);
 
   useEffect(() => {
     if (tab === 'ai') {
       setAiMounted(true);
     }
   }, [tab]);
+
+  const handleToggleExpand = (key: string) => {
+    const isChild = key.indexOf('.') !== -1;
+
+    if (expandedBlock === key) {
+      // Closing a child widget should keep the parent index group open
+      setExpandedBlock(isChild ? key.slice(0, key.indexOf('.')) : null);
+    } else if (!isChild && expandedBlock?.startsWith(`${key}.`)) {
+      // Clicking parent heading while a child is expanded — collapse everything
+      setExpandedBlock(null);
+    } else {
+      setExpandedBlock(key);
+    }
+  };
 
   return (
     <div
@@ -76,8 +143,8 @@ export function Panel({
           <div>
             <h2 class="text-sm font-semibold">Algolia Experiences</h2>
             <p class="text-muted-foreground text-xs">
-              {experience.blocks.length} widget
-              {experience.blocks.length !== 1 ? 's' : ''} configured
+              {widgetCount} widget
+              {widgetCount !== 1 ? 's' : ''} configured
             </p>
           </div>
         </div>
@@ -149,9 +216,7 @@ export function Panel({
         <TabsList>
           <TabsTrigger
             active={tab === 'manual'}
-            onClick={() => {
-              return setTab('manual');
-            }}
+            onClick={() => setTab('manual')}
           >
             <svg
               class="size-4"
@@ -167,12 +232,7 @@ export function Panel({
             </svg>
             Manual
           </TabsTrigger>
-          <TabsTrigger
-            active={tab === 'ai'}
-            onClick={() => {
-              return setTab('ai');
-            }}
-          >
+          <TabsTrigger active={tab === 'ai'} onClick={() => setTab('ai')}>
             <svg
               class="size-4"
               viewBox="0 0 24 24"
@@ -199,32 +259,46 @@ export function Panel({
         <div class="flex-1 overflow-y-auto p-4">
           <div class="space-y-3">
             {experience.blocks.map((block, index) => {
+              if (block.type === 'ais.index') {
+                return (
+                  <IndexBlockGroup
+                    key={index}
+                    block={block}
+                    parentIndex={index}
+                    expandedBlock={expandedBlock}
+                    indexBlocks={indexBlocks}
+                    onToggleExpand={handleToggleExpand}
+                    onParameterChange={onParameterChange}
+                    onCssVariableChange={onCssVariableChange}
+                    onLocate={onLocate}
+                    onDeleteBlock={onDeleteBlock}
+                    onAddBlock={onAddBlock}
+                    onMoveBlock={onMoveBlock}
+                    onPickElement={onPickElement}
+                  />
+                );
+              }
+
               return (
                 <BlockCard
                   key={index}
                   type={block.type}
                   parameters={block.parameters}
-                  open={expandedBlock === index}
-                  onToggle={() => {
-                    return setExpandedBlock(
-                      expandedBlock === index ? null : index
-                    );
-                  }}
-                  onParameterChange={(key, value) => {
-                    return onParameterChange(index, key, value);
-                  }}
-                  onCssVariableChange={(key, value) => {
-                    return onCssVariableChange(index, key, value);
-                  }}
-                  onLocate={() => {
-                    return onLocate(
-                      block.parameters.container,
+                  open={expandedBlock === String(index)}
+                  onToggle={() => handleToggleExpand(String(index))}
+                  onParameterChange={(key, value) =>
+                    onParameterChange([index], key, value)
+                  }
+                  onCssVariableChange={(key, value) =>
+                    onCssVariableChange([index], key, value)
+                  }
+                  onLocate={() =>
+                    onLocate(
+                      block.parameters.container ?? '',
                       block.parameters.placement as string | undefined
-                    );
-                  }}
-                  onDeleteBlock={() => {
-                    return onDeleteBlock(index);
-                  }}
+                    )
+                  }
+                  onDeleteBlock={() => onDeleteBlock([index])}
                   onPickElement={onPickElement}
                 />
               );
@@ -247,6 +321,7 @@ export function Panel({
             onParameterChange={onParameterChange}
             onCssVariableChange={onCssVariableChange}
             onDeleteBlock={onDeleteBlock}
+            onMoveBlock={onMoveBlock}
           />
         </div>
       )}
