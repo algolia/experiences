@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { loadToolbar } from '../src/entries/preview';
+import { loadToolbar } from '../src/load-toolbar';
 
 describe('loadToolbar', () => {
   afterEach(() => {
