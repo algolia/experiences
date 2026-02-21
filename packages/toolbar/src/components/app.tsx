@@ -99,7 +99,12 @@ export function App({ config, initialExperience }: AppProps) {
   }, []);
 
   const updateCssVariablesOnPage = useCallback(
-    (path: BlockPath, key: string, value: string) => {
+    (
+      blocks: ExperienceApiBlock[],
+      path: BlockPath,
+      key: string,
+      value: string
+    ) => {
       const existingStyle = document.querySelector(
         'style[data-algolia-experiences-toolbar]'
       );
@@ -112,11 +117,8 @@ export function App({ config, initialExperience }: AppProps) {
 
       const allVars: Record<string, string> = {};
 
-      const collectVars = (
-        blocks: ExperienceApiBlock[],
-        parentIdx?: number
-      ) => {
-        blocks.forEach((block, i) => {
+      const collectVars = (items: ExperienceApiBlock[], parentIdx?: number) => {
+        items.forEach((block, i) => {
           const currentPath: BlockPath =
             parentIdx !== undefined ? [parentIdx, i] : [i];
           const vars = block.parameters.cssVariables ?? {};
@@ -140,7 +142,7 @@ export function App({ config, initialExperience }: AppProps) {
         });
       };
 
-      collectVars(experience.blocks);
+      collectVars(blocks);
 
       style.textContent = `:root { ${Object.entries(allVars)
         .map(([prop, val]) => {
@@ -183,9 +185,9 @@ export function App({ config, initialExperience }: AppProps) {
 
   const onCssVariableChange = useCallback(
     (path: BlockPath, key: string, value: string) => {
-      updateCssVariablesOnPage(path, key, value);
-
       setExperience((prev) => {
+        updateCssVariablesOnPage(prev.blocks, path, key, value);
+
         return {
           ...prev,
           blocks: updateBlockAtPath(prev.blocks, path, (block) => {

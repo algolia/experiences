@@ -44,7 +44,7 @@ export function IndexBlockGroup({
   const isOpen =
     expandedBlock?.startsWith(`${groupKey}.`) || expandedBlock === groupKey;
   const indexName = (block.parameters.indexName as string) || '';
-  const Icon = WIDGET_TYPES['ais.index']?.icon;
+  const icon = WIDGET_TYPES['ais.index']?.icon;
 
   return (
     <div class="rounded-xl border-2 border-primary/20 bg-primary/[0.02]">
@@ -58,9 +58,9 @@ export function IndexBlockGroup({
         >
           <div class="group flex w-full items-center justify-between px-4 py-3">
             <div class="flex min-w-0 items-center gap-2.5">
-              {Icon && (
+              {icon && (
                 <div class="bg-primary/15 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <Icon />
+                  {icon}
                 </div>
               )}
               <span class="shrink-0 text-sm font-semibold">Index</span>
