@@ -4,6 +4,7 @@ import {
 } from 'instantsearch.js/es/lib/utils';
 import { getExperience } from './get-experience';
 import chat from 'instantsearch.js/es/widgets/chat/chat';
+import hits from 'instantsearch.js/es/widgets/hits/hits';
 import { EXPERIMENTAL_autocomplete } from 'instantsearch.js/es/widgets/autocomplete/autocomplete';
 
 import { renderTemplate, renderTool } from './renderer';
@@ -125,6 +126,14 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
                 }
               : {}),
           });
+        },
+      },
+      // TODO: Add support for `templates` (item, empty, banner)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.hits': {
+        widget: hits,
+        async transformParams(parameters) {
+          return parameters;
         },
       },
     },

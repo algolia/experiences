@@ -30,6 +30,8 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Autocomplete');
     expect(result).toContain('ais.chat');
     expect(result).toContain('Chat');
+    expect(result).toContain('ais.hits');
+    expect(result).toContain('Hits');
   });
 
   it('includes widget descriptions and parameter descriptions', () => {
@@ -38,6 +40,9 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Parameters:');
     expect(result).toContain('showRecent');
     expect(result).toContain('recent searches');
+    expect(result).toContain('search results');
+    expect(result).toContain('escapeHTML');
+    expect(result).toContain('XSS');
   });
 
   it('includes default placement per widget type', () => {
@@ -46,11 +51,11 @@ describe('describeWidgetTypes', () => {
       'ais.autocomplete ("Autocomplete", default placement: inside)'
     );
     expect(result).toContain('ais.chat ("Chat", default placement: body)');
+    expect(result).toContain('ais.hits ("Hits", default placement: inside)');
   });
 
   it('excludes disabled widget types', () => {
     const result = describeWidgetTypes();
-    expect(result).not.toContain('ais.hits');
     expect(result).not.toContain('ais.searchBox');
     expect(result).not.toContain('ais.pagination');
   });
@@ -433,6 +438,38 @@ describe('getTools', () => {
       expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.autocomplete');
     });
 
+    it('adds hits with default inside placement and container', async () => {
+      const experience: ExperienceApiResponse = { blocks: [] };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.hits', container: '#hits' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.hits');
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        0,
+        'placement',
+        'inside'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        0,
+        'container',
+        '#hits'
+      );
+      expect(result).toMatchObject({
+        success: true,
+        index: 0,
+        type: 'ais.hits',
+        placement: 'inside',
+        container: '#hits',
+        applied: ['placement', 'container'],
+        rejected: [],
+      });
+    });
+
     it('computes the correct index for non-empty experiences', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
@@ -736,6 +773,69 @@ describe('getTools', () => {
         rejected: ['unknownA', 'unknownB'],
       });
       expect(callbacks.onParameterChange).not.toHaveBeenCalled();
+    });
+
+    it('applies a boolean parameter with switch override on hits', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.hits',
+            parameters: { container: '#hits', escapeHTML: true },
+          },
+        ],
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { index: 0, parameters: { escapeHTML: false } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['escapeHTML'],
+        rejected: [],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        0,
+        'escapeHTML',
+        false
+      );
+    });
+
+    it('applies an object parameter (cssClasses) on hits', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.hits',
+            parameters: { container: '#hits', cssClasses: false },
+          },
+        ],
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          index: 0,
+          parameters: {
+            cssClasses: { root: 'my-root', item: 'my-item' },
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['cssClasses'],
+        rejected: [],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        0,
+        'cssClasses',
+        { root: 'my-root', item: 'my-item' }
+      );
     });
 
     it('includes index range in bounds error message', async () => {

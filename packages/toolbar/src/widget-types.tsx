@@ -284,10 +284,50 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   },
   'ais.hits': {
     label: 'Hits',
-    enabled: false,
+    description:
+      'Displays the list of search results (hits) matching the current query.',
+    enabled: true,
     icon: GRID_ICON,
     defaultParameters: {
       container: '',
+      escapeHTML: true,
+      cssClasses: false,
+    },
+    fieldOrder: ['container', 'placement', 'escapeHTML', 'cssClasses'],
+    fieldOverrides: {
+      escapeHTML: { type: 'switch', label: 'Escape HTML' },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS Classes',
+        defaultValue: {
+          root: '',
+          emptyRoot: '',
+          list: '',
+          item: '',
+          bannerRoot: '',
+          bannerImage: '',
+          bannerLink: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'emptyRoot', label: 'Empty Root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'bannerRoot', label: 'Banner Root' },
+          { key: 'bannerImage', label: 'Banner Image' },
+          { key: 'bannerLink', label: 'Banner Link' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#hits").',
+      escapeHTML:
+        'When enabled, escapes HTML tags in hit string values to prevent XSS.',
+      cssClasses: 'Custom CSS classes to apply to specific parts of the widget.',
     },
   },
   'ais.searchBox': {
