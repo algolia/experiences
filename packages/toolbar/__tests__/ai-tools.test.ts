@@ -37,9 +37,12 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Chat');
     expect(result).toContain('ais.index');
     expect(result).toContain('Index');
-    expect(result).toContain('ais.searchBox');
     expect(result).toContain('ais.configure');
     expect(result).toContain('Configure');
+    expect(result).toContain('ais.hits');
+    expect(result).toContain('Hits');
+    expect(result).toContain('ais.searchBox');
+    expect(result).toContain('Search Box');
   });
 
   it('includes widget descriptions and parameter descriptions', () => {
@@ -48,6 +51,9 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Parameters:');
     expect(result).toContain('showRecent');
     expect(result).toContain('recent searches');
+    expect(result).toContain('search results');
+    expect(result).toContain('escapeHTML');
+    expect(result).toContain('XSS');
   });
 
   it('includes default placement per widget type', () => {
@@ -56,6 +62,7 @@ describe('describeWidgetTypes', () => {
       'ais.autocomplete ("Autocomplete", default placement: inside)'
     );
     expect(result).toContain('ais.chat ("Chat", default placement: body)');
+    expect(result).toContain('ais.hits ("Hits", default placement: inside)');
   });
 
   it('marks index-independent widgets', () => {
@@ -65,7 +72,6 @@ describe('describeWidgetTypes', () => {
 
   it('excludes disabled widget types', () => {
     const result = describeWidgetTypes();
-    expect(result).not.toContain('ais.hits');
     expect(result).not.toContain('ais.pagination');
   });
 });
@@ -564,6 +570,38 @@ describe('getTools', () => {
         'showRecent',
         true
       );
+    });
+
+    it('adds hits with default inside placement and container', async () => {
+      const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.hits', container: '#hits' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.hits', undefined);
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'placement',
+        'inside'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'container',
+        '#hits'
+      );
+      expect(result).toMatchObject({
+        success: true,
+        path: '0',
+        type: 'ais.hits',
+        placement: 'inside',
+        container: '#hits',
+        applied: ['placement', 'container'],
+        rejected: [],
+      });
     });
 
     it('adds searchBox with default inside placement and container', async () => {
@@ -1162,6 +1200,71 @@ describe('getTools', () => {
         rejected: ['unknownA', 'unknownB'],
       });
       expect(callbacks.onParameterChange).not.toHaveBeenCalled();
+    });
+
+    it('applies a boolean parameter with switch override on hits', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.hits',
+            parameters: { container: '#hits', escapeHTML: true },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '0', parameters: { escapeHTML: false } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['escapeHTML'],
+        rejected: [],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'escapeHTML',
+        false
+      );
+    });
+
+    it('applies an object parameter (cssClasses) on hits', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.hits',
+            parameters: { container: '#hits', cssClasses: false },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            cssClasses: { root: 'my-root', item: 'my-item' },
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['cssClasses'],
+        rejected: [],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'cssClasses',
+        { root: 'my-root', item: 'my-item' }
+      );
     });
 
     it('includes invalid path in bounds error message', async () => {
