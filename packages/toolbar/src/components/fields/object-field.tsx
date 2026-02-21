@@ -1,5 +1,6 @@
 import { useId, useState } from 'preact/hooks';
 
+import { InfoTooltip } from './info-tooltip';
 import { CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
 import { Label } from '../ui/label';
 import { Switch } from '../ui/switch';
@@ -7,6 +8,7 @@ import { TextField } from './text-field';
 
 type ObjectFieldProps = {
   label: string;
+  description?: string;
   enabled: boolean;
   value: Record<string, unknown>;
   defaultValue: Record<string, unknown>;
@@ -17,6 +19,7 @@ type ObjectFieldProps = {
 
 export function ObjectField({
   label,
+  description,
   enabled,
   value,
   defaultValue,
@@ -30,7 +33,10 @@ export function ObjectField({
   return (
     <div>
       <div class="flex items-center justify-between">
-        <Label htmlFor={id}>{label}</Label>
+        <Label htmlFor={id}>
+          {label}
+          {description && <InfoTooltip content={description} class="mt-0.5" />}
+        </Label>
         <Switch
           id={id}
           checked={enabled}

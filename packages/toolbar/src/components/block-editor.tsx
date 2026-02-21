@@ -24,6 +24,7 @@ export function BlockEditor({
   const widgetType = WIDGET_TYPES[type];
   const overrides = widgetType?.fieldOverrides ?? {};
   const paramLabels = widgetType?.paramLabels ?? {};
+  const paramDescriptions = widgetType?.paramDescriptions ?? {};
 
   const paramKeys = widgetType?.fieldOrder
     ? widgetType.fieldOrder.filter((key) => {
@@ -81,6 +82,7 @@ export function BlockEditor({
             <TextField
               key={key}
               label={paramLabels[key] ?? key}
+              description={paramDescriptions[key]}
               value={typeof value === 'string' ? value : JSON.stringify(value)}
               onInput={(text) => {
                 return onParameterChange(key, text);
@@ -95,6 +97,7 @@ export function BlockEditor({
               <SwitchField
                 key={key}
                 label={override.label}
+                description={paramDescriptions[key]}
                 checked={Boolean(value)}
                 onToggle={(checked) => {
                   return onParameterChange(key, checked);
@@ -110,6 +113,7 @@ export function BlockEditor({
               <ObjectField
                 key={key}
                 label={override.label}
+                description={paramDescriptions[key]}
                 enabled={enabled}
                 value={objectValue}
                 defaultValue={override.defaultValue}
