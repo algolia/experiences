@@ -534,7 +534,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       container: '',
       escapeHTML: true,
       showPrevious: false,
-      cssClasses: false,
+      cssClasses: undefined,
     },
     fieldOrder: [
       'container',
@@ -549,6 +549,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       cssClasses: {
         type: 'object',
         label: 'CSS classes',
+        disabledValue: undefined,
         defaultValue: {
           root: '',
           emptyRoot: '',
