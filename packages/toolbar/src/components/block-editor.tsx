@@ -121,7 +121,16 @@ export function BlockEditor({
                 description={paramDescriptions[key]}
                 checked={Boolean(value)}
                 onToggle={(checked) => {
-                  return onParameterChange(key, checked);
+                  onParameterChange(key, checked);
+                  if (!checked) {
+                    for (const [depKey, depOverride] of Object.entries(
+                      overrides
+                    )) {
+                      if (depOverride.visibleIf?.key === key) {
+                        onParameterChange(depKey, undefined);
+                      }
+                    }
+                  }
                 }}
               />
             );

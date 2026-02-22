@@ -111,6 +111,21 @@ describe('ais.refinementList fields', () => {
 
       expect(onParameterChange).toHaveBeenCalledWith('showMore', true);
     });
+
+    it('clears showMoreLimit when toggled off', () => {
+      const { container, onParameterChange } = render({
+        showMore: true,
+        showMoreLimit: 50,
+      });
+      const switchEl = getSwitch(container, 'Show more');
+      switchEl.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith('showMore', false);
+      expect(onParameterChange).toHaveBeenCalledWith(
+        'showMoreLimit',
+        undefined
+      );
+    });
   });
 
   describe('showMoreLimit', () => {
@@ -151,6 +166,35 @@ describe('ais.refinementList fields', () => {
       switchEl.click();
 
       expect(onParameterChange).toHaveBeenCalledWith('searchable', true);
+    });
+
+    it('clears dependent params when toggled off', () => {
+      const { container, onParameterChange } = render({
+        searchable: true,
+        searchablePlaceholder: 'Find...',
+        searchableIsAlwaysActive: true,
+        searchableEscapeFacetValues: true,
+      });
+      const switchEl = getSwitch(container, 'Searchable');
+      switchEl.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith('searchable', false);
+      expect(onParameterChange).toHaveBeenCalledWith(
+        'searchablePlaceholder',
+        undefined
+      );
+      expect(onParameterChange).toHaveBeenCalledWith(
+        'searchableIsAlwaysActive',
+        undefined
+      );
+      expect(onParameterChange).toHaveBeenCalledWith(
+        'searchableEscapeFacetValues',
+        undefined
+      );
+      expect(onParameterChange).toHaveBeenCalledWith(
+        'searchableSelectOnSubmit',
+        undefined
+      );
     });
   });
 
