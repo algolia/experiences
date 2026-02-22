@@ -168,6 +168,7 @@ describe('toolbar', () => {
         expect(popoverText).toContain('Search Box');
         expect(popoverText).toContain('Configure');
         expect(popoverText).toContain('Hits');
+        expect(popoverText).toContain('Infinite Hits');
         expect(popoverText).toContain('Coming Soon');
       });
 
@@ -311,7 +312,7 @@ describe('toolbar', () => {
         const host = await openToolbar();
 
         const trigger =
-          host.shadowRoot?.querySelector<HTMLButtonElement>('[aria-expanded]')!;
+          host.shadowRoot!.querySelector<HTMLButtonElement>('[aria-expanded]')!;
 
         // Expand
         trigger.click();

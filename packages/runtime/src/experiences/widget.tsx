@@ -6,6 +6,7 @@ import { getExperience } from './get-experience';
 import chat from 'instantsearch.js/es/widgets/chat/chat';
 import configure from 'instantsearch.js/es/widgets/configure/configure';
 import hits from 'instantsearch.js/es/widgets/hits/hits';
+import infiniteHits from 'instantsearch.js/es/widgets/infinite-hits/infinite-hits';
 import { EXPERIMENTAL_autocomplete } from 'instantsearch.js/es/widgets/autocomplete/autocomplete';
 import searchBox from 'instantsearch.js/es/widgets/search-box/search-box';
 
@@ -145,6 +146,15 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
       // TODO: Add support for `transformItems` (bucket 3 function)
       'ais.hits': {
         widget: hits,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
+      // TODO: Add support for `templates` (item, empty, showMoreText)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      // TODO: Add support for `cache` (bucket 3 function)
+      'ais.infiniteHits': {
+        widget: infiniteHits,
         async transformParams(parameters) {
           return parameters;
         },

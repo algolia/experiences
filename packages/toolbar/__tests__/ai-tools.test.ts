@@ -41,6 +41,8 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Configure');
     expect(result).toContain('ais.hits');
     expect(result).toContain('Hits');
+    expect(result).toContain('ais.infiniteHits');
+    expect(result).toContain('Infinite Hits');
     expect(result).toContain('ais.searchBox');
     expect(result).toContain('Search Box');
   });
@@ -641,6 +643,130 @@ describe('getTools', () => {
 
     it('adds ais.index widget at top level', async () => {
       const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.index', parameters: { indexName: 'products' } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.index', undefined);
+      expect(result).toMatchObject({
+        success: true,
+        type: 'ais.index',
+      });
+    });
+
+    it('skips container and placement inside parameters to avoid duplication', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      await tools.add_widget.execute!(
+        {
+          type: 'ais.autocomplete',
+          container: '#search',
+          placement: 'before',
+          parameters: {
+            container: '#other',
+            placement: 'after',
+            showRecent: true,
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      // Top-level container and placement should be used
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'container',
+        '#search'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'placement',
+        'before'
+      );
+      // container and placement inside parameters should be skipped
+      expect(callbacks.onParameterChange).not.toHaveBeenCalledWith(
+        [0],
+        'container',
+        '#other'
+      );
+      expect(callbacks.onParameterChange).not.toHaveBeenCalledWith(
+        [0],
+        'placement',
+        'after'
+      );
+      // Other params inside parameters should still be applied
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'showRecent',
+        true
+      );
+    });
+
+    it('adds an infinite hits widget with default parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.infiniteHits', container: '#hits' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith(
+        'ais.infiniteHits',
+        undefined
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'container',
+        '#hits'
+      );
+      expect(result).toMatchObject({
+        success: true,
+        type: 'ais.infiniteHits',
+      });
+    });
+
+    it('adds an infinite hits widget with showPrevious enabled', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      await tools.add_widget.execute!(
+        {
+          type: 'ais.infiniteHits',
+          container: '#hits',
+          parameters: { showPrevious: true },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'showPrevious',
+        true
+      );
+    });
+
+    it('computes the correct index for non-empty experiences', async () => {
+      const experience: ExperienceApiResponse = {
         blocks: [
           {
             type: 'ais.index',
@@ -1173,6 +1299,65 @@ describe('getTools', () => {
         [0],
         'primary-color-rgb',
         '#ff0000'
+      );
+    });
+
+    it('edits infinite hits escapeHTML parameter', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.infiniteHits',
+            parameters: { container: '#hits', escapeHTML: true },
+          },
+        ],
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { index: 0, parameters: { escapeHTML: false } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['escapeHTML'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        0,
+        'escapeHTML',
+        false
+      );
+    });
+
+    it('edits infinite hits cssClasses parameter', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.infiniteHits',
+            parameters: { container: '#hits' },
+          },
+        ],
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          index: 0,
+          parameters: { cssClasses: { root: 'my-root', item: 'my-item' } },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining(['cssClasses']),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        0,
+        'cssClasses',
+        { root: 'my-root', item: 'my-item' }
       );
     });
 
