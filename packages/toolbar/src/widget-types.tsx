@@ -561,6 +561,9 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       showMoreLimit: undefined,
       searchable: false,
       searchablePlaceholder: undefined,
+      searchableIsAlwaysActive: true,
+      searchableEscapeFacetValues: true,
+      searchableSelectOnSubmit: undefined,
       cssClasses: undefined,
     },
     fieldOrder: [
@@ -573,6 +576,9 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'showMoreLimit',
       'searchable',
       'searchablePlaceholder',
+      'searchableIsAlwaysActive',
+      'searchableEscapeFacetValues',
+      'searchableSelectOnSubmit',
       'cssClasses',
     ],
     fieldOverrides: {
@@ -598,6 +604,21 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         type: 'text',
         label: 'Search placeholder',
         placeholder: 'Search...',
+        visibleIf: { key: 'searchable', value: true },
+      },
+      searchableIsAlwaysActive: {
+        type: 'switch',
+        label: 'Search always active',
+        visibleIf: { key: 'searchable', value: true },
+      },
+      searchableEscapeFacetValues: {
+        type: 'switch',
+        label: 'Escape search facet values',
+        visibleIf: { key: 'searchable', value: true },
+      },
+      searchableSelectOnSubmit: {
+        type: 'switch',
+        label: 'Select on submit',
         visibleIf: { key: 'searchable', value: true },
       },
       cssClasses: {
@@ -653,6 +674,12 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         'When enabled, adds a search field to filter within the facet values.',
       searchablePlaceholder:
         'Placeholder text for the search field. Defaults to "Search...".',
+      searchableIsAlwaysActive:
+        'When disabled, the search field becomes inactive if fewer items are shown than the limit.',
+      searchableEscapeFacetValues:
+        'When enabled, escapes the facet values returned from Algolia during search.',
+      searchableSelectOnSubmit:
+        'When enabled, submitting the search selects the first item in the list.',
       cssClasses:
         'Custom CSS classes to apply to the widget elements for styling.',
     },

@@ -185,6 +185,63 @@ describe('ais.refinementList fields', () => {
     });
   });
 
+  describe('searchableIsAlwaysActive', () => {
+    it('is hidden when searchable is false', () => {
+      const { container } = render();
+      const labels = Array.from(container.querySelectorAll('label'));
+      const label = labels.find((el) => {
+        return el.textContent?.trim() === 'Search always active';
+      });
+      expect(label).toBeUndefined();
+    });
+
+    it('renders a switch on when the parameter is true', () => {
+      const { container } = render({
+        searchable: true,
+        searchableIsAlwaysActive: true,
+      });
+      const switchEl = getSwitch(container, 'Search always active');
+      expect(switchEl.getAttribute('aria-checked')).toBe('true');
+    });
+  });
+
+  describe('searchableEscapeFacetValues', () => {
+    it('is hidden when searchable is false', () => {
+      const { container } = render();
+      const labels = Array.from(container.querySelectorAll('label'));
+      const label = labels.find((el) => {
+        return el.textContent?.trim() === 'Escape search facet values';
+      });
+      expect(label).toBeUndefined();
+    });
+
+    it('renders a switch on when the parameter is true', () => {
+      const { container } = render({
+        searchable: true,
+        searchableEscapeFacetValues: true,
+      });
+      const switchEl = getSwitch(container, 'Escape search facet values');
+      expect(switchEl.getAttribute('aria-checked')).toBe('true');
+    });
+  });
+
+  describe('searchableSelectOnSubmit', () => {
+    it('is hidden when searchable is false', () => {
+      const { container } = render();
+      const labels = Array.from(container.querySelectorAll('label'));
+      const label = labels.find((el) => {
+        return el.textContent?.trim() === 'Select on submit';
+      });
+      expect(label).toBeUndefined();
+    });
+
+    it('renders a switch when searchable is true', () => {
+      const { container } = render({ searchable: true });
+      const switchEl = getSwitch(container, 'Select on submit');
+      expect(switchEl).not.toBeNull();
+    });
+  });
+
   describe('cssClasses', () => {
     it('renders a toggle off by default', () => {
       const { container } = render();
