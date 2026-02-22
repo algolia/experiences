@@ -43,14 +43,14 @@ describe('ais.hits field behavior', () => {
   describe('object field with disabledValue undefined (cssClasses)', () => {
     it('renders the toggle even when cssClasses is absent from parameters', () => {
       const { container } = render();
-      const toggle = getSwitch(container, 'CSS Classes');
+      const toggle = getSwitch(container, 'CSS classes');
 
       expect(toggle).not.toBeNull();
     });
 
     it('sends the default object when toggled on', () => {
       const { onParameterChange, container } = render();
-      const toggle = getSwitch(container, 'CSS Classes');
+      const toggle = getSwitch(container, 'CSS classes');
 
       toggle.click();
 
@@ -64,7 +64,7 @@ describe('ais.hits field behavior', () => {
       const { onParameterChange, container } = render({
         cssClasses: { root: 'my-root' },
       });
-      const toggle = getSwitch(container, 'CSS Classes');
+      const toggle = getSwitch(container, 'CSS classes');
 
       toggle.click();
 
