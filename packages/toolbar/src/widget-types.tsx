@@ -381,7 +381,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     defaultParameters: {
       container: '',
       escapeHTML: true,
-      cssClasses: false,
+      cssClasses: undefined,
     },
     fieldOrder: ['container', 'placement', 'escapeHTML', 'cssClasses'],
     fieldOverrides: {
@@ -389,6 +389,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       cssClasses: {
         type: 'object',
         label: 'CSS Classes',
+        disabledValue: undefined,
         defaultValue: {
           root: '',
           emptyRoot: '',

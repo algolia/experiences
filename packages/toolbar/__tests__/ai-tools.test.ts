@@ -1237,7 +1237,7 @@ describe('getTools', () => {
         blocks: [
           {
             type: 'ais.hits',
-            parameters: { container: '#hits', cssClasses: false },
+            parameters: { container: '#hits' },
           },
         ],
         indexName: '',
