@@ -59,3 +59,10 @@ npm run test --workspace=packages/toolbar      # Single package
 - **Mock callbacks** with `vi.fn()` for testing function dispatch (AI tools, state callbacks). Verify calls with `toHaveBeenCalledWith`.
 - **Test file location**: `__tests__/` directory at the package root. Name files `<subject>.test.ts`.
 - **Test naming**: use `describe` for grouping, `it` for individual tests. Write test names that describe expected behavior, not implementation.
+
+### Widget tests
+
+When adding or enabling a widget, update tests in `packages/toolbar/__tests__/ai-tools.test.ts`:
+
+- **AI tool dispatch** — Widget config changes affect `describeWidgetTypes`, `add_widget`, and `edit_widget`. Test that the new widget appears in discovery, can be added via the AI tool, and that each parameter type it introduces (boolean switches, object fields like `cssClasses`) can be edited.
+- **Existing tests** — Update any tests that relied on the widget being disabled (e.g., the disabled options test in `toolbar.test.ts`).
