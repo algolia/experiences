@@ -536,10 +536,103 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   },
   'ais.refinementList': {
     label: 'Refinement List',
-    enabled: false,
+    description:
+      'A filterable list of facet values that lets users refine search results by selecting one or more attributes.',
+    enabled: true,
     icon: LIST_ICON,
     defaultParameters: {
       container: '',
+      attribute: '',
+      operator: undefined,
+      limit: undefined,
+      showMore: false,
+      showMoreLimit: undefined,
+      searchable: false,
+      searchablePlaceholder: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'attribute',
+      'operator',
+      'limit',
+      'showMore',
+      'showMoreLimit',
+      'searchable',
+      'searchablePlaceholder',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      operator: { type: 'text', label: 'Operator', placeholder: 'and' },
+      limit: { type: 'number', label: 'Limit', placeholder: '10' },
+      showMore: { type: 'switch', label: 'Show more' },
+      showMoreLimit: {
+        type: 'number',
+        label: 'Show more limit',
+        placeholder: '20',
+      },
+      searchable: { type: 'switch', label: 'Searchable' },
+      searchablePlaceholder: {
+        type: 'text',
+        label: 'Search placeholder',
+        placeholder: 'Search...',
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          item: '',
+          selectedItem: '',
+          label: '',
+          checkbox: '',
+          labelText: '',
+          showMore: '',
+          disabledShowMore: '',
+          count: '',
+          searchBox: '',
+        },
+        disabledValue: undefined,
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'selectedItem', label: 'Selected item' },
+          { key: 'label', label: 'Label' },
+          { key: 'checkbox', label: 'Checkbox' },
+          { key: 'labelText', label: 'Label text' },
+          { key: 'showMore', label: 'Show more' },
+          { key: 'disabledShowMore', label: 'Disabled show more' },
+          { key: 'count', label: 'Count' },
+          { key: 'searchBox', label: 'Search box' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attribute: 'Attribute',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#refinement-list").',
+      attribute: 'The facet attribute to display (e.g. "brand").',
+      operator:
+        'How multiple selections combine: "and" requires all, "or" requires any. Defaults to "or".',
+      limit: 'Maximum number of facet values to display. Defaults to 10.',
+      showMore:
+        'When enabled, shows a "Show more" button to reveal additional facet values.',
+      showMoreLimit:
+        'Maximum number of facet values when "Show more" is expanded. Defaults to 20.',
+      searchable:
+        'When enabled, adds a search field to filter within the facet values.',
+      searchablePlaceholder:
+        'Placeholder text for the search field. Defaults to "Search...".',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
     },
   },
   'ais.pagination': {
