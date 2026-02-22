@@ -388,7 +388,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       escapeHTML: { type: 'switch', label: 'Escape HTML' },
       cssClasses: {
         type: 'object',
-        label: 'CSS Classes',
+        label: 'CSS classes',
         disabledValue: undefined,
         defaultValue: {
           root: '',
@@ -401,12 +401,12 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         },
         fields: [
           { key: 'root', label: 'Root' },
-          { key: 'emptyRoot', label: 'Empty Root' },
+          { key: 'emptyRoot', label: 'Empty root' },
           { key: 'list', label: 'List' },
           { key: 'item', label: 'Item' },
-          { key: 'bannerRoot', label: 'Banner Root' },
-          { key: 'bannerImage', label: 'Banner Image' },
-          { key: 'bannerLink', label: 'Banner Link' },
+          { key: 'bannerRoot', label: 'Banner root' },
+          { key: 'bannerImage', label: 'Banner image' },
+          { key: 'bannerLink', label: 'Banner link' },
         ],
       },
     },
