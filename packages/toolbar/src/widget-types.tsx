@@ -716,6 +716,41 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       container: '',
     },
   },
+  'ais.stats': {
+    label: 'Stats',
+    description:
+      'Displays search result statistics such as the number of hits and processing time.',
+    enabled: true,
+    icon: TRENDING_ICON,
+    defaultParameters: {
+      container: '',
+      cssClasses: undefined,
+    },
+    fieldOrder: ['container', 'placement', 'cssClasses'],
+    fieldOverrides: {
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          text: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'text', label: 'Text' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#stats").',
+      cssClasses: 'Custom CSS classes to apply to the widget elements.',
+    },
+  },
   'ais.frequentlyBoughtTogether': {
     label: 'Frequently Bought Together',
     enabled: false,
