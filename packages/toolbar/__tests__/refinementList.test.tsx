@@ -33,17 +33,40 @@ describe('ais.refinementList fields', () => {
   });
 
   describe('operator', () => {
-    it('renders with placeholder when absent', () => {
+    it('selects the default option when absent', () => {
       const { container } = render();
-      const input = getInput(container, 'Operator');
-      expect(input.value).toBe('');
-      expect(input.placeholder).toBe('and');
+      const selected = container.querySelector(
+        '[data-slot="tabs-trigger"][aria-selected="true"]'
+      );
+      expect(selected?.textContent).toBe('or');
     });
 
-    it('calls onParameterChange with undefined when cleared', () => {
-      const { container, onParameterChange } = render({ operator: 'or' });
-      const input = getInput(container, 'Operator');
-      fireInput(input, '');
+    it('calls onParameterChange with "and" when selecting "and"', () => {
+      const { container, onParameterChange } = render();
+      const triggers = Array.from(
+        container.querySelectorAll<HTMLButtonElement>(
+          '[data-slot="tabs-trigger"]'
+        )
+      );
+      const andTrigger = triggers.find((el) => {
+        return el.textContent === 'and';
+      })!;
+      andTrigger.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith('operator', 'and');
+    });
+
+    it('calls onParameterChange with undefined when selecting the default', () => {
+      const { container, onParameterChange } = render({ operator: 'and' });
+      const triggers = Array.from(
+        container.querySelectorAll<HTMLButtonElement>(
+          '[data-slot="tabs-trigger"]'
+        )
+      );
+      const orTrigger = triggers.find((el) => {
+        return el.textContent === 'or';
+      })!;
+      orTrigger.click();
 
       expect(onParameterChange).toHaveBeenCalledWith('operator', undefined);
     });

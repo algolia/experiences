@@ -12,6 +12,12 @@ export type FieldOverride =
       picker?: boolean;
     }
   | {
+      type: 'select';
+      label: string;
+      options: Array<{ value: string; label: string }>;
+      defaultValue: string;
+    }
+  | {
       type: 'object';
       label: string;
       defaultValue: Record<string, unknown>;
@@ -564,7 +570,15 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'cssClasses',
     ],
     fieldOverrides: {
-      operator: { type: 'text', label: 'Operator', placeholder: 'and' },
+      operator: {
+        type: 'select',
+        label: 'Operator',
+        options: [
+          { value: 'or', label: 'or' },
+          { value: 'and', label: 'and' },
+        ],
+        defaultValue: 'or',
+      },
       limit: { type: 'number', label: 'Limit', placeholder: '10' },
       showMore: { type: 'switch', label: 'Show more' },
       showMoreLimit: {
