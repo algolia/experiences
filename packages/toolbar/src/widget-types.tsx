@@ -3,10 +3,19 @@ import type { ExperienceApiBlockParameters } from './types';
 
 export type FieldOverride =
   | { type: 'switch'; label: string }
+  | { type: 'number'; label: string; placeholder?: string }
+  | { type: 'text'; label: string; placeholder?: string; picker?: boolean }
+  | {
+      type: 'toggleable-text';
+      label: string;
+      placeholder?: string;
+      picker?: boolean;
+    }
   | {
       type: 'object';
       label: string;
       defaultValue: Record<string, unknown>;
+      disabledValue?: false | undefined;
       fields: Array<{ key: string; label: string }>;
     };
 

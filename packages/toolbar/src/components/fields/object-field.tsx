@@ -10,8 +10,9 @@ type ObjectFieldProps = {
   enabled: boolean;
   value: Record<string, unknown>;
   defaultValue: Record<string, unknown>;
+  disabledValue?: false | undefined;
   fields: Array<{ key: string; label: string }>;
-  onToggle: (value: boolean | Record<string, unknown>) => void;
+  onToggle: (value: false | undefined | Record<string, unknown>) => void;
   onFieldChange: (key: string, value: string) => void;
 };
 
@@ -20,6 +21,7 @@ export function ObjectField({
   enabled,
   value,
   defaultValue,
+  disabledValue,
   fields,
   onToggle,
   onFieldChange,
@@ -35,7 +37,9 @@ export function ObjectField({
           id={id}
           checked={enabled}
           onCheckedChange={(checked) => {
-            return onToggle(checked ? { ...defaultValue, ...value } : false);
+            return onToggle(
+              checked ? { ...defaultValue, ...value } : disabledValue
+            );
           }}
         />
       </div>
