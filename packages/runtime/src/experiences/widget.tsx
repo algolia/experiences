@@ -8,6 +8,7 @@ import configure from 'instantsearch.js/es/widgets/configure/configure';
 import hits from 'instantsearch.js/es/widgets/hits/hits';
 import infiniteHits from 'instantsearch.js/es/widgets/infinite-hits/infinite-hits';
 import { EXPERIMENTAL_autocomplete } from 'instantsearch.js/es/widgets/autocomplete/autocomplete';
+import clearRefinements from 'instantsearch.js/es/widgets/clear-refinements/clear-refinements';
 import pagination from 'instantsearch.js/es/widgets/pagination/pagination';
 import searchBox from 'instantsearch.js/es/widgets/search-box/search-box';
 import stats from 'instantsearch.js/es/widgets/stats/stats';
@@ -149,6 +150,14 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
                 }
               : {}),
           });
+        },
+      },
+      // TODO: Add support for `templates` (resetLabel)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.clearRefinements': {
+        widget: clearRefinements,
+        async transformParams(parameters) {
+          return parameters;
         },
       },
       // TODO: Add support for `templates` (item, empty, banner)
