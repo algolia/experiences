@@ -804,25 +804,28 @@ describe('getTools', () => {
 
       expect(result).toMatchObject({
         success: true,
-        index: 0,
+        path: '0',
         type: 'ais.configure',
         placement: 'body',
         applied: expect.arrayContaining(['placement', 'searchParameters']),
         rejected: [],
       });
-      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.configure');
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith(
+        'ais.configure',
+        undefined
+      );
       expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
+        [0],
         'placement',
         'body'
       );
       expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
+        [0],
         'searchParameters',
         { hitsPerPage: 20 }
       );
       expect(callbacks.onParameterChange).not.toHaveBeenCalledWith(
-        0,
+        [0],
         'container',
         expect.anything()
       );
@@ -1161,7 +1164,7 @@ describe('getTools', () => {
       expect(callbacks.onParameterChange).not.toHaveBeenCalled();
     });
 
-    it('includes index range in bounds error message', async () => {
+    it('includes invalid path in bounds error message', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1251,6 +1254,41 @@ describe('getTools', () => {
         [0],
         'cssClasses',
         { root: 'my-root', input: 'my-input' }
+      );
+    });
+
+    it('applies a json parameter (searchParameters) on configure', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.configure',
+            parameters: { searchParameters: { hitsPerPage: 10 } },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            searchParameters: { hitsPerPage: 20, filters: 'category:Books' },
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['searchParameters'],
+        rejected: [],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'searchParameters',
+        { hitsPerPage: 20, filters: 'category:Books' }
       );
     });
   });
