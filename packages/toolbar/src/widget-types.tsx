@@ -320,12 +320,15 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     icon: DATABASE_ICON,
     defaultParameters: {
       indexName: '',
-      indexId: '',
+      indexId: undefined,
     },
     columns: 2,
+    fieldOrder: ['indexName', 'indexId'],
+    fieldOverrides: {
+      indexId: { type: 'text', label: 'Index ID' },
+    },
     paramLabels: {
       indexName: 'Index Name',
-      indexId: 'Index ID',
     },
     paramDescriptions: {
       indexName: 'The Algolia index or composition ID to search.',
