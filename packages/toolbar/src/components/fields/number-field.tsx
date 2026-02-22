@@ -3,21 +3,19 @@ import { useId } from 'preact/hooks';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
-type TextFieldProps = {
+type NumberFieldProps = {
   label: string;
   value: string;
   placeholder?: string;
   onInput: (value: string) => void;
-  readOnly?: boolean;
 };
 
-export function TextField({
+export function NumberField({
   label,
   value,
   placeholder,
   onInput,
-  readOnly,
-}: TextFieldProps) {
+}: NumberFieldProps) {
   const id = useId();
 
   return (
@@ -25,13 +23,12 @@ export function TextField({
       <Label htmlFor={id}>{label}</Label>
       <Input
         id={id}
+        type="number"
         value={value}
         placeholder={placeholder}
         onInput={(event) => {
           return onInput((event.target as HTMLInputElement).value);
         }}
-        readOnly={readOnly}
-        class={readOnly ? 'bg-muted text-muted-foreground' : ''}
       />
     </div>
   );

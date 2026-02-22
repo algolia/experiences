@@ -1,10 +1,13 @@
 import type { ExperienceApiBlockParameters, Placement } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 import { CssVariablesEditor } from './fields/css-variables-editor';
+import { NumberField } from './fields/number-field';
 import { ObjectField } from './fields/object-field';
 import { PlacementField } from './fields/placement-field';
 import { SwitchField } from './fields/switch-field';
 import { TextField } from './fields/text-field';
+import { TextPickerField } from './fields/text-picker-field';
+import { ToggleableTextField } from './fields/toggleable-text-field';
 
 type BlockEditorProps = {
   type: string;
@@ -27,7 +30,7 @@ export function BlockEditor({
 
   const paramKeys = widgetType?.fieldOrder
     ? widgetType.fieldOrder.filter((key) => {
-        return key in parameters;
+        return key in parameters || key in overrides;
       })
     : Object.keys(parameters);
 
@@ -101,6 +104,65 @@ export function BlockEditor({
                 }}
               />
             );
+          case 'number':
+            return (
+              <NumberField
+                key={key}
+                label={override.label}
+                placeholder={override.placeholder}
+                value={typeof value === 'number' ? String(value) : ''}
+                onInput={(text) => {
+                  return onParameterChange(
+                    key,
+                    text === '' ? undefined : Number(text)
+                  );
+                }}
+              />
+            );
+          case 'text': {
+            const onTextInput = (text: string) => {
+              return onParameterChange(key, text === '' ? undefined : text);
+            };
+            if (override.picker) {
+              return (
+                <TextPickerField
+                  key={key}
+                  label={override.label}
+                  value={typeof value === 'string' ? value : ''}
+                  placeholder={override.placeholder}
+                  onInput={onTextInput}
+                  onPickElement={onPickElement}
+                />
+              );
+            }
+            return (
+              <TextField
+                key={key}
+                label={override.label}
+                value={typeof value === 'string' ? value : ''}
+                placeholder={override.placeholder}
+                onInput={onTextInput}
+              />
+            );
+          }
+          case 'toggleable-text':
+            return (
+              <ToggleableTextField
+                key={key}
+                label={override.label}
+                enabled={value !== false}
+                value={typeof value === 'string' ? value : ''}
+                placeholder={override.placeholder}
+                picker={override.picker}
+                onToggle={(toggled) => {
+                  return onParameterChange(key, toggled);
+                }}
+                onInput={(text) => {
+                  return onParameterChange(key, text);
+                }}
+                onPickElement={onPickElement}
+              />
+            );
           case 'object': {
             const enabled = typeof value === 'object' && value !== null;
             const objectValue = enabled
@@ -113,6 +175,9 @@ export function BlockEditor({
                 enabled={enabled}
                 value={objectValue}
                 defaultValue={override.defaultValue}
+                disabledValue={
+                  'disabledValue' in override ? override.disabledValue : false
+                }
                 fields={override.fields}
                 onToggle={(toggled) => {
                   return onParameterChange(key, toggled);

@@ -57,12 +57,25 @@ npm run test --workspace=packages/toolbar      # Single package
 - **DOM tests** need `environment: 'jsdom'` in the package's vitest config. Clean up in `afterEach` (`document.body.innerHTML = ''`).
 - **API tests** use MSW (`setupServer`). Call `server.listen()` in `beforeAll`, `server.resetHandlers()` in `afterEach`, `server.close()` in `afterAll`.
 - **Mock callbacks** with `vi.fn()` for testing function dispatch (AI tools, state callbacks). Verify calls with `toHaveBeenCalledWith`.
-- **Test file location**: `__tests__/` directory at the package root. Name files `<subject>.test.ts`.
+- **Test file location**: `__tests__/` directory at the package root. Name files `<subject>.test.ts` (or `.test.tsx` when rendering JSX).
 - **Test naming**: use `describe` for grouping, `it` for individual tests. Write test names that describe expected behavior, not implementation.
 
-### Widget tests
+## Widgets
 
-When adding or enabling a widget, update tests in `packages/toolbar/__tests__/ai-tools.test.ts`:
+The toolbar renders widget parameters using field overrides defined in `packages/toolbar/src/widget-types.tsx`. Each override maps a parameter to a UI field component in `BlockEditor`.
 
-- **AI tool dispatch** — Widget config changes affect `describeWidgetTypes`, `add_widget`, and `edit_widget`. Test that the new widget appears in discovery, can be added via the AI tool, and that each parameter type it introduces (boolean switches, object fields like `cssClasses`) can be edited.
-- **Existing tests** — Update any tests that relied on the widget being disabled (e.g., the disabled options test in `toolbar.test.ts`).
+### Principles
+
+- **Prefer `undefined` over redundant defaults.** Optional params (numbers, text) should default to `undefined` and show the library default as a `placeholder`. Clearing a field sends `undefined` so InstantSearch applies its own default. This avoids storing redundant values in the API.
+- **Booleans are always-on.** Switches are binary — there's no "unset" state. Default to the library default (`true` or `false`).
+- **Some params have a meaningful "off" distinct from "use the default".** When a param can be explicitly disabled (e.g., `scrollTo: false` disables scrolling, vs. `undefined` which scrolls to `body`), use a toggleable field (`toggleable-text`, or `object` with `disabledValue`). OFF sends `false` (or a custom `disabledValue`), ON sends the value or `undefined`. Use `'disabledValue' in override` (not `??`) to distinguish "not set" from "explicitly `undefined`".
+- **Fields must render even when the param is absent from the API response.** `fieldOrder` filters via `key in parameters || key in overrides`, so a field override is enough to make a field visible.
+- **Compose field components from primitives.** When a field needs extra UI (like a picker button next to an input), create a composed component from primitives (`Label`, `Input`, etc.) rather than adding feature-specific props to a generic field component.
+
+### Tests
+
+When adding or enabling a widget, update tests in three places:
+
+- **Field behavior** (`__tests__/<widget>.test.tsx`, one file per widget) — Test what values `onParameterChange` receives when the user interacts with each field: entering a value, clearing it, toggling it. Focus on the boundaries (empty → `undefined`, value → correct type, absent param still renders). Use shared helpers from `__tests__/widget-test-utils.tsx`.
+- **AI tool dispatch** (`__tests__/ai-tools.test.ts`) — Test that the widget appears in `describeWidgetTypes`, can be added via `add_widget`, and that its parameter types can be edited via `edit_widget`.
+- **Existing tests** (`__tests__/toolbar.test.ts`) — Update any tests that relied on the widget being disabled.
