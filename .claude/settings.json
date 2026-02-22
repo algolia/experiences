@@ -13,9 +13,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[[ \"$TOOL_INPUT\" == *\"apps/resolver\"* ]] && npm test --workspace=@experiences/resolver 2>&1 | tail -10 || true",
-            "async": true,
-            "timeout": 60
+            "command": "OUT=$(jq -r '.tool_input.file_path' | xargs npx prettier --write 2>&1) || { echo \"$OUT\" >&2; exit 2; }",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "OUT=$(jq -r '.tool_input.file_path' | xargs npx oxlint --deny-warnings 2>&1) || { echo \"$OUT\" >&2; exit 2; }",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path') && case \"$FILE\" in */packages/runtime/*) TSCONFIG=packages/runtime/tsconfig.json ;; */packages/toolbar/*) TSCONFIG=packages/toolbar/tsconfig.json ;; */packages/experiences/*) TSCONFIG=packages/experiences/tsconfig.json ;; */apps/resolver/*) TSCONFIG=apps/resolver/tsconfig.json ;; *) exit 0 ;; esac && OUT=$(npx tsc --noEmit -p \"$TSCONFIG\" 2>&1) || { echo \"$OUT\" >&2; exit 2; }",
+            "timeout": 60,
+            "async": true
           }
         ]
       }
