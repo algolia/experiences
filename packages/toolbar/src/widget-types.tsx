@@ -1,41 +1,47 @@
 import type { JSX } from 'preact';
 import type { ExperienceApiBlockParameters } from './types';
 
-export type FieldOverride =
-  | { type: 'switch'; label: string }
-  | { type: 'number'; label: string; placeholder?: string }
-  | { type: 'text'; label: string; placeholder?: string; picker?: boolean }
-  | {
-      type: 'toggleable-text';
-      label: string;
-      placeholder?: string;
-      picker?: boolean;
-    }
-  | {
-      type: 'select';
-      label: string;
-      options: Array<{ value: string; label: string }>;
-      defaultValue: string;
-    }
-  | {
-      type: 'object';
-      label: string;
-      defaultValue: Record<string, unknown>;
-      disabledValue?: false | undefined;
-      fields: Array<{ key: string; label: string }>;
-    }
-  | { type: 'json'; label: string }
-  | {
-      type: 'items-list';
-      label: string;
-      fields: Array<{
-        key: string;
+type FieldOverrideBase = {
+  visibleIf?: { key: string; value: unknown };
+};
+
+export type FieldOverride = FieldOverrideBase &
+  (
+    | { type: 'switch'; label: string }
+    | { type: 'number'; label: string; placeholder?: string }
+    | { type: 'text'; label: string; placeholder?: string; picker?: boolean }
+    | {
+        type: 'toggleable-text';
         label: string;
         placeholder?: string;
-        inputType?: 'text' | 'number';
-      }>;
-    }
-  | { type: 'list'; label: string; placeholder?: string; excludes?: string };
+        picker?: boolean;
+      }
+    | {
+        type: 'select';
+        label: string;
+        options: Array<{ value: string; label: string }>;
+        defaultValue: string;
+      }
+    | {
+        type: 'object';
+        label: string;
+        defaultValue: Record<string, unknown>;
+        disabledValue?: false | undefined;
+        fields: Array<{ key: string; label: string }>;
+      }
+    | { type: 'json'; label: string }
+    | {
+        type: 'items-list';
+        label: string;
+        fields: Array<{
+          key: string;
+          label: string;
+          placeholder?: string;
+          inputType?: 'text' | 'number';
+        }>;
+      }
+    | { type: 'list'; label: string; placeholder?: string; excludes?: string }
+  );
 
 export type WidgetTypeConfig = {
   label: string;
@@ -585,12 +591,14 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         type: 'number',
         label: 'Show more limit',
         placeholder: '20',
+        visibleIf: { key: 'showMore', value: true },
       },
       searchable: { type: 'switch', label: 'Searchable' },
       searchablePlaceholder: {
         type: 'text',
         label: 'Search placeholder',
         placeholder: 'Search...',
+        visibleIf: { key: 'searchable', value: true },
       },
       cssClasses: {
         type: 'object',

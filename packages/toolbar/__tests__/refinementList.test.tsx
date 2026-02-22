@@ -114,14 +114,23 @@ describe('ais.refinementList fields', () => {
   });
 
   describe('showMoreLimit', () => {
-    it('renders with placeholder when absent', () => {
+    it('is hidden when showMore is false', () => {
       const { container } = render();
+      const labels = Array.from(container.querySelectorAll('label'));
+      const label = labels.find((el) => {
+        return el.textContent?.trim() === 'Show more limit';
+      });
+      expect(label).toBeUndefined();
+    });
+
+    it('renders with placeholder when showMore is true', () => {
+      const { container } = render({ showMore: true });
       const input = getInput(container, 'Show more limit');
       expect(input.placeholder).toBe('20');
     });
 
     it('calls onParameterChange with number when set', () => {
-      const { container, onParameterChange } = render();
+      const { container, onParameterChange } = render({ showMore: true });
       const input = getInput(container, 'Show more limit');
       fireInput(input, '50');
 
@@ -146,14 +155,24 @@ describe('ais.refinementList fields', () => {
   });
 
   describe('searchablePlaceholder', () => {
-    it('renders with placeholder when absent', () => {
+    it('is hidden when searchable is false', () => {
       const { container } = render();
+      const labels = Array.from(container.querySelectorAll('label'));
+      const label = labels.find((el) => {
+        return el.textContent?.trim() === 'Search placeholder';
+      });
+      expect(label).toBeUndefined();
+    });
+
+    it('renders with placeholder when searchable is true', () => {
+      const { container } = render({ searchable: true });
       const input = getInput(container, 'Search placeholder');
       expect(input.placeholder).toBe('Search...');
     });
 
     it('calls onParameterChange with undefined when cleared', () => {
       const { container, onParameterChange } = render({
+        searchable: true,
         searchablePlaceholder: 'Find...',
       });
       const input = getInput(container, 'Search placeholder');

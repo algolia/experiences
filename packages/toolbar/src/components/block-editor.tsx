@@ -91,6 +91,13 @@ export function BlockEditor({
         const value = parameters[key];
         const override = overrides[key];
 
+        if (override?.visibleIf) {
+          const { key: depKey, value: depValue } = override.visibleIf;
+          if (parameters[depKey] !== depValue) {
+            return null;
+          }
+        }
+
         if (!override) {
           return (
             <TextField
