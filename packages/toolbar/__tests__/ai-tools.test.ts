@@ -1310,12 +1310,13 @@ describe('getTools', () => {
             parameters: { container: '#hits', escapeHTML: true },
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
       const result = await tools.edit_widget.execute!(
-        { index: 0, parameters: { escapeHTML: false } },
+        { path: '0', parameters: { escapeHTML: false } },
         { toolCallId: 'tc1', messages: [] }
       );
 
@@ -1324,7 +1325,7 @@ describe('getTools', () => {
         applied: ['escapeHTML'],
       });
       expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
+        [0],
         'escapeHTML',
         false
       );
@@ -1338,13 +1339,14 @@ describe('getTools', () => {
             parameters: { container: '#hits' },
           },
         ],
+        indexName: '',
       };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
       const result = await tools.edit_widget.execute!(
         {
-          index: 0,
+          path: '0',
           parameters: { cssClasses: { root: 'my-root', item: 'my-item' } },
         },
         { toolCallId: 'tc1', messages: [] }
@@ -1355,7 +1357,7 @@ describe('getTools', () => {
         applied: expect.arrayContaining(['cssClasses']),
       });
       expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        0,
+        [0],
         'cssClasses',
         { root: 'my-root', item: 'my-item' }
       );
