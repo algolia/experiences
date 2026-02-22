@@ -1200,7 +1200,7 @@ describe('getTools', () => {
         blocks: [
           {
             type: 'ais.searchBox',
-            parameters: { container: '#search-box', cssClasses: false },
+            parameters: { container: '#search-box' },
           },
         ],
         indexName: '',

@@ -351,14 +351,14 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     icon: SEARCH_ICON,
     defaultParameters: {
       container: '',
-      placeholder: '',
+      placeholder: undefined,
       autofocus: false,
       showLoadingIndicator: true,
       showSubmit: true,
       showReset: true,
       searchAsYouType: true,
       ignoreCompositionEvents: false,
-      cssClasses: false,
+      cssClasses: undefined,
     },
     fieldOrder: [
       'container',
@@ -373,6 +373,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'cssClasses',
     ],
     fieldOverrides: {
+      placeholder: { type: 'text', label: 'Placeholder' },
       autofocus: { type: 'switch', label: 'Autofocus' },
       searchAsYouType: { type: 'switch', label: 'Search as you type' },
       ignoreCompositionEvents: {
@@ -385,6 +386,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       cssClasses: {
         type: 'object',
         label: 'CSS classes',
+        disabledValue: undefined,
         defaultValue: {
           root: '',
           form: '',
@@ -411,7 +413,6 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     },
     paramLabels: {
       container: 'Container',
-      placeholder: 'Placeholder',
     },
     paramDescriptions: {
       container:

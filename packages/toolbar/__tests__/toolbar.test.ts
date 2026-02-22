@@ -165,6 +165,7 @@ describe('toolbar', () => {
         const popoverText = host.shadowRoot?.innerHTML ?? '';
         expect(popoverText).toContain('Autocomplete');
         expect(popoverText).toContain('Chat');
+        expect(popoverText).toContain('Search Box');
         expect(popoverText).toContain('Hits');
         expect(popoverText).toContain('Coming Soon');
       });
