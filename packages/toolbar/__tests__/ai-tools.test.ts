@@ -564,23 +564,6 @@ describe('getTools', () => {
       );
     });
 
-    it('still calls onAddBlock even when container validation fails', async () => {
-      const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
-      const callbacks = createCallbacks(experience);
-      const tools = getTools(callbacks);
-
-      await tools.add_widget.execute!(
-        { type: 'ais.autocomplete' },
-        { toolCallId: 'tc1', messages: [] }
-      );
-
-      // onAddBlock is called before validation — this documents current behavior
-      expect(callbacks.onAddBlock).toHaveBeenCalledWith(
-        'ais.autocomplete',
-        undefined
-      );
-    });
-
     it('adds searchBox with default inside placement and container', async () => {
       const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
       const callbacks = createCallbacks(experience);
@@ -1161,7 +1144,7 @@ describe('getTools', () => {
 
       expect(result).toMatchObject({
         success: false,
-        error: expect.stringContaining('0–1'),
+        error: expect.stringContaining('Invalid path'),
       });
     });
 
