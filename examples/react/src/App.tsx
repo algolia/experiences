@@ -202,8 +202,6 @@ function Layout({ preview = false }: { preview?: boolean }) {
           <div id="chat"></div>
         </div>
       </div>
-
-      <div className="tech-badge">React</div>
     </PreviewProvider>
   );
 }
