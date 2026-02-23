@@ -1,6 +1,11 @@
 import { walkIndex } from 'instantsearch.js/es/lib/utils';
+import index from 'instantsearch.js/es/widgets/index/index';
 
-import type { InternalMiddleware } from 'instantsearch.js/es/types';
+import type {
+  IndexWidget,
+  InternalMiddleware,
+  InstantSearch,
+} from 'instantsearch.js/es/types';
 import type {
   Environment,
   ExperienceApiResponse,
@@ -11,6 +16,56 @@ export type ExperienceProps = {
   config: ExperienceApiResponse;
   env?: Environment;
 };
+
+export function createExperienceMiddleware(
+  props: ExperienceProps
+): InternalMiddleware {
+  const { config, env = 'prod' } = props;
+
+  return ({ instantSearchInstance }) => {
+    const cleanups: Array<() => void> = [];
+
+    return {
+      $$type: 'ais.experience',
+      $$internal: true,
+      onStateChange: () => {},
+      subscribe() {
+        const experienceWidgets: ExperienceWidget[] = [];
+        walkIndex(instantSearchInstance.mainIndex, (index) => {
+          const widgets = index.getWidgets();
+
+          widgets.forEach((widget) => {
+            if (widget.$$type === 'ais.experience') {
+              experienceWidgets.push(widget as ExperienceWidget);
+            }
+          });
+        });
+
+        experienceWidgets.forEach((widget) => {
+          const parent = widget.parent!;
+
+          parent.removeWidgets([widget]);
+
+          processBlocks({
+            blocks: config.blocks,
+            parent,
+            widget,
+            env,
+            instantSearchInstance,
+            cleanups,
+          });
+        });
+      },
+      started: () => {},
+      unsubscribe: () => {
+        cleanups.forEach((cleanup) => {
+          return cleanup();
+        });
+        cleanups.length = 0;
+      },
+    };
+  };
+}
 
 type Placement = 'inside' | 'before' | 'after' | 'replace' | 'body';
 
@@ -74,102 +129,118 @@ function resolveContainer(
   };
 }
 
-export function createExperienceMiddleware(
-  props: ExperienceProps
-): InternalMiddleware {
-  const { config, env = 'prod' } = props;
+type ProcessBlocksOptions = {
+  blocks: ExperienceApiResponse['blocks'];
+  parent: IndexWidget;
+  widget: ExperienceWidget;
+  env: Environment;
+  instantSearchInstance: InstantSearch;
+  cleanups: Array<() => void>;
+};
 
-  return ({ instantSearchInstance }) => {
-    const cleanups: Array<() => void> = [];
+function processBlocks({
+  blocks,
+  parent,
+  widget,
+  env,
+  instantSearchInstance,
+  cleanups,
+}: ProcessBlocksOptions) {
+  blocks.forEach((block) => {
+    const { type, parameters } = block;
 
-    return {
-      $$type: 'ais.experience',
-      $$internal: true,
-      onStateChange: () => {},
-      subscribe() {
-        const experienceWidgets: ExperienceWidget[] = [];
-        walkIndex(instantSearchInstance.mainIndex, (index) => {
-          const widgets = index.getWidgets();
+    if (type === 'ais.index') {
+      const { indexName, indexId } = parameters;
 
-          widgets.forEach((widget) => {
-            if (widget.$$type === 'ais.experience') {
-              experienceWidgets.push(widget as ExperienceWidget);
-            }
-          });
+      if (!indexName) {
+        console.warn(
+          '[Algolia Experiences] ais.index block is missing required "indexName" parameter, skipping.'
+        );
+        return;
+      }
+
+      const indexWidget = index({
+        indexName,
+        indexId: indexId as string | undefined,
+      });
+
+      parent.addWidgets([indexWidget]);
+      cleanups.push(() => {
+        return parent.removeWidgets([indexWidget]);
+      });
+
+      if (block.blocks) {
+        processBlocks({
+          blocks: block.blocks,
+          parent: indexWidget,
+          widget,
+          env,
+          instantSearchInstance,
+          cleanups,
         });
+      }
 
-        experienceWidgets.forEach((widget) => {
-          const parent = widget.parent!;
+      return;
+    }
 
-          parent.removeWidgets([widget]);
+    const cssVariables = parameters.cssVariables ?? {};
+    const cssVariablesKeys = Object.keys(cssVariables);
 
-          config.blocks.forEach((block) => {
-            const { type, parameters } = block;
-
-            const cssVariables = parameters.cssVariables ?? {};
-            const cssVariablesKeys = Object.keys(cssVariables);
-            if (cssVariablesKeys.length > 0) {
-              injectStyleElement(`
-                  :root {
-                    ${cssVariablesKeys
-                      .map((key) => {
-                        return `--ais-${key}: ${cssVariables[key]};`;
-                      })
-                      .join(';')}
-                  }
-                `);
-            }
-
-            const supportedWidget = widget.$$supportedWidgets[type];
-            if (!supportedWidget) {
-              return;
-            }
-
-            const { placement, ...widgetParams } = parameters;
-            const resolved = resolveContainer(
-              widgetParams.container,
-              placement as Placement | undefined
-            );
-
-            if (!resolved) {
-              return;
-            }
-
-            cleanups.push(resolved.cleanup);
-
-            const newWidget = supportedWidget.widget;
-            supportedWidget
-              .transformParams(widgetParams, { env, instantSearchInstance })
-              .then((transformedParams) => {
-                if (newWidget) {
-                  const params = {
-                    ...(transformedParams as Record<string, unknown>),
-                    container: resolved.container,
-                  };
-                  const widgets = newWidget(params);
-                  parent.addWidgets(
-                    Array.isArray(widgets) ? widgets : [widgets]
-                  );
-                }
+    if (cssVariablesKeys.length > 0) {
+      const style = injectStyleElement(`
+          :root {
+            ${cssVariablesKeys
+              .map((key) => {
+                return `--ais-${key}: ${cssVariables[key]};`;
               })
-              .catch((error) => {
-                console.error(
-                  `[Algolia Experiences] Failed to mount widget "${type}":`,
-                  error
-                );
-              });
-          });
-        });
-      },
-      started: () => {},
-      unsubscribe: () => {
-        cleanups.forEach((cleanup) => {
-          return cleanup();
-        });
-        cleanups.length = 0;
-      },
-    };
-  };
+              .join(';')}
+          }
+        `);
+      cleanups.push(() => {
+        return style.remove();
+      });
+    }
+
+    const supportedWidget = widget.$$supportedWidgets[type];
+
+    if (!supportedWidget) {
+      return;
+    }
+
+    const { placement, ...widgetParams } = parameters;
+
+    const resolved = resolveContainer(
+      widgetParams.container as string | undefined,
+      placement as Placement | undefined
+    );
+
+    if (!resolved) {
+      return;
+    }
+
+    cleanups.push(resolved.cleanup);
+
+    const newWidget = supportedWidget.widget;
+
+    supportedWidget
+      .transformParams(widgetParams, { env, instantSearchInstance })
+      .then((transformedParams) => {
+        if (newWidget) {
+          const params = {
+            ...(transformedParams as Record<string, unknown>),
+            container: resolved.container,
+          };
+          const widgets = newWidget(params);
+          parent.addWidgets(Array.isArray(widgets) ? widgets : [widgets]);
+        }
+      })
+      .catch((error) => {
+        console.error(
+          `[Algolia Experiences] Failed to mount widget "${type}":`,
+          error
+        );
+      });
+  });
 }
 
 export function injectStyleElement(textContent: string) {
@@ -178,4 +249,6 @@ export function injectStyleElement(textContent: string) {
   style.textContent = textContent;
 
   document.head.appendChild(style);
+
+  return style;
 }

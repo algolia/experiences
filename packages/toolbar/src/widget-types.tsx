@@ -24,7 +24,9 @@ export type WidgetTypeConfig = {
   description?: string;
   icon: JSX.Element;
   enabled: boolean;
+  indexIndependent?: boolean;
   defaultParameters: ExperienceApiBlockParameters;
+  columns?: number;
   fieldOrder?: string[];
   fieldOverrides?: Record<string, FieldOverride>;
   paramLabels?: Record<string, string>;
@@ -57,6 +59,22 @@ const CHAT_ICON = (
     stroke-linejoin="round"
   >
     <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+  </svg>
+);
+
+const DATABASE_ICON = (
+  <svg
+    class="size-4 shrink-0"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <ellipse cx="12" cy="5" rx="9" ry="3" />
+    <path d="M3 5V19A9 3 0 0 0 21 19V5" />
+    <path d="M3 12A9 3 0 0 0 21 12" />
   </svg>
 );
 
@@ -227,6 +245,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     description:
       'A search-as-you-type dropdown that shows results, suggestions, and recent searches as the user types.',
     enabled: true,
+    indexIndependent: true,
     icon: SEARCH_ICON,
     defaultParameters: {
       container: '',
@@ -275,6 +294,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     description:
       'A conversational AI chat widget powered by an Algolia Agent Studio agent.',
     enabled: true,
+    indexIndependent: true,
     icon: CHAT_ICON,
     defaultParameters: {
       container: '',
@@ -289,6 +309,31 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       container:
         'CSS selector for the DOM element to render into (e.g. "#chat").',
       agentId: 'The ID of the Algolia Agent Studio agent to power the chat.',
+    },
+  },
+  'ais.index': {
+    label: 'Index',
+    description:
+      'Scopes child widgets to a specific Algolia index. Required for search widgets.',
+    enabled: true,
+    indexIndependent: true,
+    icon: DATABASE_ICON,
+    defaultParameters: {
+      indexName: '',
+      indexId: undefined,
+    },
+    columns: 2,
+    fieldOrder: ['indexName', 'indexId'],
+    fieldOverrides: {
+      indexId: { type: 'text', label: 'Index ID' },
+    },
+    paramLabels: {
+      indexName: 'Index Name',
+    },
+    paramDescriptions: {
+      indexName: 'The Algolia index or composition ID to search.',
+      indexId:
+        'Optional identifier when using multiple indices with the same name.',
     },
   },
   'ais.hits': {

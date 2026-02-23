@@ -29,6 +29,8 @@ export function BlockEditor({
   const paramLabels = widgetType?.paramLabels ?? {};
   const paramDescriptions = widgetType?.paramDescriptions ?? {};
 
+  const columns = widgetType?.columns;
+
   const paramKeys = widgetType?.fieldOrder
     ? widgetType.fieldOrder.filter((key) => {
         return key in parameters || key in overrides;
@@ -36,7 +38,12 @@ export function BlockEditor({
     : Object.keys(parameters);
 
   return (
-    <div class="space-y-3">
+    <div
+      class={columns ? 'grid gap-3' : 'space-y-3'}
+      style={
+        columns ? { gridTemplateColumns: `repeat(${columns}, 1fr)` } : undefined
+      }
+    >
       {paramKeys.map((key) => {
         if (key === 'placement') {
           return null;
