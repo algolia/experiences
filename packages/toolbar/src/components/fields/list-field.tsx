@@ -50,21 +50,6 @@ export function ListField({
                     next[index] = (event.target as HTMLInputElement).value;
                     onItemsChange(next);
                   }}
-                  onBlur={() => {
-                    const trimmed = items
-                      .map((value) => {
-                        return value.trim();
-                      })
-                      .filter(Boolean);
-                    if (
-                      trimmed.length !== items.length ||
-                      trimmed.some((value, idx) => {
-                        return value !== items[idx];
-                      })
-                    ) {
-                      onItemsChange(trimmed);
-                    }
-                  }}
                 />
                 <Button
                   variant="ghost"
