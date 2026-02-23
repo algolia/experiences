@@ -16,6 +16,15 @@ export function sanitizeExperience(experience: ExperienceApiResponse) {
       const params = { ...block.parameters };
 
       for (const [key, override] of Object.entries(overrides)) {
+        if (override.type === 'list' && Array.isArray(params[key])) {
+          const cleaned = (params[key] as string[])
+            .map((item) => {
+              return item.trim();
+            })
+            .filter(Boolean);
+          params[key] = cleaned.length > 0 ? cleaned : undefined;
+        }
+
         if (override.type === 'items-list' && Array.isArray(params[key])) {
           const cleaned = (params[key] as Array<Record<string, string>>)
             .map((item) => {

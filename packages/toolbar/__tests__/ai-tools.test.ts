@@ -592,18 +592,21 @@ describe('getTools', () => {
       );
     });
 
-    it('still calls onAddBlock even when container validation fails', async () => {
+    it('returns error when container is missing for non-body placement', async () => {
       const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
       const callbacks = createCallbacks(experience);
       const tools = getTools(callbacks);
 
-      await tools.add_widget.execute!(
+      const result = await tools.add_widget.execute!(
         { type: 'ais.autocomplete' },
         { toolCallId: 'tc1', messages: [] }
       );
 
-      // onAddBlock is called before validation — this documents current behavior
-      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.autocomplete');
+      expect(result).toMatchObject({
+        success: false,
+        error: expect.stringContaining('container'),
+      });
+      expect(callbacks.onAddBlock).not.toHaveBeenCalled();
     });
 
     it('adds hits with default inside placement and container', async () => {
