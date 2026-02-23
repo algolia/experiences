@@ -766,11 +766,13 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         type: 'list',
         label: 'Included attributes',
         placeholder: 'e.g. brand',
+        excludes: 'excludedAttributes',
       },
       excludedAttributes: {
         type: 'list',
         label: 'Excluded attributes',
         placeholder: 'e.g. query',
+        excludes: 'includedAttributes',
       },
       cssClasses: {
         type: 'object',

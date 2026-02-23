@@ -26,6 +26,20 @@ describe('ais.clearRefinements fields', () => {
       expect(onParameterChange).toHaveBeenCalledWith('includedAttributes', []);
     });
 
+    it('clears excludedAttributes when toggling on', () => {
+      const { container, onParameterChange } = render({
+        excludedAttributes: ['query'],
+      });
+      const switchEl = getSwitch(container, 'Included attributes');
+      switchEl.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith('includedAttributes', []);
+      expect(onParameterChange).toHaveBeenCalledWith(
+        'excludedAttributes',
+        undefined
+      );
+    });
+
     it('calls onParameterChange with undefined when toggling off', () => {
       const { container, onParameterChange } = render({
         includedAttributes: ['brand'],
@@ -103,6 +117,20 @@ describe('ais.clearRefinements fields', () => {
       const { container } = render();
       const switchEl = getSwitch(container, 'Excluded attributes');
       expect(switchEl.getAttribute('aria-checked')).toBe('false');
+    });
+
+    it('clears includedAttributes when toggling on', () => {
+      const { container, onParameterChange } = render({
+        includedAttributes: ['brand'],
+      });
+      const switchEl = getSwitch(container, 'Excluded attributes');
+      switchEl.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith('excludedAttributes', []);
+      expect(onParameterChange).toHaveBeenCalledWith(
+        'includedAttributes',
+        undefined
+      );
     });
 
     it('calls onParameterChange with undefined when toggling off', () => {
