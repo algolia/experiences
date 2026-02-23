@@ -12,6 +12,12 @@ export type FieldOverride =
       picker?: boolean;
     }
   | {
+      type: 'select';
+      label: string;
+      options: Array<{ value: string; label: string }>;
+      defaultValue: string;
+    }
+  | {
       type: 'object';
       label: string;
       defaultValue: Record<string, unknown>;
@@ -171,6 +177,20 @@ const SORT_ICON = (
     <path d="M7 20V4" />
     <path d="m21 8-4-4-4 4" />
     <path d="M17 4v16" />
+  </svg>
+);
+
+const BADGE_ICON = (
+  <svg
+    class="size-4 shrink-0"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
   </svg>
 );
 
@@ -334,6 +354,50 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       indexName: 'The Algolia index or composition ID to search.',
       indexId:
         'Optional identifier when using multiple indices with the same name.',
+    },
+  },
+  'ais.poweredBy': {
+    label: 'Powered By',
+    description:
+      'Displays the Algolia logo to indicate search is powered by Algolia.',
+    enabled: true,
+    icon: BADGE_ICON,
+    defaultParameters: {
+      container: '',
+      theme: undefined,
+      cssClasses: false,
+    },
+    fieldOrder: ['container', 'placement', 'theme', 'cssClasses'],
+    fieldOverrides: {
+      theme: {
+        type: 'select',
+        label: 'Theme',
+        options: [
+          { value: 'light', label: 'Light' },
+          { value: 'dark', label: 'Dark' },
+        ],
+        defaultValue: 'light',
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        defaultValue: { root: '', link: '', logo: '' },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'link', label: 'Link' },
+          { key: 'logo', label: 'Logo' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#powered-by").',
+      theme:
+        'Color theme for the Algolia logo — "light" for light backgrounds, "dark" for dark backgrounds.',
+      cssClasses: 'Custom CSS classes for the widget markup.',
     },
   },
   'ais.hits': {

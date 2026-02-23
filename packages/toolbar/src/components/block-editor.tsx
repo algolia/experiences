@@ -4,6 +4,7 @@ import { CssVariablesEditor } from './fields/css-variables-editor';
 import { NumberField } from './fields/number-field';
 import { ObjectField } from './fields/object-field';
 import { PlacementField } from './fields/placement-field';
+import { SelectField } from './fields/select-field';
 import { SwitchField } from './fields/switch-field';
 import { TextField } from './fields/text-field';
 import { TextPickerField } from './fields/text-picker-field';
@@ -108,6 +109,19 @@ export function BlockEditor({
                 checked={Boolean(value)}
                 onToggle={(checked) => {
                   return onParameterChange(key, checked);
+                }}
+              />
+            );
+          case 'select':
+            return (
+              <SelectField
+                key={key}
+                label={override.label}
+                value={typeof value === 'string' ? value : undefined}
+                options={override.options}
+                defaultValue={override.defaultValue}
+                onChange={(selected) => {
+                  return onParameterChange(key, selected);
                 }}
               />
             );

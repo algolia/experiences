@@ -37,6 +37,8 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Chat');
     expect(result).toContain('ais.index');
     expect(result).toContain('Index');
+    expect(result).toContain('ais.poweredBy');
+    expect(result).toContain('Powered By');
   });
 
   it('includes widget descriptions and parameter descriptions', () => {
@@ -512,6 +514,86 @@ describe('getTools', () => {
       );
 
       expect(result).toMatchObject({ success: true });
+    });
+
+    it('skips container and placement inside parameters to avoid duplication', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      await tools.add_widget.execute!(
+        {
+          type: 'ais.autocomplete',
+          container: '#search',
+          placement: 'before',
+          parameters: {
+            container: '#other',
+            placement: 'after',
+            showRecent: true,
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      // Top-level container and placement should be used
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'container',
+        '#search'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'placement',
+        'before'
+      );
+      // container and placement inside parameters should be skipped
+      expect(callbacks.onParameterChange).not.toHaveBeenCalledWith(
+        [0],
+        'container',
+        '#other'
+      );
+      expect(callbacks.onParameterChange).not.toHaveBeenCalledWith(
+        [0],
+        'placement',
+        'after'
+      );
+      // Other params inside parameters should still be applied
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'showRecent',
+        true
+      );
+    });
+
+    it('adds a poweredBy widget with theme parameter', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.poweredBy',
+          container: '#powered-by',
+          parameters: { theme: 'dark' },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining(['placement', 'container', 'theme']),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'theme',
+        'dark'
+      );
     });
 
     it('adds ais.index widget at top level', async () => {
@@ -1033,6 +1115,35 @@ describe('getTools', () => {
         rejected: ['unknownA', 'unknownB'],
       });
       expect(callbacks.onParameterChange).not.toHaveBeenCalled();
+    });
+
+    it('edits poweredBy theme parameter', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.poweredBy',
+            parameters: { container: '#powered-by' },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '0', parameters: { theme: 'dark' } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['theme'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'theme',
+        'dark'
+      );
     });
   });
 

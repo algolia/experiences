@@ -165,6 +165,7 @@ describe('toolbar', () => {
         const popoverText = host.shadowRoot?.innerHTML ?? '';
         expect(popoverText).toContain('Autocomplete');
         expect(popoverText).toContain('Chat');
+        expect(popoverText).toContain('Powered By');
         expect(popoverText).toContain('Hits');
         expect(popoverText).toContain('Coming Soon');
       });
@@ -309,7 +310,7 @@ describe('toolbar', () => {
         const host = await openToolbar();
 
         const trigger =
-          host.shadowRoot?.querySelector<HTMLButtonElement>('[aria-expanded]')!;
+          host.shadowRoot!.querySelector<HTMLButtonElement>('[aria-expanded]')!;
 
         // Expand
         trigger.click();

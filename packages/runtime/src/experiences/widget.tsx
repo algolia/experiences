@@ -5,6 +5,7 @@ import {
 import { getExperience } from './get-experience';
 import chat from 'instantsearch.js/es/widgets/chat/chat';
 import { EXPERIMENTAL_autocomplete } from 'instantsearch.js/es/widgets/autocomplete/autocomplete';
+import poweredBy from 'instantsearch.js/es/widgets/powered-by/powered-by';
 
 import { renderTemplate, renderTool } from './renderer';
 import type { ExperienceWidget } from './types';
@@ -125,6 +126,12 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
                 }
               : {}),
           });
+        },
+      },
+      'ais.poweredBy': {
+        widget: poweredBy,
+        async transformParams(parameters) {
+          return parameters;
         },
       },
     },
