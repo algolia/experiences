@@ -8,6 +8,7 @@ import configure from 'instantsearch.js/es/widgets/configure/configure';
 import hits from 'instantsearch.js/es/widgets/hits/hits';
 import infiniteHits from 'instantsearch.js/es/widgets/infinite-hits/infinite-hits';
 import { EXPERIMENTAL_autocomplete } from 'instantsearch.js/es/widgets/autocomplete/autocomplete';
+import pagination from 'instantsearch.js/es/widgets/pagination/pagination';
 import searchBox from 'instantsearch.js/es/widgets/search-box/search-box';
 
 import { renderTemplate, renderTool } from './renderer';
@@ -102,6 +103,13 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
           };
 
           return { ...searchParameters };
+        },
+      },
+      // TODO: Add support for `templates` (first, previous, page, next, last)
+      'ais.pagination': {
+        widget: pagination,
+        async transformParams(parameters) {
+          return parameters;
         },
       },
       'ais.autocomplete': {

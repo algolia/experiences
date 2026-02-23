@@ -72,9 +72,17 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('[index-independent]');
   });
 
+  it('includes pagination widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.pagination');
+    expect(result).toContain('Pagination');
+    expect(result).toContain('paginated search results');
+    expect(result).toContain('showFirst');
+  });
+
   it('excludes disabled widget types', () => {
     const result = describeWidgetTypes();
-    expect(result).not.toContain('ais.pagination');
+    expect(result).not.toContain('ais.refinementList');
   });
 });
 
@@ -765,6 +773,50 @@ describe('getTools', () => {
       );
     });
 
+    it('adds a pagination widget with boolean parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.pagination',
+          container: '#pagination',
+          parameters: { showFirst: false, padding: 5 },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        type: 'ais.pagination',
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'showFirst',
+          'padding',
+        ]),
+        rejected: [],
+      });
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith(
+        'ais.pagination',
+        undefined
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'showFirst',
+        false
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'padding',
+        5
+      );
+    });
+
     it('computes the correct index for non-empty experiences', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
@@ -1360,6 +1412,50 @@ describe('getTools', () => {
         [0],
         'cssClasses',
         { root: 'my-root', item: 'my-item' }
+      );
+    });
+
+    it('applies boolean and cssClasses changes on a pagination widget', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.pagination',
+            parameters: {
+              container: '#pagination',
+              showFirst: true,
+              cssClasses: { root: '' },
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            showFirst: false,
+            cssClasses: { root: 'my-root' },
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining(['showFirst', 'cssClasses']),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'showFirst',
+        false
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'cssClasses',
+        { root: 'my-root' }
       );
     });
 
