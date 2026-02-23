@@ -110,6 +110,23 @@ describe('ais.clearRefinements fields', () => {
         'color',
       ]);
     });
+
+    it('trims values and removes empty items on blur', () => {
+      const { container, onParameterChange } = render({
+        includedAttributes: ['  brand  ', ''],
+      });
+      const inputs = Array.from(
+        container.querySelectorAll('input')
+      ) as HTMLInputElement[];
+      const listInput = inputs.find((input) => {
+        return input.value === '  brand  ';
+      })!;
+      listInput.dispatchEvent(new Event('blur', { bubbles: true }));
+
+      expect(onParameterChange).toHaveBeenCalledWith('includedAttributes', [
+        'brand',
+      ]);
+    });
   });
 
   describe('excludedAttributes', () => {
