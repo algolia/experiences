@@ -84,7 +84,7 @@ export function App({ config, initialExperience }: AppProps) {
   const [isDirty, setIsDirty] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [toast, setToast] = useState<string | null>(null);
-  const [adminApiKey, setAdminApiKey] = useState<string | null>(() => {
+  const [writeApiKey, setWriteApiKey] = useState<string | null>(() => {
     return sessionStorage.getItem(`experiences.${config.experienceId}.key`);
   });
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -154,12 +154,40 @@ export function App({ config, initialExperience }: AppProps) {
   );
 
   const handlePillClick = () => {
-    if (adminApiKey) {
+    if (writeApiKey) {
       setIsExpanded(true);
     } else {
-      location.href = `${DASHBOARD_BASE[config.env || 'prod']}/apps/${config.appId}/experiences/${initialExperience.indexName}/authenticate/${config.experienceId}?previewUrl=${encodeURIComponent(location.href)}`;
+      window.open(
+        `${DASHBOARD_BASE[config.env || 'prod']}/apps/${config.appId}/experiences/${initialExperience.indexName}/authenticate/${config.experienceId}?previewUrl=${encodeURIComponent(location.href)}`,
+        '_blank'
+      );
     }
   };
+
+  useEffect(() => {
+    function onMessage(event: MessageEvent) {
+      if (
+        event.origin !== DASHBOARD_BASE[config.env || 'prod'] ||
+        event.data?.type !== 'algoliaExperiencesKey'
+      ) {
+        return;
+      }
+
+      const key = event.data?.key;
+      if (typeof key !== 'string') {
+        return;
+      }
+
+      setWriteApiKey(key);
+      sessionStorage.setItem(`experiences.${config.experienceId}.key`, key);
+      setIsExpanded(true);
+    }
+
+    window.addEventListener('message', onMessage);
+    return () => {
+      window.removeEventListener('message', onMessage);
+    };
+  }, [config.env, config.experienceId]);
 
   const onParameterChange = useCallback(
     (path: BlockPath, key: string, value: unknown) => {
@@ -405,7 +433,7 @@ export function App({ config, initialExperience }: AppProps) {
     try {
       await saveExperience({
         appId: config.appId,
-        apiKey: adminApiKey ?? config.apiKey,
+        apiKey: writeApiKey ?? config.apiKey,
         env: config.env ?? 'prod',
         config: experience,
       });
@@ -419,7 +447,7 @@ export function App({ config, initialExperience }: AppProps) {
       setSaveState('idle');
       setToast(err instanceof Error ? err.message : 'Failed to save.');
     }
-  }, [adminApiKey, config, experience]);
+  }, [writeApiKey, config, experience]);
 
   useEffect(() => {
     if (!toast) {
@@ -434,23 +462,6 @@ export function App({ config, initialExperience }: AppProps) {
       return clearTimeout(timer);
     };
   }, [toast]);
-
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    const algoliaExperiencesKey = url.searchParams.get('algoliaExperiencesKey');
-
-    if (algoliaExperiencesKey) {
-      setAdminApiKey(algoliaExperiencesKey);
-      sessionStorage.setItem(
-        `experiences.${config.experienceId}.key`,
-        algoliaExperiencesKey
-      );
-      setIsExpanded(true);
-
-      url.searchParams.delete('algoliaExperiencesKey');
-      window.history.replaceState({}, '', url.toString());
-    }
-  }, []);
 
   return (
     <>
@@ -473,7 +484,7 @@ export function App({ config, initialExperience }: AppProps) {
       />
       <Pill
         visible={!isExpanded}
-        locked={!adminApiKey}
+        locked={!writeApiKey}
         onClick={handlePillClick}
       />
 
