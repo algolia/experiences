@@ -526,10 +526,69 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   },
   'ais.infiniteHits': {
     label: 'Infinite Hits',
-    enabled: false,
+    description:
+      'Displays search results with a "Show more" button to load additional pages incrementally.',
+    enabled: true,
     icon: ARROW_DOWN_ICON,
     defaultParameters: {
       container: '',
+      escapeHTML: true,
+      showPrevious: false,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'escapeHTML',
+      'showPrevious',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      escapeHTML: { type: 'switch', label: 'Escape HTML' },
+      showPrevious: { type: 'switch', label: 'Show previous' },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          emptyRoot: '',
+          list: '',
+          item: '',
+          loadPrevious: '',
+          disabledLoadPrevious: '',
+          loadMore: '',
+          disabledLoadMore: '',
+          bannerRoot: '',
+          bannerImage: '',
+          bannerLink: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'emptyRoot', label: 'Empty root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'loadPrevious', label: 'Load previous' },
+          { key: 'disabledLoadPrevious', label: 'Disabled load previous' },
+          { key: 'loadMore', label: 'Load more' },
+          { key: 'disabledLoadMore', label: 'Disabled load more' },
+          { key: 'bannerRoot', label: 'Banner root' },
+          { key: 'bannerImage', label: 'Banner image' },
+          { key: 'bannerLink', label: 'Banner link' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#infinite-hits").',
+      escapeHTML:
+        'When enabled, escapes HTML entities in hit string values for safety.',
+      showPrevious:
+        'When enabled, shows a button to load previous results above the list.',
+      cssClasses: 'Custom CSS classes to apply to the widget elements.',
     },
   },
   'ais.sortBy': {
