@@ -1,6 +1,7 @@
 import type { ExperienceApiBlockParameters, Placement } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 import { CssVariablesEditor } from './fields/css-variables-editor';
+import { FacetValueField } from './fields/facet-value-field';
 import { JsonField } from './fields/json-field';
 import { ListField } from './fields/list-field';
 import { NumberField } from './fields/number-field';
@@ -146,6 +147,24 @@ export function BlockEditor({
                 defaultValue={override.defaultValue}
                 onChange={(selected) => {
                   return onParameterChange(key, selected);
+                }}
+              />
+            );
+          case 'facet-value':
+            return (
+              <FacetValueField
+                key={key}
+                label={override.label}
+                placeholder={override.placeholder}
+                value={
+                  typeof value === 'string' ||
+                  typeof value === 'number' ||
+                  typeof value === 'boolean'
+                    ? value
+                    : undefined
+                }
+                onChange={(parsed) => {
+                  return onParameterChange(key, parsed);
                 }}
               />
             );
