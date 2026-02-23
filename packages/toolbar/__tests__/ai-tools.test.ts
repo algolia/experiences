@@ -45,6 +45,8 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Infinite Hits');
     expect(result).toContain('ais.searchBox');
     expect(result).toContain('Search Box');
+    expect(result).toContain('ais.stats');
+    expect(result).toContain('Stats');
   });
 
   it('includes widget descriptions and parameter descriptions', () => {
@@ -815,6 +817,27 @@ describe('getTools', () => {
         'padding',
         5
       );
+    });
+
+    it('adds ais.stats widget', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.stats', container: '#stats' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.stats', undefined);
+      expect(result).toMatchObject({
+        success: true,
+        type: 'ais.stats',
+        container: '#stats',
+      });
     });
 
     it('computes the correct index for non-empty experiences', async () => {
@@ -1675,6 +1698,38 @@ describe('getTools', () => {
         [0],
         'searchParameters',
         { hitsPerPage: 20, filters: 'category:Books' }
+      );
+    });
+
+    it('edits ais.stats cssClasses', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.stats',
+            parameters: { container: '#stats' },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: { cssClasses: { root: 'my-stats', text: 'my-text' } },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['cssClasses'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'cssClasses',
+        { root: 'my-stats', text: 'my-text' }
       );
     });
   });

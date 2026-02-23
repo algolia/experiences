@@ -9,6 +9,7 @@ import type { HitsWidget } from 'instantsearch.js/es/widgets/hits/hits';
 import type { InfiniteHitsWidget } from 'instantsearch.js/es/widgets/infinite-hits/infinite-hits';
 import type { PaginationWidget } from 'instantsearch.js/es/widgets/pagination/pagination';
 import type { SearchBoxWidget } from 'instantsearch.js/es/widgets/search-box/search-box';
+import type { StatsWidget } from 'instantsearch.js/es/widgets/stats/stats';
 
 export type Environment = 'prod' | 'beta';
 
@@ -62,6 +63,7 @@ export type ExperienceWidget = Widget & {
     'ais.infiniteHits': SupportedWidget<Parameters<InfiniteHitsWidget>[0]>;
     'ais.pagination': SupportedWidget<Parameters<PaginationWidget>[0]>;
     'ais.searchBox': SupportedWidget<Parameters<SearchBoxWidget>[0]>;
+    'ais.stats': SupportedWidget<Parameters<StatsWidget>[0]>;
   } & Record<
     | 'ais.chat'
     | 'ais.configure'
@@ -70,6 +72,7 @@ export type ExperienceWidget = Widget & {
     | 'ais.infiniteHits'
     | 'ais.pagination'
     | 'ais.searchBox'
+    | 'ais.stats'
     | (string & {}),
     SupportedWidget
   >;
