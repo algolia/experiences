@@ -846,10 +846,53 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   },
   'ais.sortBy': {
     label: 'Sort By',
-    enabled: false,
+    description:
+      'A dropdown selector that lets the user switch between different sort orders (replica indices or sorting strategies).',
+    enabled: true,
     icon: SORT_ICON,
     defaultParameters: {
       container: '',
+      items: [],
+      cssClasses: false,
+    },
+    fieldOrder: ['container', 'placement', 'items', 'cssClasses'],
+    fieldOverrides: {
+      items: {
+        type: 'items-list',
+        label: 'Sort options',
+        fields: [
+          {
+            key: 'value',
+            label: 'Index name',
+            placeholder: 'e.g. products_price_asc',
+          },
+          {
+            key: 'label',
+            label: 'Label',
+            placeholder: 'e.g. Price (ascending)',
+          },
+        ],
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        defaultValue: { root: '', select: '', option: '' },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'select', label: 'Select' },
+          { key: 'option', label: 'Option' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#sort").',
+      items:
+        'List of sort options, each mapping a replica index name to a display label.',
+      cssClasses: 'Custom CSS classes for the widget markup.',
     },
   },
   'ais.hierarchicalMenu': {

@@ -68,6 +68,7 @@ export type ExperienceWidget = Widget & {
     'ais.pagination': SupportedWidget<Parameters<PaginationWidget>[0]>;
     'ais.refinementList': SupportedWidget;
     'ais.searchBox': SupportedWidget<Parameters<SearchBoxWidget>[0]>;
+    'ais.sortBy': SupportedWidget;
     'ais.stats': SupportedWidget<Parameters<StatsWidget>[0]>;
   } & Record<
     | 'ais.chat'
@@ -79,6 +80,7 @@ export type ExperienceWidget = Widget & {
     | 'ais.pagination'
     | 'ais.refinementList'
     | 'ais.searchBox'
+    | 'ais.sortBy'
     | 'ais.stats'
     | (string & {}),
     SupportedWidget
