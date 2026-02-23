@@ -5,6 +5,7 @@ import {
 import { getExperience } from './get-experience';
 import chat from 'instantsearch.js/es/widgets/chat/chat';
 import { EXPERIMENTAL_autocomplete } from 'instantsearch.js/es/widgets/autocomplete/autocomplete';
+import searchBox from 'instantsearch.js/es/widgets/search-box/search-box';
 
 import { renderTemplate, renderTool } from './renderer';
 import type { ExperienceWidget } from './types';
@@ -125,6 +126,14 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
                 }
               : {}),
           });
+        },
+      },
+      // TODO: Add support for `templates` (submit, reset, loadingIndicator)
+      // TODO: Add support for `queryHook` (bucket 3 — function)
+      'ais.searchBox': {
+        widget: searchBox,
+        async transformParams(params) {
+          return params;
         },
       },
     },
