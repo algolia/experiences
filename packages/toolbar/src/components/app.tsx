@@ -193,7 +193,7 @@ export function App({ config, initialExperience }: AppProps) {
   const onParameterChange = useCallback(
     (path: BlockPath, key: string, value: unknown) => {
       setExperience((prev) => {
-        const updated = {
+        let updated = {
           ...prev,
           blocks: updateBlockAtPath(prev.blocks, path, (block) => {
             return {
@@ -202,6 +202,45 @@ export function App({ config, initialExperience }: AppProps) {
             };
           }),
         };
+
+        // When an index name changes, sync the first item of child sortBy widgets
+        // TODO: Widget-specific side effects like this shouldn't live in App.
+        // Consider letting each widget type declare its own onParameterChange
+        // hook, so App stays a generic orchestrator.
+        if (key === 'indexName' && path.length === 1) {
+          const parentBlock = updated.blocks[path[0]];
+          if (parentBlock?.type === 'ais.index') {
+            for (const [childIndex, child] of (
+              parentBlock.blocks ?? []
+            ).entries()) {
+              if (child.type !== 'ais.sortBy') continue;
+              const items = Array.isArray(child.parameters.items)
+                ? (child.parameters.items as Array<Record<string, string>>)
+                : [];
+              if (items.length === 0) continue;
+              updated = {
+                ...updated,
+                blocks: updateBlockAtPath(
+                  updated.blocks,
+                  [path[0], childIndex],
+                  (block) => {
+                    return {
+                      ...block,
+                      parameters: {
+                        ...block.parameters,
+                        items: items.map((item, idx) => {
+                          return idx === 0
+                            ? { ...item, value: value as string }
+                            : item;
+                        }),
+                      },
+                    };
+                  }
+                ),
+              };
+            }
+          }
+        }
 
         scheduleRun(updated);
 
@@ -329,6 +368,33 @@ export function App({ config, initialExperience }: AppProps) {
             ...(config?.defaultParameters ?? { container: '' }),
           },
         };
+
+        // TODO: Same as onParameterChange — widget-specific logic to extract.
+        // Pre-populate sortBy first item with parent index name
+        if (type === 'ais.sortBy') {
+          const parentIdx =
+            targetParentIndex ??
+            findLastIndex(prev.blocks, (bl) => {
+              return bl.type === 'ais.index';
+            });
+          const parentIndexName =
+            parentIdx >= 0
+              ? (prev.blocks[parentIdx]?.parameters.indexName as string) || ''
+              : '';
+          if (parentIndexName && Array.isArray(newBlock.parameters.items)) {
+            const items = newBlock.parameters.items as Array<
+              Record<string, string>
+            >;
+            if (items.length > 0) {
+              newBlock.parameters = {
+                ...newBlock.parameters,
+                items: items.map((item, idx) => {
+                  return idx === 0 ? { ...item, value: parentIndexName } : item;
+                }),
+              };
+            }
+          }
+        }
 
         let updated: ExperienceApiResponse;
 

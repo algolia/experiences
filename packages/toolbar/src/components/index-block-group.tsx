@@ -1,4 +1,4 @@
-import type { BlockPath, ExperienceApiBlock } from '../types';
+import type { AddBlockResult, BlockPath, ExperienceApiBlock } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 import { AddWidgetPopover } from './add-widget-popover';
 import { BlockCard } from './block-card';
@@ -21,7 +21,7 @@ type IndexBlockGroupProps = {
   onCssVariableChange: (path: BlockPath, key: string, value: string) => void;
   onLocate: (container: string, placement: string | undefined) => void;
   onDeleteBlock: (path: BlockPath) => void;
-  onAddBlock: (type: string, targetParentIndex?: number) => void;
+  onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
   onMoveBlock: (fromPath: BlockPath, toParentIndex: number) => void;
   onPickElement: (callback: (selector: string) => void) => void;
 };
@@ -140,6 +140,7 @@ export function IndexBlockGroup({
                   key={childIndex}
                   type={child.type}
                   parameters={child.parameters}
+                  parentIndexName={indexName}
                   open={expandedBlock === `${parentIndex}.${childIndex}`}
                   onToggle={() => {
                     return onToggleExpand(`${parentIndex}.${childIndex}`);
@@ -183,7 +184,7 @@ export function IndexBlockGroup({
             {/* Scoped add widget */}
             <AddWidgetPopover
               onSelect={(type) => {
-                return onAddBlock(type, parentIndex);
+                onAddBlock(type, parentIndex);
               }}
               filter={(type) => {
                 return type !== 'ais.index';

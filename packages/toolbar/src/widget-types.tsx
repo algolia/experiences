@@ -852,7 +852,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     icon: SORT_ICON,
     defaultParameters: {
       container: '',
-      items: [],
+      items: [{ value: '', label: 'Default' }],
       cssClasses: false,
     },
     fieldOrder: ['container', 'placement', 'items', 'cssClasses'],
@@ -891,7 +891,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       container:
         'CSS selector for the DOM element to render into (e.g. "#sort").',
       items:
-        'List of sort options, each mapping a replica index name to a display label.',
+        'List of sort options, each mapping a replica index name to a display label. The first item always targets the parent index (default sort) and its value is auto-synced.',
       cssClasses: 'Custom CSS classes for the widget markup.',
     },
   },
