@@ -4,6 +4,7 @@ import {
 } from 'instantsearch.js/es/lib/utils';
 import { getExperience } from './get-experience';
 import chat from 'instantsearch.js/es/widgets/chat/chat';
+import configure from 'instantsearch.js/es/widgets/configure/configure';
 import { EXPERIMENTAL_autocomplete } from 'instantsearch.js/es/widgets/autocomplete/autocomplete';
 import searchBox from 'instantsearch.js/es/widgets/search-box/search-box';
 
@@ -88,6 +89,17 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
             },
             tools,
           });
+        },
+      },
+      'ais.configure': {
+        widget: configure,
+        headless: true,
+        async transformParams(params) {
+          const { searchParameters } = params as typeof params & {
+            searchParameters?: Record<string, unknown>;
+          };
+
+          return { ...searchParameters };
         },
       },
       'ais.autocomplete': {

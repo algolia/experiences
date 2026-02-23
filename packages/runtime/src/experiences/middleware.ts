@@ -208,17 +208,21 @@ function processBlocks({
     }
 
     const { placement, ...widgetParams } = parameters;
+    const isHeadless = supportedWidget.headless;
+    const resolved = isHeadless
+      ? null
+      : resolveContainer(
+          widgetParams.container as string | undefined,
+          placement as Placement | undefined
+        );
 
-    const resolved = resolveContainer(
-      widgetParams.container as string | undefined,
-      placement as Placement | undefined
-    );
-
-    if (!resolved) {
+    if (!isHeadless && !resolved) {
       return;
     }
 
-    cleanups.push(resolved.cleanup);
+    if (resolved) {
+      cleanups.push(resolved.cleanup);
+    }
 
     const newWidget = supportedWidget.widget;
 
@@ -228,7 +232,7 @@ function processBlocks({
         if (newWidget) {
           const params = {
             ...(transformedParams as Record<string, unknown>),
-            container: resolved.container,
+            ...(resolved ? { container: resolved.container } : {}),
           };
           const widgets = newWidget(params);
           parent.addWidgets(Array.isArray(widgets) ? widgets : [widgets]);
