@@ -18,7 +18,17 @@ export type FieldOverride =
       disabledValue?: false | undefined;
       fields: Array<{ key: string; label: string }>;
     }
-  | { type: 'json'; label: string };
+  | { type: 'json'; label: string }
+  | {
+      type: 'items-list';
+      label: string;
+      fields: Array<{
+        key: string;
+        label: string;
+        placeholder?: string;
+        inputType?: 'text' | 'number';
+      }>;
+    };
 
 export type WidgetTypeConfig = {
   label: string;
