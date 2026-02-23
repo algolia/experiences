@@ -11,7 +11,7 @@ import {
   vi,
 } from 'vitest';
 
-import { sanitizeExperience } from '../src/components/app';
+import { sanitizeExperience } from '../src/sanitize';
 
 const server = setupServer();
 
