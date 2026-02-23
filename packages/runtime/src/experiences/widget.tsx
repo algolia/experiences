@@ -15,6 +15,7 @@ import searchBox from 'instantsearch.js/es/widgets/search-box/search-box';
 import sortBy from 'instantsearch.js/es/widgets/sort-by/sort-by';
 import stats from 'instantsearch.js/es/widgets/stats/stats';
 import toggleRefinement from 'instantsearch.js/es/widgets/toggle-refinement/toggle-refinement';
+import hitsPerPage from 'instantsearch.js/es/widgets/hits-per-page/hits-per-page';
 
 import { renderTemplate, renderTool } from './renderer';
 import type { ExperienceWidget } from './types';
@@ -213,6 +214,13 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
       // TODO: Add support for `templates` (labelText)
       'ais.toggleRefinement': {
         widget: toggleRefinement,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.hitsPerPage': {
+        widget: hitsPerPage,
         async transformParams(parameters) {
           return parameters;
         },
