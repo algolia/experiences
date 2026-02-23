@@ -31,6 +31,10 @@ export type WidgetTypeConfig = {
   fieldOverrides?: Record<string, FieldOverride>;
   paramLabels?: Record<string, string>;
   paramDescriptions?: Record<string, string>;
+  aiKnowledge?: {
+    useCases: string;
+    parameterHints?: Record<string, string>;
+  };
 };
 
 const SEARCH_ICON = (
@@ -288,6 +292,16 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       showSuggestions:
         'When enabled, shows query suggestions from a dedicated suggestions index. Requires an indexName, a searchPageUrl, and a query parameter name.',
     },
+    aiKnowledge: {
+      useCases:
+        'Suggest this widget when the user wants a search bar, search-as-you-type experience, instant results, type-ahead, autocomplete dropdown, or says something like "add search to my site". This is the primary search input widget — it combines a text input with a dropdown that shows results, suggestions, and recent queries as the user types. Unlike ais.searchBox (a plain input), autocomplete provides a rich, self-contained search experience.',
+      parameterHints: {
+        showRecent:
+          'Set to true when the user mentions recent searches, search history, or previously searched terms.',
+        showSuggestions:
+          'Enable when the user wants query suggestions, popular searches, or type-ahead completions. Requires a suggestions index — ask the user for the index name if not provided.',
+      },
+    },
   },
   'ais.chat': {
     label: 'Chat',
@@ -309,6 +323,14 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       container:
         'CSS selector for the DOM element to render into (e.g. "#chat").',
       agentId: 'The ID of the Algolia Agent Studio agent to power the chat.',
+    },
+    aiKnowledge: {
+      useCases:
+        'Suggest this widget when the user wants conversational search, an AI assistant, a chatbot, Q&A, or says something like "let users ask questions in natural language". This renders a chat interface powered by an Algolia Agent Studio agent. Unlike autocomplete (keyword search), chat provides a conversational experience where users ask questions and get AI-generated answers.',
+      parameterHints: {
+        agentId:
+          'The Agent Studio agent ID is always required. If the user does not provide one, ask for it — they can find it in their Algolia Agent Studio dashboard.',
+      },
     },
   },
   'ais.index': {
@@ -334,6 +356,10 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       indexName: 'The Algolia index or composition ID to search.',
       indexId:
         'Optional identifier when using multiple indices with the same name.',
+    },
+    aiKnowledge: {
+      useCases:
+        'This widget scopes child widgets to a specific Algolia index. It is usually auto-created when adding index-dependent widgets and rarely requested directly by users. Suggest it when the user explicitly wants multi-index search or needs to target a different index for a group of widgets.',
     },
   },
   'ais.hits': {

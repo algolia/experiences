@@ -66,6 +66,18 @@ export function describeWidgetTypes(): string {
         desc += `\n  Parameters:\n${paramLines.join('\n')}`;
       }
 
+      if (config.aiKnowledge) {
+        desc += `\n  When to use: ${config.aiKnowledge.useCases}`;
+        if (config.aiKnowledge.parameterHints) {
+          const hintLines = Object.entries(
+            config.aiKnowledge.parameterHints
+          ).map(([param, hint]) => {
+            return `    - ${param}: ${hint}`;
+          });
+          desc += `\n  Parameter hints:\n${hintLines.join('\n')}`;
+        }
+      }
+
       return desc;
     })
     .join('\n');

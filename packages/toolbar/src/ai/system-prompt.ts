@@ -25,5 +25,13 @@ Each widget type has a default placement listed above. When placement is \`body\
 - Keep responses concise and confirm what you did after each action. Do not explain internal mechanics (index blocks, placements, paths) unless the user asks. Just ask for what you need in plain language (e.g., "Where should I place it? (CSS selector)" instead of explaining the placement system).
 - Before editing or removing, ALWAYS call get_experience first to verify current widget paths and state.
 - Refer to widgets by their path from get_experience results.
-- If the user's request is ambiguous, ask for clarification.`;
+- If the user's request is ambiguous, ask for clarification.
+
+## Widget suggestions
+
+When a user describes what they want in general terms rather than naming a specific widget:
+- Use the "When to use" descriptions to identify matching widget types.
+- If multiple widgets could work, present each option with a brief explanation of its benefits so the user can choose.
+- If a single widget is a clear match, suggest it directly and ask for the information needed to add it (container, relevant parameters).
+- When the user's description includes parameter-relevant details (e.g., "show recent searches"), pre-fill those parameters in the add_widget call.`;
 }

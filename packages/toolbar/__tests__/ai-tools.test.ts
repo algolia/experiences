@@ -65,6 +65,28 @@ describe('describeWidgetTypes', () => {
     expect(result).not.toContain('ais.hits');
     expect(result).not.toContain('ais.pagination');
   });
+
+  it('includes aiKnowledge use cases for enabled widgets', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('When to use:');
+    expect(result).toContain('type-ahead');
+    expect(result).toContain('conversational search');
+    expect(result).toContain('multi-index search');
+  });
+
+  it('includes aiKnowledge parameter hints for enabled widgets', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('Parameter hints:');
+    expect(result).toContain('showRecent: Set to true when the user mentions');
+    expect(result).toContain('showSuggestions: Enable when the user wants');
+    expect(result).toContain('agentId: The Agent Studio agent ID');
+  });
+
+  it('does not include parameter hints when widget has none', () => {
+    const result = describeWidgetTypes();
+    const indexSection = result.split('ais.index')[1]?.split('\n- ais.')[0];
+    expect(indexSection).not.toContain('Parameter hints:');
+  });
 });
 
 describe('describeExperience', () => {
