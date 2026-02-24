@@ -19,6 +19,7 @@ beforeAll(() => {
 afterEach(() => {
   server.resetHandlers();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   vi.resetModules();
 
   delete window.__ALGOLIA_EXPERIENCES_TOOLBAR_CONFIG__;
@@ -69,8 +70,13 @@ describe('toolbar authentication', () => {
     return document.getElementById('algolia-experiences-toolbar')!;
   }
 
-  it('opens the dashboard auth page when pill is clicked without a key', async () => {
-    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+  it('navigates to the dashboard auth page when pill is clicked without a key', async () => {
+    vi.stubGlobal('location', {
+      href: 'http://localhost/',
+      search: '',
+      pathname: '/',
+      hash: '',
+    });
 
     const host = await mountToolbar();
     const pill = host.shadowRoot?.querySelector<HTMLButtonElement>(
@@ -78,58 +84,55 @@ describe('toolbar authentication', () => {
     );
     pill?.click();
 
-    expect(openSpy).toHaveBeenCalledWith(
-      expect.stringContaining('/authenticate/exp-123'),
-      '_blank'
-    );
+    expect(window.location.href).toContain('/authenticate/exp-123');
   });
 
-  it('unlocks the toolbar when receiving a valid postMessage', async () => {
-    const host = await mountToolbar();
+  it('unlocks the toolbar when URL contains a token parameter', async () => {
+    vi.stubGlobal('location', {
+      href: 'http://localhost/?token=WRITE_KEY',
+      search: '?token=WRITE_KEY',
+      pathname: '/',
+      hash: '',
+    });
+    vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
 
-    window.dispatchEvent(
-      new MessageEvent('message', {
-        origin: 'https://dashboard.algolia.com',
-        data: { type: 'algoliaExperiencesKey', key: 'WRITE_KEY' },
-      })
-    );
+    const host = await mountToolbar();
     await new Promise((resolve) => {
       return setTimeout(resolve, 50);
     });
+
+    expect(sessionStorage.getItem('experiences.exp-123.key')).toBe('WRITE_KEY');
 
     // Panel should be open (no aria-hidden)
     const panel = host.shadowRoot?.querySelector('[aria-hidden]');
     expect(panel).toBeNull();
-
-    // Key should be persisted in sessionStorage
-    expect(sessionStorage.getItem('experiences.exp-123.key')).toBe('WRITE_KEY');
   });
 
-  it('ignores messages from wrong origins', async () => {
-    await mountToolbar();
+  it('cleans the token from the URL after reading it', async () => {
+    vi.stubGlobal('location', {
+      href: 'http://localhost/page?token=WRITE_KEY&other=keep#section',
+      search: '?token=WRITE_KEY&other=keep',
+      pathname: '/page',
+      hash: '#section',
+    });
+    const replaceStateSpy = vi
+      .spyOn(window.history, 'replaceState')
+      .mockImplementation(() => {});
 
-    window.dispatchEvent(
-      new MessageEvent('message', {
-        origin: 'https://evil.com',
-        data: { type: 'algoliaExperiencesKey', key: 'EVIL_KEY' },
-      })
-    );
+    await mountToolbar();
     await new Promise((resolve) => {
       return setTimeout(resolve, 50);
     });
 
-    expect(sessionStorage.getItem('experiences.exp-123.key')).toBeNull();
+    expect(replaceStateSpy).toHaveBeenCalledWith(
+      {},
+      '',
+      '/page?other=keep#section'
+    );
   });
 
-  it('ignores messages with wrong type', async () => {
+  it('does not unlock when no token is present in the URL', async () => {
     await mountToolbar();
-
-    window.dispatchEvent(
-      new MessageEvent('message', {
-        origin: 'https://dashboard.algolia.com',
-        data: { type: 'somethingElse', key: 'SOME_KEY' },
-      })
-    );
     await new Promise((resolve) => {
       return setTimeout(resolve, 50);
     });

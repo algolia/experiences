@@ -35,7 +35,7 @@ function tailwindPlugin(): Plugin {
 export default defineConfig({
   entry: { toolbar: 'src/index.ts' },
   format: ['umd'],
-  outDir: '../experiences/dist',
+  outDir: 'dist',
   globalName: 'AlgoliaExperiencesToolbar',
   target: 'es2020',
   platform: 'browser',

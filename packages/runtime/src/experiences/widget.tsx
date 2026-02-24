@@ -33,9 +33,10 @@ import type { ExperienceWidgetParams } from './types';
 // have a proper CDN setup.
 declare const __CHAT_CSS__: string;
 declare const __AUTOCOMPLETE_CSS__: string;
+declare const __SATELLITE_CSS__: string;
 (() => {
   const style = document.createElement('style');
-  style.textContent = __CHAT_CSS__ + __AUTOCOMPLETE_CSS__;
+  style.textContent = __CHAT_CSS__ + __AUTOCOMPLETE_CSS__ + __SATELLITE_CSS__;
   document.head.appendChild(style);
 })();
 
