@@ -90,7 +90,6 @@ export function App({ config, initialExperience }: AppProps) {
   });
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const panelRef = useRef<HTMLDivElement>(null);
-  const panelWidth = useRef(0);
   const picker = useElementPicker();
 
   const scheduleRun = useCallback((newExperience: ExperienceApiResponse) => {
@@ -509,19 +508,38 @@ export function App({ config, initialExperience }: AppProps) {
   }, [writeApiKey, config, experience]);
 
   useEffect(() => {
-    if (isExpanded) {
-      panelWidth.current = panelRef.current?.offsetWidth ?? panelWidth.current;
+    if (!panelRef.current) {
+      return;
     }
 
-    document.body.style.transition = 'padding-left 300ms ease-in-out';
-    document.body.style.paddingLeft = isExpanded
-      ? `${panelWidth.current}px`
-      : '0px';
+    const style = document.createElement('style');
+    style.id = 'algolia-experiences-toolbar-styles';
+    style.textContent = `
+      .algolia-experiences-toolbar {
+        padding-left: 0px;
+        transition: padding-left 300ms ease-in-out;
+      }
+      .algolia-experiences-toolbar--open {
+        padding-left: ${panelRef.current.offsetWidth}px;
+      }
+    `;
+    document.head.appendChild(style);
+    document.body.classList.add('algolia-experiences-toolbar');
 
     return () => {
-      document.body.style.paddingLeft = '';
-      document.body.style.transition = '';
+      document.body.classList.remove(
+        'algolia-experiences-toolbar',
+        'algolia-experiences-toolbar--open'
+      );
+      style.remove();
     };
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle(
+      'algolia-experiences-toolbar--open',
+      isExpanded
+    );
   }, [isExpanded]);
 
   useEffect(() => {
