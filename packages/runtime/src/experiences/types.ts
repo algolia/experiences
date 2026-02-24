@@ -65,6 +65,7 @@ export type ExperienceWidget = Widget & {
     >;
     'ais.hits': SupportedWidget<Parameters<HitsWidget>[0]>;
     'ais.infiniteHits': SupportedWidget<Parameters<InfiniteHitsWidget>[0]>;
+    'ais.menu': SupportedWidget;
     'ais.pagination': SupportedWidget<Parameters<PaginationWidget>[0]>;
     'ais.refinementList': SupportedWidget;
     'ais.searchBox': SupportedWidget<Parameters<SearchBoxWidget>[0]>;
@@ -79,6 +80,7 @@ export type ExperienceWidget = Widget & {
     | 'ais.clearRefinements'
     | 'ais.hits'
     | 'ais.infiniteHits'
+    | 'ais.menu'
     | 'ais.pagination'
     | 'ais.refinementList'
     | 'ais.searchBox'

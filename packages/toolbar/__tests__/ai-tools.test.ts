@@ -113,6 +113,14 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('attribute');
     expect(result).toContain('searchable');
   });
+
+  it('includes menu widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.menu');
+    expect(result).toContain('Menu');
+    expect(result).toContain('single-select facet');
+    expect(result).toContain('attribute');
+  });
 });
 
 describe('describeExperience', () => {
@@ -2059,6 +2067,35 @@ describe('getTools', () => {
         { value: '20', label: '20 per page' },
         { value: '50', label: '50 per page' },
       ]);
+    });
+
+    it('edits menu attribute parameter', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.menu',
+            parameters: { container: '#menu', attribute: 'category' },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '0', parameters: { attribute: 'brand' } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['attribute'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'attribute',
+        'brand'
+      );
     });
 
     it('edits sortBy items parameter', async () => {

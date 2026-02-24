@@ -8,6 +8,7 @@ import { NumberField } from './fields/number-field';
 import { ObjectField } from './fields/object-field';
 import { PlacementField } from './fields/placement-field';
 import { SelectField } from './fields/select-field';
+import { SelectListField } from './fields/select-list-field';
 import { SwitchField } from './fields/switch-field';
 import { TextField } from './fields/text-field';
 import { TextPickerField } from './fields/text-picker-field';
@@ -276,6 +277,28 @@ export function BlockEditor({
                   if (toggled && override.excludes) {
                     onParameterChange(override.excludes, undefined);
                   }
+                }}
+                onItemsChange={(newItems) => {
+                  return onParameterChange(key, newItems);
+                }}
+              />
+            );
+          }
+          case 'select-list': {
+            const selectListEnabled = Array.isArray(value);
+            const selectListItems = selectListEnabled
+              ? (value as string[])
+              : [];
+            return (
+              <SelectListField
+                key={key}
+                label={override.label}
+                description={paramDescriptions[key]}
+                enabled={selectListEnabled}
+                items={selectListItems}
+                options={override.options}
+                onToggle={(toggled) => {
+                  return onParameterChange(key, toggled);
                 }}
                 onItemsChange={(newItems) => {
                   return onParameterChange(key, newItems);
