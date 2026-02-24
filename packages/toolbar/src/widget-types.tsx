@@ -28,7 +28,8 @@ export type FieldOverride =
         placeholder?: string;
         inputType?: 'text' | 'number';
       }>;
-    };
+    }
+  | { type: 'list'; label: string; placeholder?: string; excludes?: string };
 
 export type WidgetTypeConfig = {
   label: string;
@@ -262,6 +263,21 @@ const CART_ICON = (
     <circle cx="8" cy="21" r="1" />
     <circle cx="19" cy="21" r="1" />
     <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+  </svg>
+);
+
+const X_ICON = (
+  <svg
+    class="size-4 shrink-0"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
   </svg>
 );
 
@@ -724,6 +740,69 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     icon: TRENDING_ICON,
     defaultParameters: {
       container: '',
+    },
+  },
+  'ais.clearRefinements': {
+    label: 'Clear Refinements',
+    description:
+      'A button that lets users remove all active filters and refinements at once.',
+    enabled: true,
+    icon: X_ICON,
+    defaultParameters: {
+      container: '',
+      includedAttributes: undefined,
+      excludedAttributes: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'includedAttributes',
+      'excludedAttributes',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      includedAttributes: {
+        type: 'list',
+        label: 'Included attributes',
+        placeholder: 'e.g. brand',
+        excludes: 'excludedAttributes',
+      },
+      excludedAttributes: {
+        type: 'list',
+        label: 'Excluded attributes',
+        placeholder: 'e.g. query',
+        excludes: 'includedAttributes',
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        defaultValue: {
+          root: '',
+          button: '',
+          disabledButton: '',
+        },
+        disabledValue: undefined,
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'button', label: 'Button' },
+          { key: 'disabledButton', label: 'Disabled button' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      includedAttributes: 'Included attributes',
+      excludedAttributes: 'Excluded attributes',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#clear-refinements").',
+      includedAttributes:
+        'Only clear refinements from these attributes. When empty, all refinements are clearable.',
+      excludedAttributes: 'Never clear refinements from these attributes.',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
     },
   },
   'ais.stats': {

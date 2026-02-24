@@ -2,6 +2,7 @@ import type { ExperienceApiBlockParameters, Placement } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 import { CssVariablesEditor } from './fields/css-variables-editor';
 import { JsonField } from './fields/json-field';
+import { ListField } from './fields/list-field';
 import { NumberField } from './fields/number-field';
 import { ObjectField } from './fields/object-field';
 import { PlacementField } from './fields/placement-field';
@@ -200,6 +201,28 @@ export function BlockEditor({
                 label={override.label}
                 items={items}
                 fields={override.fields}
+                onItemsChange={(newItems) => {
+                  return onParameterChange(key, newItems);
+                }}
+              />
+            );
+          }
+          case 'list': {
+            const enabled = Array.isArray(value);
+            const items = enabled ? (value as string[]) : [];
+            return (
+              <ListField
+                key={key}
+                label={override.label}
+                enabled={enabled}
+                items={items}
+                placeholder={override.placeholder}
+                onToggle={(toggled) => {
+                  onParameterChange(key, toggled);
+                  if (toggled && override.excludes) {
+                    onParameterChange(override.excludes, undefined);
+                  }
+                }}
                 onItemsChange={(newItems) => {
                   return onParameterChange(key, newItems);
                 }}

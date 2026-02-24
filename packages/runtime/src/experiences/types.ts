@@ -4,6 +4,7 @@ import type {
   Widget,
 } from 'instantsearch.js/es/types';
 import type { ChatWidget } from 'instantsearch.js/es/widgets/chat/chat';
+import type { ClearRefinementsWidget } from 'instantsearch.js/es/widgets/clear-refinements/clear-refinements';
 import type { ConfigureWidget } from 'instantsearch.js/es/widgets/configure/configure';
 import type { HitsWidget } from 'instantsearch.js/es/widgets/hits/hits';
 import type { InfiniteHitsWidget } from 'instantsearch.js/es/widgets/infinite-hits/infinite-hits';
@@ -59,6 +60,9 @@ export type ExperienceWidget = Widget & {
     'ais.chat': SupportedWidget<Parameters<ChatWidget>[0]>;
     'ais.configure': SupportedWidget<Parameters<ConfigureWidget>[0]>;
     'ais.autocomplete': SupportedWidget;
+    'ais.clearRefinements': SupportedWidget<
+      Parameters<ClearRefinementsWidget>[0]
+    >;
     'ais.hits': SupportedWidget<Parameters<HitsWidget>[0]>;
     'ais.infiniteHits': SupportedWidget<Parameters<InfiniteHitsWidget>[0]>;
     'ais.pagination': SupportedWidget<Parameters<PaginationWidget>[0]>;
@@ -68,6 +72,7 @@ export type ExperienceWidget = Widget & {
     | 'ais.chat'
     | 'ais.configure'
     | 'ais.autocomplete'
+    | 'ais.clearRefinements'
     | 'ais.hits'
     | 'ais.infiniteHits'
     | 'ais.pagination'
