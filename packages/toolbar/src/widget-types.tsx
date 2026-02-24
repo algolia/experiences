@@ -1158,6 +1158,83 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         'Custom CSS classes to apply to the widget elements for styling.',
     },
   },
+  'ais.numericMenu': {
+    label: 'Numeric Menu',
+    description:
+      'A list of numeric ranges that lets users filter results by selecting a price range, rating, or other numeric attribute.',
+    enabled: true,
+    icon: HASH_ICON,
+    defaultParameters: {
+      container: '',
+      attribute: '',
+      items: [],
+      cssClasses: undefined,
+    },
+    fieldOrder: ['container', 'placement', 'attribute', 'items', 'cssClasses'],
+    fieldOverrides: {
+      items: {
+        type: 'items-list',
+        label: 'Ranges',
+        fields: [
+          {
+            key: 'label',
+            label: 'Label',
+            placeholder: 'e.g. All',
+          },
+          {
+            key: 'start',
+            label: 'Min (>=)',
+            placeholder: 'No min',
+            inputType: 'number',
+          },
+          {
+            key: 'end',
+            label: 'Max (<=)',
+            placeholder: 'No max',
+            inputType: 'number',
+          },
+        ],
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          item: '',
+          selectedItem: '',
+          label: '',
+          labelText: '',
+          radio: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'selectedItem', label: 'Selected item' },
+          { key: 'label', label: 'Label' },
+          { key: 'labelText', label: 'Label text' },
+          { key: 'radio', label: 'Radio' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attribute: 'Attribute',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#numeric-menu").',
+      attribute: 'The numeric attribute to filter on (e.g. "price").',
+      items:
+        'List of numeric ranges, each with a label and optional min/max bounds. Omit min for "up to X", omit max for "X and above", omit both for "All".',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
+    },
+  },
   'ais.hierarchicalMenu': {
     label: 'Hierarchical Menu',
     enabled: false,

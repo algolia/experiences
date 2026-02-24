@@ -51,6 +51,8 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Stats');
     expect(result).toContain('ais.hitsPerPage');
     expect(result).toContain('Hits Per Page');
+    expect(result).toContain('ais.numericMenu');
+    expect(result).toContain('Numeric Menu');
   });
 
   it('includes widget descriptions and parameter descriptions', () => {
@@ -96,6 +98,14 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Pagination');
     expect(result).toContain('paginated search results');
     expect(result).toContain('showFirst');
+  });
+
+  it('includes numericMenu widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.numericMenu');
+    expect(result).toContain('Numeric Menu');
+    expect(result).toContain('attribute');
+    expect(result).toContain('items');
   });
 
   it('includes clearRefinements widget type', () => {
@@ -1037,6 +1047,51 @@ describe('getTools', () => {
         'max',
         5
       );
+    });
+
+    it('adds a numericMenu widget with attribute and items', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.numericMenu',
+          container: '#numeric-menu',
+          parameters: {
+            attribute: 'price',
+            items: [
+              { label: 'All' },
+              { label: 'Under $50', end: 50 },
+              { label: '$50–$100', start: 50, end: 100 },
+            ],
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'attribute',
+          'items',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'attribute',
+        'price'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'items', [
+        { label: 'All' },
+        { label: 'Under $50', end: 50 },
+        { label: '$50–$100', start: 50, end: 100 },
+      ]);
     });
 
     it('adds a sortBy widget with items parameter', async () => {
@@ -2177,6 +2232,49 @@ describe('getTools', () => {
         'attribute',
         'score'
       );
+    });
+
+    it('edits numericMenu attribute and items', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.numericMenu',
+            parameters: {
+              container: '#numeric-menu',
+              attribute: 'price',
+              items: [{ label: 'All' }],
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            attribute: 'rating',
+            items: [{ label: 'All' }, { label: '4 stars and up', start: 4 }],
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining(['attribute', 'items']),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'attribute',
+        'rating'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'items', [
+        { label: 'All' },
+        { label: '4 stars and up', start: 4 },
+      ]);
     });
 
     it('edits sortBy items parameter', async () => {

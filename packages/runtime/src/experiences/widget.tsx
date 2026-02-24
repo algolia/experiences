@@ -18,6 +18,7 @@ import stats from 'instantsearch.js/es/widgets/stats/stats';
 import toggleRefinement from 'instantsearch.js/es/widgets/toggle-refinement/toggle-refinement';
 import hitsPerPage from 'instantsearch.js/es/widgets/hits-per-page/hits-per-page';
 import ratingMenu from 'instantsearch.js/es/widgets/rating-menu/rating-menu';
+import numericMenu from 'instantsearch.js/es/widgets/numeric-menu/numeric-menu';
 
 import { renderTemplate, renderTool } from './renderer';
 import type { ExperienceWidget } from './types';
@@ -242,6 +243,35 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
         widget: ratingMenu,
         async transformParams(parameters) {
           return parameters;
+        },
+      },
+      // TODO: Add support for `templates` (item)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.numericMenu': {
+        widget: numericMenu,
+        async transformParams(parameters) {
+          const { items, ...rest } = parameters as typeof parameters & {
+            items?: Array<{
+              label: string;
+              start?: string | number;
+              end?: string | number;
+            }>;
+          };
+
+          return {
+            ...rest,
+            items: items?.map(({ label, start, end }) => {
+              return {
+                label,
+                ...(start !== undefined && start !== ''
+                  ? { start: Number(start) }
+                  : {}),
+                ...(end !== undefined && end !== ''
+                  ? { end: Number(end) }
+                  : {}),
+              };
+            }),
+          };
         },
       },
     },

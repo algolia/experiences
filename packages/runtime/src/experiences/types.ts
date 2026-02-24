@@ -74,6 +74,7 @@ export type ExperienceWidget = Widget & {
     'ais.toggleRefinement': SupportedWidget;
     'ais.hitsPerPage': SupportedWidget;
     'ais.ratingMenu': SupportedWidget;
+    'ais.numericMenu': SupportedWidget;
   } & Record<
     | 'ais.chat'
     | 'ais.configure'
@@ -90,6 +91,7 @@ export type ExperienceWidget = Widget & {
     | 'ais.stats'
     | 'ais.toggleRefinement'
     | 'ais.hitsPerPage'
+    | 'ais.numericMenu'
     | (string & {}),
     SupportedWidget
   >;
