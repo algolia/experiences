@@ -512,15 +512,18 @@ export function App({ config, initialExperience }: AppProps) {
       return;
     }
 
+    const currentPadding = getComputedStyle(document.body).paddingLeft;
+    const panelWidth = panelRef.current.offsetWidth;
+
     const style = document.createElement('style');
     style.id = 'algolia-experiences-toolbar-styles';
     style.textContent = `
       .algolia-experiences-toolbar {
-        padding-left: 0px;
+        padding-left: ${currentPadding};
         transition: padding-left 300ms ease-in-out;
       }
       .algolia-experiences-toolbar--open {
-        padding-left: ${panelRef.current.offsetWidth}px;
+        padding-left: calc(${currentPadding} + ${panelWidth}px);
       }
     `;
     document.head.appendChild(style);
