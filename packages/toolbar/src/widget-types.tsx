@@ -285,6 +285,20 @@ const CONFIGURE_ICON = (
   </svg>
 );
 
+const STAR_ICON = (
+  <svg
+    class="size-4 shrink-0"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
+  </svg>
+);
+
 const CART_ICON = (
   <svg
     class="size-4 shrink-0"
@@ -1079,6 +1093,69 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       items:
         'List of page size options, each mapping a number of hits to a display label. The first item is automatically marked as the default.',
       cssClasses: 'Custom CSS classes for the widget markup.',
+    },
+  },
+  'ais.ratingMenu': {
+    label: 'Rating Menu',
+    description:
+      'A star-based rating filter that lets users refine results by minimum rating value.',
+    enabled: true,
+    icon: STAR_ICON,
+    defaultParameters: {
+      container: '',
+      attribute: '',
+      max: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: ['container', 'placement', 'attribute', 'max', 'cssClasses'],
+    fieldOverrides: {
+      max: { type: 'number', label: 'Max rating', placeholder: '5' },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          item: '',
+          selectedItem: '',
+          disabledItem: '',
+          link: '',
+          starIcon: '',
+          fullStarIcon: '',
+          emptyStarIcon: '',
+          label: '',
+          count: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'selectedItem', label: 'Selected item' },
+          { key: 'disabledItem', label: 'Disabled item' },
+          { key: 'link', label: 'Link' },
+          { key: 'starIcon', label: 'Star icon' },
+          { key: 'fullStarIcon', label: 'Full star icon' },
+          { key: 'emptyStarIcon', label: 'Empty star icon' },
+          { key: 'label', label: 'Label' },
+          { key: 'count', label: 'Count' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attribute: 'Attribute',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#rating").',
+      attribute:
+        'The name of the numeric attribute that contains ratings (e.g. "rating").',
+      max: 'The maximum rating value. Defaults to 5.',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
     },
   },
   'ais.hierarchicalMenu': {

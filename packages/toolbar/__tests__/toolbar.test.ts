@@ -172,6 +172,7 @@ describe('toolbar', () => {
         expect(popoverText).toContain('Menu');
         expect(popoverText).toContain('Toggle Refinement');
         expect(popoverText).toContain('Hits Per Page');
+        expect(popoverText).toContain('Rating Menu');
         expect(popoverText).toContain('Hits');
         expect(popoverText).toContain('Infinite Hits');
         expect(popoverText).toContain('Coming Soon');

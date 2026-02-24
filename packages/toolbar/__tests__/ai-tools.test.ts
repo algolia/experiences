@@ -121,6 +121,14 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('single-select facet');
     expect(result).toContain('attribute');
   });
+
+  it('includes ratingMenu widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.ratingMenu');
+    expect(result).toContain('Rating Menu');
+    expect(result).toContain('star-based rating');
+    expect(result).toContain('attribute');
+  });
 });
 
 describe('describeExperience', () => {
@@ -984,6 +992,50 @@ describe('getTools', () => {
           { value: '20', label: '20 per page' },
           { value: '50', label: '50 per page' },
         ]
+      );
+    });
+
+    it('adds a ratingMenu widget with attribute and max parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0]);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.ratingMenu',
+          container: '#rating',
+          parameters: { attribute: 'rating', max: 5 },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'attribute',
+          'max',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'attribute',
+        'rating'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'max',
+        5
       );
     });
 
@@ -2095,6 +2147,35 @@ describe('getTools', () => {
         [0],
         'attribute',
         'brand'
+      );
+    });
+
+    it('edits ratingMenu attribute parameter', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.ratingMenu',
+            parameters: { container: '#rating', attribute: 'rating' },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '0', parameters: { attribute: 'score' } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['attribute'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'attribute',
+        'score'
       );
     });
 

@@ -17,6 +17,7 @@ import sortBy from 'instantsearch.js/es/widgets/sort-by/sort-by';
 import stats from 'instantsearch.js/es/widgets/stats/stats';
 import toggleRefinement from 'instantsearch.js/es/widgets/toggle-refinement/toggle-refinement';
 import hitsPerPage from 'instantsearch.js/es/widgets/hits-per-page/hits-per-page';
+import ratingMenu from 'instantsearch.js/es/widgets/rating-menu/rating-menu';
 
 import { renderTemplate, renderTool } from './renderer';
 import type { ExperienceWidget } from './types';
@@ -231,6 +232,14 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
       // TODO: Add support for `transformItems` (bucket 3 function)
       'ais.hitsPerPage': {
         widget: hitsPerPage,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
+      // TODO: Add support for `templates` (item)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.ratingMenu': {
+        widget: ratingMenu,
         async transformParams(parameters) {
           return parameters;
         },
