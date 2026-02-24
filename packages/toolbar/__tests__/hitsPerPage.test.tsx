@@ -37,7 +37,7 @@ function getItemInputs(
     return [];
   }
 
-  const section = pageSizesLabel.closest('.space-y-2');
+  const section = pageSizesLabel.closest('.space-y-1\\.5');
 
   if (!section) {
     return [];

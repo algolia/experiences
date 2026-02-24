@@ -25,41 +25,59 @@ export function ItemsListField({
   const isFirstLocked = Boolean(lockedFirstValue);
 
   return (
-    <div class="space-y-2">
+    <div class="space-y-1.5">
       <Label>{label}</Label>
+      {items.length > 0 && (
+        <div class="flex gap-1.5">
+          <div class="flex min-w-0 flex-1 gap-1.5">
+            {fields.map((field) => {
+              return (
+                <span
+                  key={field.key}
+                  class="min-w-0 flex-1 text-xs text-muted-foreground"
+                >
+                  {field.label}
+                </span>
+              );
+            })}
+          </div>
+          <div class="w-9 shrink-0" />
+        </div>
+      )}
       {items.map((item, index) => {
         const isLocked = isFirstLocked && index === 0;
 
         return (
           <div key={index} class="flex items-start gap-1.5">
-            <div class="flex min-w-0 flex-1 flex-col gap-1.5">
+            <div class="flex min-w-0 flex-1 gap-1.5">
               {fields.map((field) => {
                 const isValueLocked = isLocked && field.key === 'value';
 
                 return (
-                  <Input
-                    key={field.key}
-                    type={field.inputType ?? 'text'}
-                    placeholder={field.placeholder ?? field.label}
-                    value={
-                      isValueLocked
-                        ? lockedFirstValue!
-                        : (item[field.key] ?? '')
-                    }
-                    disabled={isValueLocked}
-                    onInput={(event) => {
-                      const updated = items.map((existing, idx) => {
-                        return idx === index
-                          ? {
-                              ...existing,
-                              [field.key]: (event.target as HTMLInputElement)
-                                .value,
-                            }
-                          : existing;
-                      });
-                      onItemsChange(updated);
-                    }}
-                  />
+                  <div key={field.key} class="min-w-0 flex-1">
+                    <Input
+                      type={field.inputType ?? 'text'}
+                      placeholder={field.placeholder ?? field.label}
+                      value={
+                        isValueLocked
+                          ? lockedFirstValue!
+                          : (item[field.key] ?? '')
+                      }
+                      disabled={isValueLocked}
+                      onInput={(event) => {
+                        const updated = items.map((existing, idx) => {
+                          return idx === index
+                            ? {
+                                ...existing,
+                                [field.key]: (event.target as HTMLInputElement)
+                                  .value,
+                              }
+                            : existing;
+                        });
+                        onItemsChange(updated);
+                      }}
+                    />
+                  </div>
                 );
               })}
             </div>

@@ -40,7 +40,7 @@ function getItemInputs(
     return [];
   }
 
-  const section = sortOptionsLabel.closest('.space-y-2');
+  const section = sortOptionsLabel.closest('.space-y-1\\.5');
 
   if (!section) {
     return [];
