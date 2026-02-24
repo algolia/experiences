@@ -19,6 +19,7 @@ type BlockEditorProps = {
   onParameterChange: (key: string, value: unknown) => void;
   onCssVariableChange: (key: string, value: string) => void;
   onPickElement: (callback: (selector: string) => void) => void;
+  parentIndexName?: string;
 };
 
 export function BlockEditor({
@@ -27,6 +28,7 @@ export function BlockEditor({
   onParameterChange,
   onCssVariableChange,
   onPickElement,
+  parentIndexName,
 }: BlockEditorProps) {
   const widgetType = WIDGET_TYPES[type];
   const overrides = widgetType?.fieldOverrides ?? {};
@@ -231,6 +233,7 @@ export function BlockEditor({
                 label={override.label}
                 items={items}
                 fields={override.fields}
+                lockedFirstValue={parentIndexName}
                 onItemsChange={(newItems) => {
                   return onParameterChange(key, newItems);
                 }}

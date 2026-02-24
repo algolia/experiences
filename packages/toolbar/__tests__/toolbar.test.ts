@@ -168,6 +168,7 @@ describe('toolbar', () => {
         expect(popoverText).toContain('Search Box');
         expect(popoverText).toContain('Configure');
         expect(popoverText).toContain('Pagination');
+        expect(popoverText).toContain('Sort By');
         expect(popoverText).toContain('Hits');
         expect(popoverText).toContain('Infinite Hits');
         expect(popoverText).toContain('Coming Soon');
@@ -222,18 +223,20 @@ describe('toolbar', () => {
         });
 
         // Disabled items are rendered as <div> elements, not <button>
-        // Check that "Sort By" is not a button
+        // Check that "Hierarchical Menu" is not a button
         const buttons = Array.from(
           host.shadowRoot?.querySelectorAll('button') ?? []
         );
         const disabledButton = buttons.find((btn) => {
-          return btn.textContent?.includes('Sort By') && btn !== addButton;
+          return (
+            btn.textContent?.includes('Hierarchical Menu') && btn !== addButton
+          );
         });
         expect(disabledButton).toBeUndefined();
 
         // Verify the text is still rendered (as a div)
         const popoverText = host.shadowRoot?.innerHTML ?? '';
-        expect(popoverText).toContain('Sort By');
+        expect(popoverText).toContain('Hierarchical Menu');
       });
     });
 

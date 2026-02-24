@@ -25,6 +25,7 @@ type BlockCardProps = {
   onPickElement: (callback: (selector: string) => void) => void;
   indexBlocks?: Array<{ index: number; block: ExperienceApiBlock }>;
   parentIndex?: number;
+  parentIndexName?: string;
   onMoveToIndex?: (toParentIndex: number) => void;
 };
 
@@ -69,6 +70,7 @@ export function BlockCard({
   onPickElement,
   indexBlocks,
   parentIndex,
+  parentIndexName,
   onMoveToIndex,
 }: BlockCardProps) {
   const widgetType = WIDGET_TYPES[type];
@@ -219,6 +221,7 @@ export function BlockCard({
               onParameterChange={onParameterChange}
               onCssVariableChange={onCssVariableChange}
               onPickElement={onPickElement}
+              parentIndexName={parentIndexName}
             />
           </CardContent>
         </CollapsibleContent>

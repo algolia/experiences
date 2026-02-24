@@ -12,6 +12,7 @@ import clearRefinements from 'instantsearch.js/es/widgets/clear-refinements/clea
 import pagination from 'instantsearch.js/es/widgets/pagination/pagination';
 import refinementList from 'instantsearch.js/es/widgets/refinement-list/refinement-list';
 import searchBox from 'instantsearch.js/es/widgets/search-box/search-box';
+import sortBy from 'instantsearch.js/es/widgets/sort-by/sort-by';
 import stats from 'instantsearch.js/es/widgets/stats/stats';
 
 import { renderTemplate, renderTool } from './renderer';
@@ -192,6 +193,13 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
         widget: searchBox,
         async transformParams(params) {
           return params;
+        },
+      },
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.sortBy': {
+        widget: sortBy,
+        async transformParams(parameters) {
+          return parameters;
         },
       },
       // TODO: Add support for `templates` (text)

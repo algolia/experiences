@@ -3,7 +3,11 @@ import { vi } from 'vitest';
 
 import { BlockEditor } from '../src/components/block-editor';
 
-export function renderEditor(params: Record<string, unknown>, type: string) {
+export function renderEditor(
+  params: Record<string, unknown>,
+  type: string,
+  options?: { parentIndexName?: string }
+) {
   const onParameterChange = vi.fn();
   const container = document.createElement('div');
   document.body.appendChild(container);
@@ -15,6 +19,7 @@ export function renderEditor(params: Record<string, unknown>, type: string) {
       onParameterChange={onParameterChange}
       onCssVariableChange={vi.fn()}
       onPickElement={vi.fn()}
+      parentIndexName={options?.parentIndexName}
     />,
     container
   );
