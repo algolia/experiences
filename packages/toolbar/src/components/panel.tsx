@@ -24,6 +24,7 @@ type PanelProps = {
   onLocate: (container: string, placement: string | undefined) => void;
   onDeleteBlock: (path: BlockPath) => void;
   onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
+  onChangeWidgetIndex: (widgetPath: BlockPath, targetIndexName: string) => void;
   onMoveBlock: (fromPath: BlockPath, toParentIndex: number) => void;
   onPickElement: (callback: (selector: string) => void) => void;
 };
@@ -42,6 +43,7 @@ export function Panel({
   onLocate,
   onDeleteBlock,
   onAddBlock,
+  onChangeWidgetIndex,
   onMoveBlock,
   onPickElement,
 }: PanelProps) {
@@ -83,6 +85,9 @@ export function Panel({
       } else {
         setExpandedBlock(String(lastIdx));
       }
+    } else if (curr.length < prev.length) {
+      // Blocks were removed (e.g. empty index auto-cleanup) — reset
+      setExpandedBlock(null);
     } else {
       for (let i = 0; i < curr.length; i++) {
         const currBlock = curr[i]!;
@@ -107,17 +112,7 @@ export function Panel({
   }, [tab]);
 
   const handleToggleExpand = (key: string) => {
-    const isChild = key.indexOf('.') !== -1;
-
-    if (expandedBlock === key) {
-      // Closing a child widget should keep the parent index group open
-      setExpandedBlock(isChild ? key.slice(0, key.indexOf('.')) : null);
-    } else if (!isChild && expandedBlock?.startsWith(`${key}.`)) {
-      // Clicking parent heading while a child is expanded — collapse everything
-      setExpandedBlock(null);
-    } else {
-      setExpandedBlock(key);
-    }
+    setExpandedBlock(expandedBlock === key ? null : key);
   };
 
   return (
@@ -279,8 +274,7 @@ export function Panel({
                     onCssVariableChange={onCssVariableChange}
                     onLocate={onLocate}
                     onDeleteBlock={onDeleteBlock}
-                    onAddBlock={onAddBlock}
-                    onMoveBlock={onMoveBlock}
+                    onChangeWidgetIndex={onChangeWidgetIndex}
                     onPickElement={onPickElement}
                   />
                 );
@@ -314,7 +308,12 @@ export function Panel({
                 />
               );
             })}
-            <AddWidgetPopover onSelect={onAddBlock} />
+            <AddWidgetPopover
+              onSelect={onAddBlock}
+              filter={(widgetType) => {
+                return widgetType !== 'ais.index';
+              }}
+            />
           </div>
         </div>
       </TabsContent>
