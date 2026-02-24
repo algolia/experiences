@@ -172,6 +172,7 @@ export function App({ config, initialExperience }: AppProps) {
     return sessionStorage.getItem(`experiences.${config.experienceId}.key`);
   });
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const panelRef = useRef<HTMLDivElement>(null);
   const picker = useElementPicker();
 
   const scheduleRun = useCallback((newExperience: ExperienceApiResponse) => {
@@ -638,6 +639,44 @@ export function App({ config, initialExperience }: AppProps) {
   }, [writeApiKey, config, experience]);
 
   useEffect(() => {
+    if (!panelRef.current) {
+      return;
+    }
+
+    const currentPadding = getComputedStyle(document.body).paddingLeft;
+    const panelWidth = panelRef.current.offsetWidth;
+
+    const style = document.createElement('style');
+    style.id = 'algolia-experiences-toolbar-styles';
+    style.textContent = `
+      .algolia-experiences-toolbar {
+        padding-left: ${currentPadding};
+        transition: padding-left 300ms ease-in-out;
+      }
+      .algolia-experiences-toolbar--open {
+        padding-left: calc(${currentPadding} + ${panelWidth}px);
+      }
+    `;
+    document.head.appendChild(style);
+    document.body.classList.add('algolia-experiences-toolbar');
+
+    return () => {
+      document.body.classList.remove(
+        'algolia-experiences-toolbar',
+        'algolia-experiences-toolbar--open'
+      );
+      style.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle(
+      'algolia-experiences-toolbar--open',
+      isExpanded
+    );
+  }, [isExpanded]);
+
+  useEffect(() => {
     if (!toast) {
       return;
     }
@@ -654,6 +693,7 @@ export function App({ config, initialExperience }: AppProps) {
   return (
     <>
       <Panel
+        panelRef={panelRef}
         experience={experience}
         dirty={isDirty}
         saveState={saveState}

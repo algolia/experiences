@@ -1,3 +1,4 @@
+import type { Ref } from 'preact';
 import { useMemo, useEffect, useRef, useState } from 'preact/hooks';
 import type {
   AddBlockResult,
@@ -27,6 +28,7 @@ type PanelProps = {
   onChangeWidgetIndex: (widgetPath: BlockPath, targetIndexName: string) => void;
   onMoveBlock: (fromPath: BlockPath, toParentIndex: number) => void;
   onPickElement: (callback: (selector: string) => void) => void;
+  panelRef?: Ref<HTMLDivElement>;
 };
 
 type Tab = 'manual' | 'ai';
@@ -46,6 +48,7 @@ export function Panel({
   onChangeWidgetIndex,
   onMoveBlock,
   onPickElement,
+  panelRef,
 }: PanelProps) {
   const [tab, setTab] = useState<Tab>('manual');
   const [aiMounted, setAiMounted] = useState(false);
@@ -117,6 +120,7 @@ export function Panel({
 
   return (
     <div
+      ref={panelRef}
       class="bg-background text-foreground fixed left-0 top-0 bottom-0 z-[2147483647] flex w-[480px] flex-col border-r shadow-2xl transition-transform duration-300 ease-in-out"
       style={{ transform: open ? 'translateX(0)' : 'translateX(-100%)' }}
       aria-hidden={!open || undefined}
