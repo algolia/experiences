@@ -579,6 +579,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       container: '',
       attribute: '',
       operator: undefined,
+      sortBy: undefined,
       limit: undefined,
       showMore: false,
       showMoreLimit: undefined,
@@ -594,6 +595,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'placement',
       'attribute',
       'operator',
+      'sortBy',
       'limit',
       'showMore',
       'showMoreLimit',
@@ -613,6 +615,18 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
           { value: 'and', label: 'and' },
         ],
         defaultValue: 'or',
+      },
+      sortBy: {
+        type: 'select-list',
+        label: 'Sort by',
+        options: [
+          { value: 'count:asc', label: 'Count (asc)' },
+          { value: 'count:desc', label: 'Count (desc)' },
+          { value: 'name:asc', label: 'Name (asc)' },
+          { value: 'name:desc', label: 'Name (desc)' },
+          { value: 'isRefined:asc', label: 'Is refined (asc)' },
+          { value: 'isRefined:desc', label: 'Is refined (desc)' },
+        ],
       },
       limit: { type: 'number', label: 'Limit', placeholder: '10' },
       showMore: { type: 'switch', label: 'Show more' },
@@ -688,6 +702,8 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       attribute: 'The facet attribute to display (e.g. "brand").',
       operator:
         'How multiple selections combine: "and" requires all, "or" requires any. Defaults to "or".',
+      sortBy:
+        'Ordered list of sort criteria. Available values: "count:asc", "count:desc", "name:asc", "name:desc", "isRefined:asc", "isRefined:desc".',
       limit: 'Maximum number of facet values to display. Defaults to 10.',
       showMore:
         'When enabled, shows a "Show more" button to reveal additional facet values.',

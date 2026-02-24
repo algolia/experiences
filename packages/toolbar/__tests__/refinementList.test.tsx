@@ -286,6 +286,61 @@ describe('ais.refinementList fields', () => {
     });
   });
 
+  describe('sortBy', () => {
+    it('renders a toggle off by default', () => {
+      const { container } = render();
+      const switchEl = getSwitch(container, 'Sort by');
+      expect(switchEl.getAttribute('aria-checked')).toBe('false');
+    });
+
+    it('calls onParameterChange with first option when toggled on', () => {
+      const { container, onParameterChange } = render();
+      const switchEl = getSwitch(container, 'Sort by');
+      switchEl.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith('sortBy', ['count:asc']);
+    });
+
+    it('calls onParameterChange with undefined when toggled off', () => {
+      const { container, onParameterChange } = render({
+        sortBy: ['name:asc'],
+      });
+      const switchEl = getSwitch(container, 'Sort by');
+      switchEl.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith('sortBy', undefined);
+    });
+
+    it('adds a criterion when clicking Add', () => {
+      const { container, onParameterChange } = render({
+        sortBy: ['count:asc'],
+      });
+      const addButton = Array.from(container.querySelectorAll('button')).find(
+        (btn) => {
+          return btn.textContent?.includes('Add');
+        }
+      )!;
+      addButton.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith('sortBy', [
+        'count:asc',
+        'count:desc',
+      ]);
+    });
+
+    it('removes last item and toggles off', () => {
+      const { container, onParameterChange } = render({
+        sortBy: ['name:asc'],
+      });
+      const removeButton = container.querySelector(
+        'button[aria-label="Remove item"]'
+      ) as HTMLButtonElement;
+      removeButton.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith('sortBy', undefined);
+    });
+  });
+
   describe('cssClasses', () => {
     it('renders a toggle off by default', () => {
       const { container } = render();
