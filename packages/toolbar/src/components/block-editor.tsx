@@ -6,6 +6,7 @@ import { ListField } from './fields/list-field';
 import { NumberField } from './fields/number-field';
 import { ObjectField } from './fields/object-field';
 import { PlacementField } from './fields/placement-field';
+import { SelectField } from './fields/select-field';
 import { SwitchField } from './fields/switch-field';
 import { TextField } from './fields/text-field';
 import { TextPickerField } from './fields/text-picker-field';
@@ -90,6 +91,13 @@ export function BlockEditor({
         const value = parameters[key];
         const override = overrides[key];
 
+        if (override?.visibleIf) {
+          const { key: depKey, value: depValue } = override.visibleIf;
+          if (parameters[depKey] !== depValue) {
+            return null;
+          }
+        }
+
         if (!override) {
           return (
             <TextField
@@ -113,7 +121,29 @@ export function BlockEditor({
                 description={paramDescriptions[key]}
                 checked={Boolean(value)}
                 onToggle={(checked) => {
-                  return onParameterChange(key, checked);
+                  onParameterChange(key, checked);
+                  if (!checked) {
+                    for (const [depKey, depOverride] of Object.entries(
+                      overrides
+                    )) {
+                      if (depOverride.visibleIf?.key === key) {
+                        onParameterChange(depKey, undefined);
+                      }
+                    }
+                  }
+                }}
+              />
+            );
+          case 'select':
+            return (
+              <SelectField
+                key={key}
+                label={override.label}
+                value={typeof value === 'string' ? value : undefined}
+                options={override.options}
+                defaultValue={override.defaultValue}
+                onChange={(selected) => {
+                  return onParameterChange(key, selected);
                 }}
               />
             );

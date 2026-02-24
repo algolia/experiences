@@ -222,20 +222,18 @@ describe('toolbar', () => {
         });
 
         // Disabled items are rendered as <div> elements, not <button>
-        // Check that "Refinement List" is not a button
+        // Check that "Sort By" is not a button
         const buttons = Array.from(
           host.shadowRoot?.querySelectorAll('button') ?? []
         );
         const disabledButton = buttons.find((btn) => {
-          return (
-            btn.textContent?.includes('Refinement List') && btn !== addButton
-          );
+          return btn.textContent?.includes('Sort By') && btn !== addButton;
         });
         expect(disabledButton).toBeUndefined();
 
         // Verify the text is still rendered (as a div)
         const popoverText = host.shadowRoot?.innerHTML ?? '';
-        expect(popoverText).toContain('Refinement List');
+        expect(popoverText).toContain('Sort By');
       });
     });
 

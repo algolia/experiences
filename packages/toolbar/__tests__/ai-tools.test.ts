@@ -90,9 +90,12 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('excludedAttributes');
   });
 
-  it('excludes disabled widget types', () => {
+  it('includes refinementList widget type', () => {
     const result = describeWidgetTypes();
-    expect(result).not.toContain('ais.refinementList');
+    expect(result).toContain('ais.refinementList');
+    expect(result).toContain('Refinement List');
+    expect(result).toContain('attribute');
+    expect(result).toContain('searchable');
   });
 });
 
@@ -844,6 +847,44 @@ describe('getTools', () => {
       });
     });
 
+    it('adds refinementList widget with parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.refinementList',
+          container: '#filters',
+          parameters: { attribute: 'brand', searchable: true },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'attribute',
+          'searchable',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'attribute',
+        'brand'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'searchable',
+        true
+      );
+    });
+
     it('computes the correct index for non-empty experiences', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
@@ -1531,6 +1572,48 @@ describe('getTools', () => {
         'excludedAttributes',
         ['query']
       );
+    });
+
+    it('applies parameter changes on refinementList', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.refinementList',
+            parameters: {
+              container: '#filters',
+              attribute: 'brand',
+              searchable: false,
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: { attribute: 'color', showMore: true, limit: 5 },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining(['attribute', 'showMore', 'limit']),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'attribute',
+        'color'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'showMore',
+        true
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'limit', 5);
     });
 
     it('returns empty applied when all parameters are rejected', async () => {

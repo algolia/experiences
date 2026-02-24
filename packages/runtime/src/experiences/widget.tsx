@@ -10,6 +10,7 @@ import infiniteHits from 'instantsearch.js/es/widgets/infinite-hits/infinite-hit
 import { EXPERIMENTAL_autocomplete } from 'instantsearch.js/es/widgets/autocomplete/autocomplete';
 import clearRefinements from 'instantsearch.js/es/widgets/clear-refinements/clear-refinements';
 import pagination from 'instantsearch.js/es/widgets/pagination/pagination';
+import refinementList from 'instantsearch.js/es/widgets/refinement-list/refinement-list';
 import searchBox from 'instantsearch.js/es/widgets/search-box/search-box';
 import stats from 'instantsearch.js/es/widgets/stats/stats';
 
@@ -173,6 +174,14 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
       // TODO: Add support for `cache` (bucket 3 function)
       'ais.infiniteHits': {
         widget: infiniteHits,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
+      // TODO: Add support for `templates` (item, showMoreText, searchableNoResults, searchableSubmit, searchableReset, searchableLoadingIndicator)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.refinementList': {
+        widget: refinementList,
         async transformParams(parameters) {
           return parameters;
         },
