@@ -89,6 +89,8 @@ export function App({ config, initialExperience }: AppProps) {
     return sessionStorage.getItem(`experiences.${config.experienceId}.key`);
   });
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const panelWidth = useRef(0);
   const picker = useElementPicker();
 
   const scheduleRun = useCallback((newExperience: ExperienceApiResponse) => {
@@ -507,6 +509,22 @@ export function App({ config, initialExperience }: AppProps) {
   }, [writeApiKey, config, experience]);
 
   useEffect(() => {
+    if (isExpanded) {
+      panelWidth.current = panelRef.current?.offsetWidth ?? panelWidth.current;
+    }
+
+    document.body.style.transition = 'padding-left 300ms ease-in-out';
+    document.body.style.paddingLeft = isExpanded
+      ? `${panelWidth.current}px`
+      : '0px';
+
+    return () => {
+      document.body.style.paddingLeft = '';
+      document.body.style.transition = '';
+    };
+  }, [isExpanded]);
+
+  useEffect(() => {
     if (!toast) {
       return;
     }
@@ -523,6 +541,7 @@ export function App({ config, initialExperience }: AppProps) {
   return (
     <>
       <Panel
+        panelRef={panelRef}
         experience={experience}
         dirty={isDirty}
         saveState={saveState}
