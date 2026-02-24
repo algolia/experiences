@@ -8,6 +8,7 @@ import { PlacementField } from './fields/placement-field';
 import { SwitchField } from './fields/switch-field';
 import { TextField } from './fields/text-field';
 import { TextPickerField } from './fields/text-picker-field';
+import { ItemsListField } from './fields/items-list-field';
 import { ToggleableTextField } from './fields/toggleable-text-field';
 
 type BlockEditorProps = {
@@ -189,6 +190,22 @@ export function BlockEditor({
                 }}
               />
             );
+          case 'items-list': {
+            const items = Array.isArray(value)
+              ? (value as Array<Record<string, string>>)
+              : [];
+            return (
+              <ItemsListField
+                key={key}
+                label={override.label}
+                items={items}
+                fields={override.fields}
+                onItemsChange={(newItems) => {
+                  return onParameterChange(key, newItems);
+                }}
+              />
+            );
+          }
           case 'object': {
             const enabled = typeof value === 'object' && value !== null;
             const objectValue = enabled
