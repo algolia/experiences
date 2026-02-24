@@ -158,37 +158,25 @@ export function App({ config, initialExperience }: AppProps) {
     if (writeApiKey) {
       setIsExpanded(true);
     } else {
-      window.open(
-        `${DASHBOARD_BASE[config.env || 'prod']}/apps/${config.appId}/experiences/${initialExperience.indexName}/authenticate/${config.experienceId}?previewUrl=${encodeURIComponent(location.href)}`,
-        '_blank'
-      );
+      location.href = `${DASHBOARD_BASE[config.env || 'prod']}/apps/${config.appId}/experiences/${initialExperience.indexName}/authenticate/${config.experienceId}?previewUrl=${encodeURIComponent(location.href)}`;
     }
   };
 
   useEffect(() => {
-    function onMessage(event: MessageEvent) {
-      if (
-        event.origin !== DASHBOARD_BASE[config.env || 'prod'] ||
-        event.data?.type !== 'algoliaExperiencesKey'
-      ) {
-        return;
-      }
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
 
-      const key = event.data?.key;
-      if (typeof key !== 'string') {
-        return;
-      }
-
-      setWriteApiKey(key);
-      sessionStorage.setItem(`experiences.${config.experienceId}.key`, key);
+    if (token) {
+      setWriteApiKey(token);
+      sessionStorage.setItem(`experiences.${config.experienceId}.key`, token);
       setIsExpanded(true);
-    }
 
-    window.addEventListener('message', onMessage);
-    return () => {
-      window.removeEventListener('message', onMessage);
-    };
-  }, [config.env, config.experienceId]);
+      params.delete('token');
+      const query = params.toString();
+      const url = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`;
+      window.history.replaceState({}, '', url);
+    }
+  }, [config.experienceId]);
 
   const onParameterChange = useCallback(
     (path: BlockPath, key: string, value: unknown) => {
