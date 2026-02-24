@@ -10,6 +10,7 @@ export type FieldOverride = FieldOverrideBase &
     | { type: 'switch'; label: string }
     | { type: 'number'; label: string; placeholder?: string }
     | { type: 'text'; label: string; placeholder?: string; picker?: boolean }
+    | { type: 'facet-value'; label: string; placeholder?: string }
     | {
         type: 'toggleable-text';
         label: string;
@@ -913,10 +914,58 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   },
   'ais.toggleRefinement': {
     label: 'Toggle Refinement',
-    enabled: false,
+    description:
+      'A checkbox toggle that filters results by a single faceted boolean attribute (e.g., free shipping).',
+    enabled: true,
     icon: TOGGLE_ICON,
     defaultParameters: {
       container: '',
+      attribute: '',
+      // oxlint-disable-next-line id-length
+      on: undefined,
+      off: undefined,
+      cssClasses: false,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'attribute',
+      'on',
+      'off',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      // oxlint-disable-next-line id-length
+      on: { type: 'facet-value', label: 'On Value', placeholder: 'true' },
+      off: { type: 'facet-value', label: 'Off Value' },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        defaultValue: { root: '', label: '', checkbox: '', labelText: '' },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'label', label: 'Label' },
+          { key: 'checkbox', label: 'Checkbox' },
+          { key: 'labelText', label: 'Label Text' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attribute: 'Attribute',
+      // oxlint-disable-next-line id-length
+      on: 'On Value',
+      off: 'Off Value',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#toggle").',
+      attribute:
+        'The name of the faceted boolean attribute to toggle (e.g. "free_shipping").',
+      // oxlint-disable-next-line id-length
+      on: 'Value to filter on when the toggle is checked (defaults to "true").',
+      off: 'Value to filter on when the toggle is unchecked (defaults to no refinement).',
+      cssClasses: 'Custom CSS classes for the widget markup.',
     },
   },
   'ais.trendingItems': {

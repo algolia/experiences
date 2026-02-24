@@ -76,6 +76,12 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('[index-independent]');
   });
 
+  it('includes toggleRefinement widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.toggleRefinement');
+    expect(result).toContain('Toggle Refinement');
+  });
+
   it('includes pagination widget type', () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.pagination');
@@ -425,6 +431,42 @@ describe('getTools', () => {
         placement: 'body',
         applied: ['placement'],
       });
+    });
+
+    it('adds a toggleRefinement widget with attribute and on parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0]);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.toggleRefinement',
+          container: '#toggle',
+          parameters: { attribute: 'free_shipping', on: true },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({ success: true });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'attribute',
+        'free_shipping'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'on',
+        true
+      );
     });
 
     it('uses default placement from widget config when not specified', async () => {
@@ -1648,6 +1690,35 @@ describe('getTools', () => {
         true
       );
       expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'limit', 5);
+    });
+
+    it('edits toggleRefinement attribute parameter', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.toggleRefinement',
+            parameters: { container: '#toggle', attribute: 'free_shipping' },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '0', parameters: { attribute: 'on_sale' } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['attribute'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'attribute',
+        'on_sale'
+      );
     });
 
     it('returns empty applied when all parameters are rejected', async () => {
