@@ -6,7 +6,17 @@ const CANARY_URL =
 const LOCAL_PREFIX = '/__local__/';
 const RESOLVER_URL =
   'https://experiences-bundle-resolver.algolia-5d2.workers.dev';
-const DIST_DIR = resolve(__dirname, '../../packages/experiences/dist');
+const PACKAGES_DIR = resolve(__dirname, '../../packages');
+
+function resolveDistFile(filename) {
+  if (filename.startsWith('runtime')) {
+    return resolve(PACKAGES_DIR, 'runtime/dist', filename);
+  }
+  if (filename.startsWith('toolbar')) {
+    return resolve(PACKAGES_DIR, 'toolbar/dist', filename);
+  }
+  return resolve(PACKAGES_DIR, 'experiences/dist', filename);
+}
 
 function transformForPreview(html) {
   // Inject staging banner after <body>
@@ -46,7 +56,9 @@ export default {
   build: {
     rollupOptions: {
       input: Object.fromEntries(
-        pages.map((page) => {return [page.replace('.html', ''), resolve(__dirname, page)]})
+        pages.map((page) => {
+          return [page.replace('.html', ''), resolve(__dirname, page)];
+        })
       ),
     },
   },
@@ -72,11 +84,13 @@ export default {
       configureServer(server) {
         // Reload the browser when local dist files change (e.g. after
         // tsdown --watch rebuilds the toolbar or runtime).
-        watch(DIST_DIR, (_, filename) => {
-          if (filename?.endsWith('.js')) {
-            server.ws.send({ type: 'full-reload' });
-          }
-        });
+        for (const pkg of ['experiences', 'runtime', 'toolbar']) {
+          watch(resolve(PACKAGES_DIR, pkg, 'dist'), (_, filename) => {
+            if (filename?.endsWith('.js')) {
+              server.ws.send({ type: 'full-reload' });
+            }
+          });
+        }
 
         // Mock the resolver: return a bundleUrl pointing to the local prefix.
         server.middlewares.use((req, res, next) => {
@@ -97,7 +111,7 @@ export default {
           if (!pathname.startsWith(LOCAL_PREFIX)) return next();
 
           const filename = pathname.slice(LOCAL_PREFIX.length);
-          const filePath = resolve(DIST_DIR, filename);
+          const filePath = resolveDistFile(filename);
 
           try {
             let content = readFileSync(filePath, 'utf-8');
