@@ -6,6 +6,7 @@ import type {
 } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 import { BlockEditor } from './block-editor';
+import { InfoTooltip } from './fields/info-tooltip';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader } from './ui/card';
@@ -15,6 +16,7 @@ import {
   CollapsibleTrigger,
 } from './ui/collapsible';
 import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 type BlockCardProps = {
   type: string;
@@ -206,11 +208,15 @@ export function BlockCard({
         <CollapsibleContent open={open}>
           <CardContent class="border-t px-4 py-3">
             {indexBlocks && onChangeIndex && parentIndex !== undefined && (
-              <div class="mb-3">
-                <label class="block text-xs font-medium text-foreground">
+              <div class="mb-3 space-y-1">
+                <Label>
                   Index
-                </label>
-                <div class="relative mt-1">
+                  <InfoTooltip
+                    content="The Algolia index this widget queries."
+                    class="mt-0.5"
+                  />
+                </Label>
+                <div class="relative">
                   <Input
                     value={
                       isEditingIndex ? indexInputValue : parentIndexName || ''
