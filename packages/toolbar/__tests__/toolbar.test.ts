@@ -169,6 +169,7 @@ describe('toolbar', () => {
         expect(popoverText).toContain('Configure');
         expect(popoverText).toContain('Pagination');
         expect(popoverText).toContain('Sort By');
+        expect(popoverText).toContain('Menu');
         expect(popoverText).toContain('Toggle Refinement');
         expect(popoverText).toContain('Hits Per Page');
         expect(popoverText).toContain('Hits');

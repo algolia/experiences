@@ -42,6 +42,11 @@ export type FieldOverride = FieldOverrideBase &
         }>;
       }
     | { type: 'list'; label: string; placeholder?: string; excludes?: string }
+    | {
+        type: 'select-list';
+        label: string;
+        options: Array<{ value: string; label: string }>;
+      }
   );
 
 export type WidgetTypeConfig = {
@@ -698,6 +703,101 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         'When enabled, escapes the facet values returned from Algolia during search.',
       searchableSelectOnSubmit:
         'When enabled, submitting the search selects the first item in the list.',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
+    },
+  },
+  'ais.menu': {
+    label: 'Menu',
+    description:
+      'A single-select facet list that lets users filter results by choosing one value from a given attribute.',
+    enabled: true,
+    icon: LIST_ICON,
+    defaultParameters: {
+      container: '',
+      attribute: '',
+      limit: undefined,
+      showMore: false,
+      showMoreLimit: undefined,
+      sortBy: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'attribute',
+      'limit',
+      'showMore',
+      'showMoreLimit',
+      'sortBy',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      limit: { type: 'number', label: 'Limit', placeholder: '10' },
+      showMore: { type: 'switch', label: 'Show more' },
+      showMoreLimit: {
+        type: 'number',
+        label: 'Show more limit',
+        placeholder: '20',
+        visibleIf: { key: 'showMore', value: true },
+      },
+      sortBy: {
+        type: 'select-list',
+        label: 'Sort by',
+        options: [
+          { value: 'count:asc', label: 'Count (asc)' },
+          { value: 'count:desc', label: 'Count (desc)' },
+          { value: 'name:asc', label: 'Name (asc)' },
+          { value: 'name:desc', label: 'Name (desc)' },
+          { value: 'isRefined:asc', label: 'Is refined (asc)' },
+          { value: 'isRefined:desc', label: 'Is refined (desc)' },
+        ],
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          item: '',
+          selectedItem: '',
+          link: '',
+          label: '',
+          count: '',
+          showMore: '',
+          disabledShowMore: '',
+        },
+        disabledValue: undefined,
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'selectedItem', label: 'Selected item' },
+          { key: 'link', label: 'Link' },
+          { key: 'label', label: 'Label' },
+          { key: 'count', label: 'Count' },
+          { key: 'showMore', label: 'Show more' },
+          { key: 'disabledShowMore', label: 'Disabled show more' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attribute: 'Attribute',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#menu").',
+      attribute: 'The facet attribute to display (e.g. "category").',
+      limit: 'Maximum number of facet values to display. Defaults to 10.',
+      showMore:
+        'When enabled, shows a "Show more" button to reveal additional facet values.',
+      showMoreLimit:
+        'Maximum number of facet values when "Show more" is expanded. Defaults to 20.',
+      sortBy:
+        'Ordered list of sort criteria. Available values: "count:asc", "count:desc", "name:asc", "name:desc", "isRefined:asc", "isRefined:desc".',
       cssClasses:
         'Custom CSS classes to apply to the widget elements for styling.',
     },
