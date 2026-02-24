@@ -23,7 +23,7 @@ const autocompleteCss = readFileSync(autocompleteCssPath, 'utf-8');
 export default defineConfig({
   entry: { runtime: 'src/index.ts' },
   format: ['umd'],
-  outDir: '../experiences/dist',
+  outDir: 'dist',
   globalName: 'AlgoliaExperiences',
   target: 'es2020',
   platform: 'browser',
