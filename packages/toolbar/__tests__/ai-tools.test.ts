@@ -49,6 +49,8 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Sort By');
     expect(result).toContain('ais.stats');
     expect(result).toContain('Stats');
+    expect(result).toContain('ais.hitsPerPage');
+    expect(result).toContain('Hits Per Page');
   });
 
   it('includes widget descriptions and parameter descriptions', () => {
@@ -80,6 +82,12 @@ describe('describeWidgetTypes', () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.toggleRefinement');
     expect(result).toContain('Toggle Refinement');
+  });
+
+  it('includes hitsPerPage widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.hitsPerPage');
+    expect(result).toContain('Hits Per Page');
   });
 
   it('includes pagination widget type', () => {
@@ -926,6 +934,48 @@ describe('getTools', () => {
         [0],
         'searchable',
         true
+      );
+    });
+
+    it('adds a hitsPerPage widget with items parameter', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0]);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.hitsPerPage',
+          container: '#hits-per-page',
+          parameters: {
+            items: [
+              { value: '20', label: '20 per page' },
+              { value: '50', label: '50 per page' },
+            ],
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining(['placement', 'container', 'items']),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'items',
+        [
+          { value: '20', label: '20 per page' },
+          { value: '50', label: '50 per page' },
+        ]
       );
     });
 
@@ -1970,6 +2020,45 @@ describe('getTools', () => {
         'cssClasses',
         { root: 'my-stats', text: 'my-text' }
       );
+    });
+
+    it('edits hitsPerPage items parameter', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.hitsPerPage',
+            parameters: {
+              container: '#hits-per-page',
+              items: [{ value: '20', label: '20 per page' }],
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            items: [
+              { value: '20', label: '20 per page' },
+              { value: '50', label: '50 per page' },
+            ],
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['items'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'items', [
+        { value: '20', label: '20 per page' },
+        { value: '50', label: '50 per page' },
+      ]);
     });
 
     it('edits sortBy items parameter', async () => {

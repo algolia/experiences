@@ -252,7 +252,9 @@ export function BlockEditor({
                 label={override.label}
                 items={items}
                 fields={override.fields}
-                lockedFirstValue={parentIndexName}
+                lockedFirstValue={
+                  type === 'ais.sortBy' ? parentIndexName : undefined
+                }
                 onItemsChange={(newItems) => {
                   return onParameterChange(key, newItems);
                 }}

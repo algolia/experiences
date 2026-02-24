@@ -199,6 +199,23 @@ const SORT_ICON = (
   </svg>
 );
 
+const HASH_ICON = (
+  <svg
+    class="size-4 shrink-0"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <line x1="4" x2="20" y1="9" y2="9" />
+    <line x1="4" x2="20" y1="15" y2="15" />
+    <line x1="10" x2="8" y1="3" y2="21" />
+    <line x1="16" x2="14" y1="3" y2="21" />
+  </svg>
+);
+
 const SLIDER_ICON = (
   <svg
     class="size-4 shrink-0"
@@ -893,6 +910,58 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         'CSS selector for the DOM element to render into (e.g. "#sort").',
       items:
         'List of sort options, each mapping a replica index name to a display label. The first item always targets the parent index (default sort) and its value is auto-synced.',
+      cssClasses: 'Custom CSS classes for the widget markup.',
+    },
+  },
+  'ais.hitsPerPage': {
+    label: 'Hits Per Page',
+    description:
+      'A dropdown selector that lets the user choose how many results to display per page.',
+    enabled: true,
+    icon: HASH_ICON,
+    defaultParameters: {
+      container: '',
+      items: [],
+      cssClasses: false,
+    },
+    fieldOrder: ['container', 'placement', 'items', 'cssClasses'],
+    fieldOverrides: {
+      items: {
+        type: 'items-list',
+        label: 'Page sizes',
+        fields: [
+          {
+            key: 'value',
+            label: 'Hits per page',
+            placeholder: 'e.g. 20',
+            inputType: 'number',
+          },
+          {
+            key: 'label',
+            label: 'Label',
+            placeholder: 'e.g. 20 per page',
+          },
+        ],
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        defaultValue: { root: '', select: '', option: '' },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'select', label: 'Select' },
+          { key: 'option', label: 'Option' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#hits-per-page").',
+      items:
+        'List of page size options, each mapping a number of hits to a display label. The first item is automatically marked as the default.',
       cssClasses: 'Custom CSS classes for the widget markup.',
     },
   },
