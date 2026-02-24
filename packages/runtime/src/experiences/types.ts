@@ -4,6 +4,13 @@ import type {
   Widget,
 } from 'instantsearch.js/es/types';
 import type { ChatWidget } from 'instantsearch.js/es/widgets/chat/chat';
+import type { ClearRefinementsWidget } from 'instantsearch.js/es/widgets/clear-refinements/clear-refinements';
+import type { ConfigureWidget } from 'instantsearch.js/es/widgets/configure/configure';
+import type { HitsWidget } from 'instantsearch.js/es/widgets/hits/hits';
+import type { InfiniteHitsWidget } from 'instantsearch.js/es/widgets/infinite-hits/infinite-hits';
+import type { PaginationWidget } from 'instantsearch.js/es/widgets/pagination/pagination';
+import type { SearchBoxWidget } from 'instantsearch.js/es/widgets/search-box/search-box';
+import type { StatsWidget } from 'instantsearch.js/es/widgets/stats/stats';
 
 export type Environment = 'prod' | 'beta';
 
@@ -37,6 +44,7 @@ type SupportedWidget<
   TApiParameters = ExperienceApiBlockParameters,
 > = {
   widget: (...args: any[]) => Widget | Array<IndexWidget | Widget>;
+  headless?: boolean;
   transformParams: (
     params: TApiParameters,
     options: {
@@ -50,6 +58,27 @@ export type ExperienceWidget = Widget & {
   $$widgetParams: ExperienceWidgetParams;
   $$supportedWidgets: {
     'ais.chat': SupportedWidget<Parameters<ChatWidget>[0]>;
+    'ais.configure': SupportedWidget<Parameters<ConfigureWidget>[0]>;
     'ais.autocomplete': SupportedWidget;
-  } & Record<'ais.chat' | 'ais.autocomplete' | (string & {}), SupportedWidget>;
+    'ais.clearRefinements': SupportedWidget<
+      Parameters<ClearRefinementsWidget>[0]
+    >;
+    'ais.hits': SupportedWidget<Parameters<HitsWidget>[0]>;
+    'ais.infiniteHits': SupportedWidget<Parameters<InfiniteHitsWidget>[0]>;
+    'ais.pagination': SupportedWidget<Parameters<PaginationWidget>[0]>;
+    'ais.searchBox': SupportedWidget<Parameters<SearchBoxWidget>[0]>;
+    'ais.stats': SupportedWidget<Parameters<StatsWidget>[0]>;
+  } & Record<
+    | 'ais.chat'
+    | 'ais.configure'
+    | 'ais.autocomplete'
+    | 'ais.clearRefinements'
+    | 'ais.hits'
+    | 'ais.infiniteHits'
+    | 'ais.pagination'
+    | 'ais.searchBox'
+    | 'ais.stats'
+    | (string & {}),
+    SupportedWidget
+  >;
 };

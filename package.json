@@ -24,6 +24,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "oxlint": "^1.43.0",
+    "portless": "^0.4.0",
     "prettier": "^3.7.4",
     "turbo": "^2.8.3",
     "typescript": "5.9.2"

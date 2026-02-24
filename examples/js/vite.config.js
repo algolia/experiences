@@ -38,6 +38,11 @@ function resolveFile(urlPath) {
 const pages = ['index.html', 'search.html', 'product.html'];
 
 export default {
+  server: {
+    host: '127.0.0.1',
+    port: process.env.PORT ? Number(process.env.PORT) : undefined,
+    strictPort: Boolean(process.env.PORT),
+  },
   build: {
     rollupOptions: {
       input: Object.fromEntries(
@@ -46,6 +51,18 @@ export default {
     },
   },
   plugins: [
+    {
+      name: 'portless-url',
+      configureServer(server) {
+        const name = process.env.PORTLESS_NAME;
+        if (!name) return;
+        const port = process.env.PORTLESS_PORT || 1355;
+        server.printUrls = () => {
+          const url = `http://${name}.localhost:${port}/`;
+          server.config.logger.info(`  ➜  Portless:  ${url}`);
+        };
+      },
+    },
     {
       name: 'local-canary-proxy',
       // Rewrite GitHub canary URLs to a local prefix so Vite serves them.

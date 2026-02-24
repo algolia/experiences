@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 
 import { saveExperience } from '../api';
 import { useElementPicker } from '../hooks/use-element-picker';
+import { sanitizeExperience } from '../lib/utils';
 import type {
   AddBlockResult,
   BlockPath,
@@ -430,12 +431,14 @@ export function App({ config, initialExperience }: AppProps) {
   const onSave = useCallback(async () => {
     setSaveState('saving');
 
+    const sanitized = sanitizeExperience(experience);
+
     try {
       await saveExperience({
         appId: config.appId,
         apiKey: writeApiKey ?? config.apiKey,
         env: config.env ?? 'prod',
-        config: experience,
+        config: sanitized,
       });
 
       setIsDirty(false);

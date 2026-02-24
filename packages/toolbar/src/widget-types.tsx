@@ -17,7 +17,19 @@ export type FieldOverride =
       defaultValue: Record<string, unknown>;
       disabledValue?: false | undefined;
       fields: Array<{ key: string; label: string }>;
-    };
+    }
+  | { type: 'json'; label: string }
+  | {
+      type: 'items-list';
+      label: string;
+      fields: Array<{
+        key: string;
+        label: string;
+        placeholder?: string;
+        inputType?: 'text' | 'number';
+      }>;
+    }
+  | { type: 'list'; label: string; placeholder?: string; excludes?: string };
 
 export type WidgetTypeConfig = {
   label: string;
@@ -223,6 +235,21 @@ const TRENDING_ICON = (
   </svg>
 );
 
+const CONFIGURE_ICON = (
+  <svg
+    class="size-4 shrink-0"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
 const CART_ICON = (
   <svg
     class="size-4 shrink-0"
@@ -236,6 +263,21 @@ const CART_ICON = (
     <circle cx="8" cy="21" r="1" />
     <circle cx="19" cy="21" r="1" />
     <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+  </svg>
+);
+
+const X_ICON = (
+  <svg
+    class="size-4 shrink-0"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
   </svg>
 );
 
@@ -336,20 +378,160 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         'Optional identifier when using multiple indices with the same name.',
     },
   },
+  'ais.configure': {
+    label: 'Configure',
+    description:
+      'A headless widget that sets default Algolia search parameters without rendering any UI.',
+    enabled: true,
+    icon: CONFIGURE_ICON,
+    defaultParameters: {
+      container: '',
+      placement: 'body',
+      searchParameters: {},
+    },
+    fieldOrder: ['searchParameters'],
+    fieldOverrides: {
+      searchParameters: { type: 'json', label: 'Search parameters' },
+    },
+    paramDescriptions: {
+      searchParameters:
+        'Algolia search parameters as JSON (e.g. {"hitsPerPage": 20, "filters": "category:Books"}).',
+    },
+  },
   'ais.hits': {
     label: 'Hits',
-    enabled: false,
+    description:
+      'Displays the list of search results (hits) matching the current query.',
+    enabled: true,
     icon: GRID_ICON,
     defaultParameters: {
       container: '',
+      escapeHTML: true,
+      cssClasses: undefined,
+    },
+    fieldOrder: ['container', 'placement', 'escapeHTML', 'cssClasses'],
+    fieldOverrides: {
+      escapeHTML: { type: 'switch', label: 'Escape HTML' },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          emptyRoot: '',
+          list: '',
+          item: '',
+          bannerRoot: '',
+          bannerImage: '',
+          bannerLink: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'emptyRoot', label: 'Empty root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'bannerRoot', label: 'Banner root' },
+          { key: 'bannerImage', label: 'Banner image' },
+          { key: 'bannerLink', label: 'Banner link' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#hits").',
+      escapeHTML:
+        'When enabled, escapes HTML tags in hit string values to prevent XSS.',
+      cssClasses:
+        'Custom CSS classes to apply to specific parts of the widget.',
     },
   },
   'ais.searchBox': {
     label: 'Search Box',
-    enabled: false,
+    enabled: true,
+    description: 'A search input with submit, reset, and loading indicators.',
     icon: SEARCH_ICON,
     defaultParameters: {
       container: '',
+      placeholder: undefined,
+      autofocus: false,
+      showLoadingIndicator: true,
+      showSubmit: true,
+      showReset: true,
+      searchAsYouType: true,
+      ignoreCompositionEvents: false,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'placeholder',
+      'autofocus',
+      'searchAsYouType',
+      'ignoreCompositionEvents',
+      'showLoadingIndicator',
+      'showSubmit',
+      'showReset',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      placeholder: { type: 'text', label: 'Placeholder' },
+      autofocus: { type: 'switch', label: 'Autofocus' },
+      searchAsYouType: { type: 'switch', label: 'Search as you type' },
+      ignoreCompositionEvents: {
+        type: 'switch',
+        label: 'Ignore composition events',
+      },
+      showLoadingIndicator: { type: 'switch', label: 'Show loading indicator' },
+      showSubmit: { type: 'switch', label: 'Show submit button' },
+      showReset: { type: 'switch', label: 'Show reset button' },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          form: '',
+          input: '',
+          submit: '',
+          submitIcon: '',
+          reset: '',
+          resetIcon: '',
+          loadingIndicator: '',
+          loadingIcon: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'form', label: 'Form' },
+          { key: 'input', label: 'Input' },
+          { key: 'submit', label: 'Submit' },
+          { key: 'submitIcon', label: 'Submit icon' },
+          { key: 'reset', label: 'Reset' },
+          { key: 'resetIcon', label: 'Reset icon' },
+          { key: 'loadingIndicator', label: 'Loading indicator' },
+          { key: 'loadingIcon', label: 'Loading icon' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#search-box").',
+      placeholder: 'Placeholder text shown in the search input.',
+      autofocus: 'Whether the input should be focused on page load.',
+      searchAsYouType:
+        'When enabled, triggers a search on each keystroke. When disabled, searches only on submit.',
+      ignoreCompositionEvents:
+        'When enabled, ignores IME composition events for CJK input.',
+      showLoadingIndicator:
+        'Whether to show a loading indicator while results are being fetched.',
+      showSubmit: 'Whether to show the submit button.',
+      showReset: 'Whether to show the reset button.',
+      cssClasses: 'CSS classes to apply to the widget DOM elements.',
     },
   },
   'ais.refinementList': {
@@ -362,18 +544,162 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   },
   'ais.pagination': {
     label: 'Pagination',
-    enabled: false,
+    description:
+      'A page navigation widget that lets users browse through paginated search results.',
+    enabled: true,
     icon: CHEVRON_LEFT_ICON,
     defaultParameters: {
       container: '',
+      totalPages: undefined,
+      padding: undefined,
+      scrollTo: undefined,
+      showFirst: true,
+      showLast: true,
+      showNext: true,
+      showPrevious: true,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'totalPages',
+      'padding',
+      'scrollTo',
+      'showFirst',
+      'showLast',
+      'showPrevious',
+      'showNext',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      totalPages: { type: 'number', label: 'Total Pages' },
+      padding: { type: 'number', label: 'Padding', placeholder: '3' },
+      scrollTo: {
+        type: 'toggleable-text',
+        label: 'Scroll to',
+        placeholder: 'body',
+        picker: true,
+      },
+      showFirst: { type: 'switch', label: 'Show first page' },
+      showLast: { type: 'switch', label: 'Show last page' },
+      showNext: { type: 'switch', label: 'Show next page' },
+      showPrevious: { type: 'switch', label: 'Show previous page' },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          item: '',
+          firstPageItem: '',
+          lastPageItem: '',
+          previousPageItem: '',
+          nextPageItem: '',
+          pageItem: '',
+          selectedItem: '',
+          disabledItem: '',
+          link: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'firstPageItem', label: 'First page item' },
+          { key: 'lastPageItem', label: 'Last page item' },
+          { key: 'previousPageItem', label: 'Previous page item' },
+          { key: 'nextPageItem', label: 'Next page item' },
+          { key: 'pageItem', label: 'Page item' },
+          { key: 'selectedItem', label: 'Selected item' },
+          { key: 'disabledItem', label: 'Disabled item' },
+          { key: 'link', label: 'Link' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#pagination").',
+      totalPages: 'Maximum number of pages to browse.',
+      padding: 'Number of pages to display on each side of the current page.',
+      scrollTo:
+        'CSS selector to scroll to after a page click. When enabled without a value, scrolls to body. Disable to prevent scrolling.',
+      showFirst: 'When enabled, shows a link to the first page.',
+      showLast: 'When enabled, shows a link to the last page.',
+      showNext: 'When enabled, shows a link to the next page.',
+      showPrevious: 'When enabled, shows a link to the previous page.',
+      cssClasses: 'Custom CSS classes for pagination elements.',
     },
   },
   'ais.infiniteHits': {
     label: 'Infinite Hits',
-    enabled: false,
+    description:
+      'Displays search results with a "Show more" button to load additional pages incrementally.',
+    enabled: true,
     icon: ARROW_DOWN_ICON,
     defaultParameters: {
       container: '',
+      escapeHTML: true,
+      showPrevious: false,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'escapeHTML',
+      'showPrevious',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      escapeHTML: { type: 'switch', label: 'Escape HTML' },
+      showPrevious: { type: 'switch', label: 'Show previous' },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          emptyRoot: '',
+          list: '',
+          item: '',
+          loadPrevious: '',
+          disabledLoadPrevious: '',
+          loadMore: '',
+          disabledLoadMore: '',
+          bannerRoot: '',
+          bannerImage: '',
+          bannerLink: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'emptyRoot', label: 'Empty root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'loadPrevious', label: 'Load previous' },
+          { key: 'disabledLoadPrevious', label: 'Disabled load previous' },
+          { key: 'loadMore', label: 'Load more' },
+          { key: 'disabledLoadMore', label: 'Disabled load more' },
+          { key: 'bannerRoot', label: 'Banner root' },
+          { key: 'bannerImage', label: 'Banner image' },
+          { key: 'bannerLink', label: 'Banner link' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#infinite-hits").',
+      escapeHTML:
+        'When enabled, escapes HTML entities in hit string values for safety.',
+      showPrevious:
+        'When enabled, shows a button to load previous results above the list.',
+      cssClasses: 'Custom CSS classes to apply to the widget elements.',
     },
   },
   'ais.sortBy': {
@@ -414,6 +740,104 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     icon: TRENDING_ICON,
     defaultParameters: {
       container: '',
+    },
+  },
+  'ais.clearRefinements': {
+    label: 'Clear Refinements',
+    description:
+      'A button that lets users remove all active filters and refinements at once.',
+    enabled: true,
+    icon: X_ICON,
+    defaultParameters: {
+      container: '',
+      includedAttributes: undefined,
+      excludedAttributes: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'includedAttributes',
+      'excludedAttributes',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      includedAttributes: {
+        type: 'list',
+        label: 'Included attributes',
+        placeholder: 'e.g. brand',
+        excludes: 'excludedAttributes',
+      },
+      excludedAttributes: {
+        type: 'list',
+        label: 'Excluded attributes',
+        placeholder: 'e.g. query',
+        excludes: 'includedAttributes',
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        defaultValue: {
+          root: '',
+          button: '',
+          disabledButton: '',
+        },
+        disabledValue: undefined,
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'button', label: 'Button' },
+          { key: 'disabledButton', label: 'Disabled button' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      includedAttributes: 'Included attributes',
+      excludedAttributes: 'Excluded attributes',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#clear-refinements").',
+      includedAttributes:
+        'Only clear refinements from these attributes. When empty, all refinements are clearable.',
+      excludedAttributes: 'Never clear refinements from these attributes.',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
+    },
+  },
+  'ais.stats': {
+    label: 'Stats',
+    description:
+      'Displays search result statistics such as the number of hits and processing time.',
+    enabled: true,
+    icon: TRENDING_ICON,
+    defaultParameters: {
+      container: '',
+      cssClasses: undefined,
+    },
+    fieldOrder: ['container', 'placement', 'cssClasses'],
+    fieldOverrides: {
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          text: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'text', label: 'Text' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#stats").',
+      cssClasses: 'Custom CSS classes to apply to the widget elements.',
     },
   },
   'ais.frequentlyBoughtTogether': {

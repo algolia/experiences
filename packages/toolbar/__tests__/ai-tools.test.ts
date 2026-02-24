@@ -37,6 +37,16 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Chat');
     expect(result).toContain('ais.index');
     expect(result).toContain('Index');
+    expect(result).toContain('ais.configure');
+    expect(result).toContain('Configure');
+    expect(result).toContain('ais.hits');
+    expect(result).toContain('Hits');
+    expect(result).toContain('ais.infiniteHits');
+    expect(result).toContain('Infinite Hits');
+    expect(result).toContain('ais.searchBox');
+    expect(result).toContain('Search Box');
+    expect(result).toContain('ais.stats');
+    expect(result).toContain('Stats');
   });
 
   it('includes widget descriptions and parameter descriptions', () => {
@@ -45,6 +55,9 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Parameters:');
     expect(result).toContain('showRecent');
     expect(result).toContain('recent searches');
+    expect(result).toContain('search results');
+    expect(result).toContain('escapeHTML');
+    expect(result).toContain('XSS');
   });
 
   it('includes default placement per widget type', () => {
@@ -53,6 +66,7 @@ describe('describeWidgetTypes', () => {
       'ais.autocomplete ("Autocomplete", default placement: inside)'
     );
     expect(result).toContain('ais.chat ("Chat", default placement: body)');
+    expect(result).toContain('ais.hits ("Hits", default placement: inside)');
   });
 
   it('marks index-independent widgets', () => {
@@ -60,10 +74,25 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('[index-independent]');
   });
 
+  it('includes pagination widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.pagination');
+    expect(result).toContain('Pagination');
+    expect(result).toContain('paginated search results');
+    expect(result).toContain('showFirst');
+  });
+
+  it('includes clearRefinements widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.clearRefinements');
+    expect(result).toContain('Clear Refinements');
+    expect(result).toContain('includedAttributes');
+    expect(result).toContain('excludedAttributes');
+  });
+
   it('excludes disabled widget types', () => {
     const result = describeWidgetTypes();
-    expect(result).not.toContain('ais.hits');
-    expect(result).not.toContain('ais.pagination');
+    expect(result).not.toContain('ais.refinementList');
   });
 });
 
@@ -514,7 +543,308 @@ describe('getTools', () => {
       expect(result).toMatchObject({ success: true });
     });
 
+    it('skips container and placement inside parameters to avoid duplication', async () => {
+      const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      await tools.add_widget.execute!(
+        {
+          type: 'ais.autocomplete',
+          container: '#search',
+          placement: 'before',
+          parameters: {
+            container: '#other',
+            placement: 'after',
+            showRecent: true,
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      // Top-level container and placement should be used
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'container',
+        '#search'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'placement',
+        'before'
+      );
+      // container and placement inside parameters should be skipped
+      expect(callbacks.onParameterChange).not.toHaveBeenCalledWith(
+        [0],
+        'container',
+        '#other'
+      );
+      expect(callbacks.onParameterChange).not.toHaveBeenCalledWith(
+        [0],
+        'placement',
+        'after'
+      );
+      // Other params inside parameters should still be applied
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'showRecent',
+        true
+      );
+    });
+
+    it('returns error when container is missing for non-body placement', async () => {
+      const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.autocomplete' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: false,
+        error: expect.stringContaining('container'),
+      });
+      expect(callbacks.onAddBlock).not.toHaveBeenCalled();
+    });
+
+    it('adds hits with default inside placement and container', async () => {
+      const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.hits', container: '#hits' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.hits', undefined);
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'placement',
+        'inside'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'container',
+        '#hits'
+      );
+      expect(result).toMatchObject({
+        success: true,
+        path: '0',
+        type: 'ais.hits',
+        placement: 'inside',
+        container: '#hits',
+        applied: ['placement', 'container'],
+        rejected: [],
+      });
+    });
+
+    it('adds searchBox with default inside placement and container', async () => {
+      const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.searchBox', container: '#search-box' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith(
+        'ais.searchBox',
+        undefined
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'placement',
+        'inside'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'container',
+        '#search-box'
+      );
+      expect(result).toMatchObject({
+        success: true,
+        path: '0',
+        type: 'ais.searchBox',
+        placement: 'inside',
+        container: '#search-box',
+        applied: ['placement', 'container'],
+        rejected: [],
+      });
+    });
+
+    it('adds clearRefinements widget with list parameters', async () => {
+      const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.clearRefinements',
+          container: '#clear',
+          parameters: {
+            includedAttributes: ['brand', 'color'],
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'includedAttributes',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'includedAttributes',
+        ['brand', 'color']
+      );
+    });
+
     it('adds ais.index widget at top level', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.index', parameters: { indexName: 'products' } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.index', undefined);
+      expect(result).toMatchObject({
+        success: true,
+        type: 'ais.index',
+      });
+    });
+
+    it('adds an infinite hits widget with default parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.infiniteHits', container: '#hits' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith(
+        'ais.infiniteHits',
+        undefined
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'container',
+        '#hits'
+      );
+      expect(result).toMatchObject({
+        success: true,
+        type: 'ais.infiniteHits',
+      });
+    });
+
+    it('adds an infinite hits widget with showPrevious enabled', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      await tools.add_widget.execute!(
+        {
+          type: 'ais.infiniteHits',
+          container: '#hits',
+          parameters: { showPrevious: true },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'showPrevious',
+        true
+      );
+    });
+
+    it('adds a pagination widget with boolean parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.pagination',
+          container: '#pagination',
+          parameters: { showFirst: false, padding: 5 },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        type: 'ais.pagination',
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'showFirst',
+          'padding',
+        ]),
+        rejected: [],
+      });
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith(
+        'ais.pagination',
+        undefined
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'showFirst',
+        false
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'padding',
+        5
+      );
+    });
+
+    it('adds ais.stats widget', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        { type: 'ais.stats', container: '#stats' },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith('ais.stats', undefined);
+      expect(result).toMatchObject({
+        success: true,
+        type: 'ais.stats',
+        container: '#stats',
+      });
+    });
+
+    it('computes the correct index for non-empty experiences', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -700,6 +1030,48 @@ describe('getTools', () => {
 
       expect(result).toMatchObject({ success: true });
       expect(result).not.toHaveProperty('note');
+    });
+
+    it('adds configure widget with body placement and no container', async () => {
+      const experience: ExperienceApiResponse = { blocks: [] };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.configure',
+          parameters: { searchParameters: { hitsPerPage: 20 } },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        path: '0',
+        type: 'ais.configure',
+        placement: 'body',
+        applied: expect.arrayContaining(['placement', 'searchParameters']),
+        rejected: [],
+      });
+      expect(callbacks.onAddBlock).toHaveBeenCalledWith(
+        'ais.configure',
+        undefined
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'placement',
+        'body'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'searchParameters',
+        { hitsPerPage: 20 }
+      );
+      expect(callbacks.onParameterChange).not.toHaveBeenCalledWith(
+        [0],
+        'container',
+        expect.anything()
+      );
     });
   });
 
@@ -1009,6 +1381,158 @@ describe('getTools', () => {
       );
     });
 
+    it('edits infinite hits escapeHTML parameter', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.infiniteHits',
+            parameters: { container: '#hits', escapeHTML: true },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '0', parameters: { escapeHTML: false } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['escapeHTML'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'escapeHTML',
+        false
+      );
+    });
+
+    it('edits infinite hits cssClasses parameter', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.infiniteHits',
+            parameters: { container: '#hits' },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: { cssClasses: { root: 'my-root', item: 'my-item' } },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining(['cssClasses']),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'cssClasses',
+        { root: 'my-root', item: 'my-item' }
+      );
+    });
+
+    it('applies boolean and cssClasses changes on a pagination widget', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.pagination',
+            parameters: {
+              container: '#pagination',
+              showFirst: true,
+              cssClasses: { root: '' },
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            showFirst: false,
+            cssClasses: { root: 'my-root' },
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining(['showFirst', 'cssClasses']),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'showFirst',
+        false
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'cssClasses',
+        { root: 'my-root' }
+      );
+    });
+
+    it('applies list parameter changes on clearRefinements', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.clearRefinements',
+            parameters: {
+              container: '#clear',
+              includedAttributes: [],
+              excludedAttributes: [],
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            includedAttributes: ['brand'],
+            excludedAttributes: ['query'],
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'includedAttributes',
+          'excludedAttributes',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'includedAttributes',
+        ['brand']
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'excludedAttributes',
+        ['query']
+      );
+    });
+
     it('returns empty applied when all parameters are rejected', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
@@ -1033,6 +1557,231 @@ describe('getTools', () => {
         rejected: ['unknownA', 'unknownB'],
       });
       expect(callbacks.onParameterChange).not.toHaveBeenCalled();
+    });
+
+    it('applies a boolean parameter with switch override on hits', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.hits',
+            parameters: { container: '#hits', escapeHTML: true },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '0', parameters: { escapeHTML: false } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['escapeHTML'],
+        rejected: [],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'escapeHTML',
+        false
+      );
+    });
+
+    it('applies an object parameter (cssClasses) on hits', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.hits',
+            parameters: { container: '#hits' },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            cssClasses: { root: 'my-root', item: 'my-item' },
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['cssClasses'],
+        rejected: [],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'cssClasses',
+        { root: 'my-root', item: 'my-item' }
+      );
+    });
+
+    it('includes invalid path in bounds error message', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.autocomplete',
+            parameters: { container: '#search' },
+          },
+          {
+            type: 'ais.chat',
+            parameters: { container: '#chat', placement: 'body' },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '5', parameters: { container: '#new' } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: false,
+        error: expect.stringContaining('Invalid path'),
+      });
+    });
+
+    it('applies a boolean parameter with switch override on searchBox', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.searchBox',
+            parameters: { container: '#search-box', searchAsYouType: true },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '0', parameters: { searchAsYouType: false } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['searchAsYouType'],
+        rejected: [],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'searchAsYouType',
+        false
+      );
+    });
+
+    it('applies an object parameter (cssClasses) on searchBox', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.searchBox',
+            parameters: { container: '#search-box' },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            cssClasses: { root: 'my-root', input: 'my-input' },
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['cssClasses'],
+        rejected: [],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'cssClasses',
+        { root: 'my-root', input: 'my-input' }
+      );
+    });
+
+    it('applies a json parameter (searchParameters) on configure', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.configure',
+            parameters: { searchParameters: { hitsPerPage: 10 } },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            searchParameters: { hitsPerPage: 20, filters: 'category:Books' },
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['searchParameters'],
+        rejected: [],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'searchParameters',
+        { hitsPerPage: 20, filters: 'category:Books' }
+      );
+    });
+
+    it('edits ais.stats cssClasses', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.stats',
+            parameters: { container: '#stats' },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: { cssClasses: { root: 'my-stats', text: 'my-text' } },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['cssClasses'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'cssClasses',
+        { root: 'my-stats', text: 'my-text' }
+      );
     });
   });
 

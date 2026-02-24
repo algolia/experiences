@@ -4,7 +4,14 @@ import {
 } from 'instantsearch.js/es/lib/utils';
 import { getExperience } from './get-experience';
 import chat from 'instantsearch.js/es/widgets/chat/chat';
+import configure from 'instantsearch.js/es/widgets/configure/configure';
+import hits from 'instantsearch.js/es/widgets/hits/hits';
+import infiniteHits from 'instantsearch.js/es/widgets/infinite-hits/infinite-hits';
 import { EXPERIMENTAL_autocomplete } from 'instantsearch.js/es/widgets/autocomplete/autocomplete';
+import clearRefinements from 'instantsearch.js/es/widgets/clear-refinements/clear-refinements';
+import pagination from 'instantsearch.js/es/widgets/pagination/pagination';
+import searchBox from 'instantsearch.js/es/widgets/search-box/search-box';
+import stats from 'instantsearch.js/es/widgets/stats/stats';
 
 import { renderTemplate, renderTool } from './renderer';
 import type { ExperienceWidget } from './types';
@@ -89,6 +96,24 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
           });
         },
       },
+      'ais.configure': {
+        widget: configure,
+        headless: true,
+        async transformParams(params) {
+          const { searchParameters } = params as typeof params & {
+            searchParameters?: Record<string, unknown>;
+          };
+
+          return { ...searchParameters };
+        },
+      },
+      // TODO: Add support for `templates` (first, previous, page, next, last)
+      'ais.pagination': {
+        widget: pagination,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
       'ais.autocomplete': {
         widget: EXPERIMENTAL_autocomplete,
         async transformParams(params) {
@@ -125,6 +150,46 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
                 }
               : {}),
           });
+        },
+      },
+      // TODO: Add support for `templates` (resetLabel)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.clearRefinements': {
+        widget: clearRefinements,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
+      // TODO: Add support for `templates` (item, empty, banner)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.hits': {
+        widget: hits,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
+      // TODO: Add support for `templates` (item, empty, showMoreText)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      // TODO: Add support for `cache` (bucket 3 function)
+      'ais.infiniteHits': {
+        widget: infiniteHits,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
+      // TODO: Add support for `templates` (submit, reset, loadingIndicator)
+      // TODO: Add support for `queryHook` (bucket 3 — function)
+      'ais.searchBox': {
+        widget: searchBox,
+        async transformParams(params) {
+          return params;
+        },
+      },
+      // TODO: Add support for `templates` (text)
+      'ais.stats': {
+        widget: stats,
+        async transformParams(parameters) {
+          return parameters;
         },
       },
     },

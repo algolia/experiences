@@ -1,12 +1,15 @@
 import type { ExperienceApiBlockParameters, Placement } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 import { CssVariablesEditor } from './fields/css-variables-editor';
+import { JsonField } from './fields/json-field';
+import { ListField } from './fields/list-field';
 import { NumberField } from './fields/number-field';
 import { ObjectField } from './fields/object-field';
 import { PlacementField } from './fields/placement-field';
 import { SwitchField } from './fields/switch-field';
 import { TextField } from './fields/text-field';
 import { TextPickerField } from './fields/text-picker-field';
+import { ItemsListField } from './fields/items-list-field';
 import { ToggleableTextField } from './fields/toggleable-text-field';
 
 type BlockEditorProps = {
@@ -27,6 +30,7 @@ export function BlockEditor({
   const widgetType = WIDGET_TYPES[type];
   const overrides = widgetType?.fieldOverrides ?? {};
   const paramLabels = widgetType?.paramLabels ?? {};
+  const paramDescriptions = widgetType?.paramDescriptions ?? {};
 
   const columns = widgetType?.columns;
 
@@ -91,6 +95,7 @@ export function BlockEditor({
             <TextField
               key={key}
               label={paramLabels[key] ?? key}
+              description={paramDescriptions[key]}
               value={typeof value === 'string' ? value : JSON.stringify(value)}
               onInput={(text) => {
                 return onParameterChange(key, text);
@@ -105,6 +110,7 @@ export function BlockEditor({
               <SwitchField
                 key={key}
                 label={override.label}
+                description={paramDescriptions[key]}
                 checked={Boolean(value)}
                 onToggle={(checked) => {
                   return onParameterChange(key, checked);
@@ -170,6 +176,59 @@ export function BlockEditor({
                 onPickElement={onPickElement}
               />
             );
+          case 'json':
+            return (
+              <JsonField
+                key={key}
+                label={override.label}
+                value={
+                  typeof value === 'object' && value !== null
+                    ? (value as Record<string, unknown>)
+                    : {}
+                }
+                onChange={(newValue) => {
+                  return onParameterChange(key, newValue);
+                }}
+              />
+            );
+          case 'items-list': {
+            const items = Array.isArray(value)
+              ? (value as Array<Record<string, string>>)
+              : [];
+            return (
+              <ItemsListField
+                key={key}
+                label={override.label}
+                items={items}
+                fields={override.fields}
+                onItemsChange={(newItems) => {
+                  return onParameterChange(key, newItems);
+                }}
+              />
+            );
+          }
+          case 'list': {
+            const enabled = Array.isArray(value);
+            const items = enabled ? (value as string[]) : [];
+            return (
+              <ListField
+                key={key}
+                label={override.label}
+                enabled={enabled}
+                items={items}
+                placeholder={override.placeholder}
+                onToggle={(toggled) => {
+                  onParameterChange(key, toggled);
+                  if (toggled && override.excludes) {
+                    onParameterChange(override.excludes, undefined);
+                  }
+                }}
+                onItemsChange={(newItems) => {
+                  return onParameterChange(key, newItems);
+                }}
+              />
+            );
+          }
           case 'object': {
             const enabled = typeof value === 'object' && value !== null;
             const objectValue = enabled
@@ -179,6 +238,7 @@ export function BlockEditor({
               <ObjectField
                 key={key}
                 label={override.label}
+                description={paramDescriptions[key]}
                 enabled={enabled}
                 value={objectValue}
                 defaultValue={override.defaultValue}
