@@ -187,16 +187,17 @@ export default (function experience(
                       const { name, brand, description, image, price } =
                         Object.entries(template).reduce(
                           (acc, [key, attr]) => {
-                            acc[key] = attr ? hit[attr] : undefined;
+                            acc[key] =
+                              key === 'currency'
+                                ? attr
+                                : attr
+                                  ? hit[attr]
+                                  : undefined;
                             return acc;
                           },
                           {} as Record<string, unknown>
                         );
-
-                      console.log({
-                        template,
-                        map: { name, brand, description, image, price },
-                      });
+                      const currency = template.currency || '';
 
                       return html`
                         <div
@@ -219,7 +220,7 @@ export default (function experience(
                           <div style="flex-grow:1"></div>
                           ${price &&
                           html`<span style="flex-shrink:0;font-weight:bold"
-                            >${price}</span
+                            >${currency}${price}</span
                           >`}
                         </div>
                       `;

@@ -13,6 +13,7 @@ import { SwitchField } from './fields/switch-field';
 import { TextField } from './fields/text-field';
 import { TextPickerField } from './fields/text-picker-field';
 import { ItemsListField } from './fields/items-list-field';
+import { ItemTemplateField } from './fields/item-template-field';
 import { ToggleableTextField } from './fields/toggleable-text-field';
 
 type BlockEditorProps = {
@@ -303,6 +304,28 @@ export function BlockEditor({
                 onItemsChange={(newItems) => {
                   return onParameterChange(key, newItems);
                 }}
+              />
+            );
+          }
+          case 'item-template': {
+            const templateValue =
+              typeof value === 'object' && value !== null
+                ? (value as Record<string, unknown>)
+                : {};
+            return (
+              <ItemTemplateField
+                key={key}
+                label={override.label}
+                description={paramDescriptions[key]}
+                value={templateValue}
+                fields={override.fields}
+                onFieldChange={(subKey, subValue) => {
+                  return onParameterChange(key, {
+                    ...templateValue,
+                    [subKey]: subValue,
+                  });
+                }}
+                indexName={parentIndexName}
               />
             );
           }

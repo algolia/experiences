@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { fetchExperience, saveExperience } from '../src/api';
+import { fetchExperience, fetchIndexRecords, saveExperience } from '../src/api';
 
 const server = setupServer();
 
@@ -212,5 +212,78 @@ describe('saveExperience', () => {
         config: { blocks: [] },
       })
     ).rejects.toThrow('Failed to save experience: 403');
+  });
+});
+
+describe('fetchIndexRecords', () => {
+  it('fetches records from the Algolia search API', async () => {
+    server.use(
+      http.post(
+        'https://APP_ID-dsn.algolia.net/1/indexes/my_index/query',
+        () => {
+          return HttpResponse.json({
+            hits: [{ name: 'Widget', objectID: '1' }],
+          });
+        }
+      )
+    );
+
+    const result = await fetchIndexRecords({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      indexName: 'my_index',
+    });
+
+    expect(result).toEqual([{ name: 'Widget', objectID: '1' }]);
+  });
+
+  it('sends correct headers and body', async () => {
+    let headers: Headers;
+    let body: unknown;
+
+    server.use(
+      http.post(
+        'https://APP_ID-dsn.algolia.net/1/indexes/my_index/query',
+        async ({ request }) => {
+          headers = request.headers;
+          body = await request.json();
+
+          return HttpResponse.json({ hits: [] });
+        }
+      )
+    );
+
+    await fetchIndexRecords({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      indexName: 'my_index',
+    });
+
+    expect(headers!.get('X-Algolia-Application-ID')).toBe('APP_ID');
+    expect(headers!.get('X-Algolia-API-Key')).toBe('API_KEY');
+    expect(body).toEqual({
+      hitsPerPage: 10,
+      attributesToHighlight: [],
+      attributesToSnippet: [],
+    });
+  });
+
+  it('returns empty array on error', async () => {
+    server.use(
+      http.post(
+        'https://APP_ID-dsn.algolia.net/1/indexes/my_index/query',
+        () => {
+          return new HttpResponse(null, { status: 403 });
+        }
+      )
+    );
+
+    const result = await fetchIndexRecords({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      indexName: 'my_index',
+    });
+
+    expect(result).toEqual([]);
   });
 });

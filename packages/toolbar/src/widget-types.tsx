@@ -47,6 +47,12 @@ export type FieldOverride = FieldOverrideBase &
         label: string;
         options: Array<{ value: string; label: string }>;
       }
+    | {
+        type: 'item-template';
+        label: string;
+        defaultValue: Record<string, unknown>;
+        fields: Array<{ key: string; label: string }>;
+      }
   );
 
 export type WidgetTypeConfig = {
@@ -456,7 +462,14 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     defaultParameters: {
       container: '',
       escapeHTML: true,
-      template: { name: '', brand: '', description: '', image: '', price: '' },
+      template: {
+        name: '',
+        brand: '',
+        description: '',
+        image: '',
+        price: '',
+        currency: '',
+      },
       cssClasses: undefined,
     },
     fieldOrder: [
@@ -469,15 +482,15 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     fieldOverrides: {
       escapeHTML: { type: 'switch', label: 'Escape HTML' },
       template: {
-        type: 'object',
+        type: 'item-template',
         label: 'Template',
-        disabledValue: undefined,
         defaultValue: {
           name: '',
           brand: '',
           description: '',
           image: '',
           price: '',
+          currency: '',
         },
         fields: [
           { key: 'name', label: 'Name' },
@@ -485,6 +498,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
           { key: 'description', label: 'Description' },
           { key: 'image', label: 'Image' },
           { key: 'price', label: 'Price' },
+          { key: 'currency', label: 'Currency' },
         ],
       },
       cssClasses: {

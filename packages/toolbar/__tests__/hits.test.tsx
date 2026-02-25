@@ -40,57 +40,7 @@ describe('ais.hits field behavior', () => {
     });
   });
 
-  describe('object field (template)', () => {
-    it('renders the toggle when template is present', () => {
-      const { container } = render({
-        template: {
-          name: '',
-          brand: '',
-          description: '',
-          image: '',
-          price: '',
-        },
-      });
-      const toggle = getSwitch(container, 'Template');
-
-      expect(toggle).not.toBeNull();
-    });
-
-    it('sends undefined when toggled off', () => {
-      const { onParameterChange, container } = render({
-        template: {
-          name: 'title',
-          brand: '',
-          description: '',
-          image: '',
-          price: '',
-        },
-      });
-      const toggle = getSwitch(container, 'Template');
-
-      toggle.click();
-
-      expect(onParameterChange).toHaveBeenCalledWith('template', undefined);
-    });
-
-    it('sends the default object merged with existing values when toggled on', () => {
-      const { onParameterChange, container } = render();
-      const toggle = getSwitch(container, 'Template');
-
-      toggle.click();
-
-      expect(onParameterChange).toHaveBeenCalledWith(
-        'template',
-        expect.objectContaining({
-          name: '',
-          brand: '',
-          description: '',
-          image: '',
-          price: '',
-        })
-      );
-    });
-
+  describe('item-template field (template)', () => {
     it('sends the updated object when a sub-field changes', () => {
       const { onParameterChange, container } = render({
         template: {
@@ -99,6 +49,7 @@ describe('ais.hits field behavior', () => {
           description: '',
           image: '',
           price: '',
+          currency: '',
         },
       });
       const input = getInput(container, 'Name');
@@ -108,6 +59,27 @@ describe('ais.hits field behavior', () => {
       expect(onParameterChange).toHaveBeenCalledWith(
         'template',
         expect.objectContaining({ name: 'product_name' })
+      );
+    });
+
+    it('sends the updated object when currency changes', () => {
+      const { onParameterChange, container } = render({
+        template: {
+          name: '',
+          brand: '',
+          description: '',
+          image: '',
+          price: '',
+          currency: '',
+        },
+      });
+      const input = getInput(container, 'Currency');
+
+      fireInput(input, '$');
+
+      expect(onParameterChange).toHaveBeenCalledWith(
+        'template',
+        expect.objectContaining({ currency: '$' })
       );
     });
   });
