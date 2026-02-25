@@ -274,6 +274,7 @@ export function BlockEditor({
                 enabled={enabled}
                 items={items}
                 placeholder={override.placeholder}
+                required={override.required}
                 onToggle={(toggled) => {
                   onParameterChange(key, toggled);
                   if (toggled && override.excludes) {
