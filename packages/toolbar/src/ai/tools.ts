@@ -1,6 +1,3 @@
-import { tool } from 'ai';
-import { z } from 'zod';
-
 import type {
   AddBlockResult,
   BlockPath,
@@ -207,279 +204,278 @@ function boundsError(path: string): string {
   return `Invalid path "${path}". Use get_experience to see valid widget paths.`;
 }
 
-export function getTools(callbacks: ToolCallbacks) {
+function executeGetExperience(
+  _args: Record<string, unknown>,
+  callbacks: ToolCallbacks
+) {
+  const experience = callbacks.getExperience();
+  return { state: describeExperience(experience) };
+}
+
+function executeAddWidget(
+  args: Record<string, unknown>,
+  callbacks: ToolCallbacks
+) {
+  const type = args.type as string;
+  const container = args.container as string | undefined;
+  const placement = args.placement as Placement | undefined;
+  const parameters = args.parameters as Record<string, unknown> | undefined;
+  const target_index = args.target_index as number | undefined;
+
+  const config = WIDGET_TYPES[type];
   const enabledKeys = getEnabledTypes().map(([key]) => {
     return key;
   });
-  const typeEnum = z.enum(enabledKeys as [string, ...string[]]);
+
+  if (!enabledKeys.includes(type)) {
+    return {
+      success: false,
+      error: `Unknown widget type "${type}". Available types: ${enabledKeys.join(', ')}`,
+    };
+  }
+
+  const effectivePlacement: Placement =
+    type === 'ais.index'
+      ? 'inside'
+      : (placement ??
+        (config?.defaultParameters.placement as Placement | undefined) ??
+        'inside');
+
+  if (
+    type !== 'ais.index' &&
+    effectivePlacement !== 'body' &&
+    !container &&
+    !parameters?.container
+  ) {
+    return {
+      success: false,
+      error: `A container CSS selector is required when placement is "${effectivePlacement}".`,
+    };
+  }
+
+  if (target_index !== undefined) {
+    const experience = callbacks.getExperience();
+    const targetBlock = experience.blocks[target_index];
+    if (!targetBlock || targetBlock.type !== 'ais.index') {
+      return {
+        success: false,
+        error: `Target index ${target_index} is not an ais.index block.`,
+      };
+    }
+  }
+
+  const result = callbacks.onAddBlock(type, target_index);
+  const newPath = result.path;
+
+  if (type === 'ais.index') {
+    if (parameters) {
+      for (const [key, value] of Object.entries(parameters)) {
+        callbacks.onParameterChange(newPath, key, value);
+      }
+    }
+
+    return { success: true, path: newPath.join('.'), type };
+  }
+
+  const allowedKeys = new Set([
+    ...Object.keys(config?.defaultParameters ?? {}),
+    ...Object.keys(config?.fieldOverrides ?? {}),
+    'placement',
+  ]);
+
+  const applied: string[] = [];
+  const rejected: string[] = [];
+
+  callbacks.onParameterChange(newPath, 'placement', effectivePlacement);
+  applied.push('placement');
+
+  if (container) {
+    callbacks.onParameterChange(newPath, 'container', container);
+    applied.push('container');
+  }
+
+  if (parameters) {
+    for (const [key, value] of Object.entries(parameters)) {
+      if (key === 'container' || key === 'placement') continue;
+      if (allowedKeys.has(key)) {
+        callbacks.onParameterChange(newPath, key, value);
+        applied.push(key);
+      } else {
+        rejected.push(key);
+      }
+    }
+  }
 
   return {
-    get_experience: tool({
-      description:
-        'Get the current experience state, including all widgets and their parameters. Widgets are addressed by path (e.g., "0" for top-level, "1.0" for first child of index block 1).',
-      inputSchema: z.object({}),
-      execute: async () => {
-        const experience = callbacks.getExperience();
-        return { state: describeExperience(experience) };
-      },
-    }),
-
-    add_widget: tool({
-      description:
-        'Add a new widget to the experience. Index-dependent widgets (all except ais.chat, ais.autocomplete, ais.index) are automatically placed inside an ais.index block. When placement is "body", no container is needed. For other placements, a container CSS selector is required.',
-      inputSchema: z.object({
-        type: typeEnum.describe('The widget type to add'),
-        container: z
-          .string()
-          .optional()
-          .describe(
-            'CSS selector for the container element (required unless placement is "body" or type is "ais.index")'
-          ),
-        placement: z
-          .enum<
-            Placement,
-            [Placement, ...Placement[]]
-          >(['inside', 'before', 'after', 'replace', 'body'])
-          .optional()
-          .describe(
-            'Where to place the widget relative to the container. Uses the widget type default placement if not specified.'
-          ),
-        parameters: z
-          .record(z.unknown())
-          .optional()
-          .describe('Additional parameters for the widget'),
-        target_index: z
-          .number()
-          .optional()
-          .describe(
-            'Index of the ais.index block to add this widget to. Only for index-dependent widgets. If omitted, uses the last index block or auto-creates one.'
-          ),
-      }),
-      execute: async ({
-        type,
-        container,
-        placement,
-        parameters,
-        target_index,
-      }) => {
-        const config = WIDGET_TYPES[type];
-
-        // Validate container before mutating state
-        const effectivePlacement: Placement =
-          type === 'ais.index'
-            ? 'inside'
-            : (placement ??
-              (config?.defaultParameters.placement as Placement | undefined) ??
-              'inside');
-
-        if (
-          type !== 'ais.index' &&
-          effectivePlacement !== 'body' &&
-          !container &&
-          !parameters?.container
-        ) {
-          return {
-            success: false,
-            error: `A container CSS selector is required when placement is "${effectivePlacement}".`,
-          };
-        }
-
-        if (target_index !== undefined) {
-          const experience = callbacks.getExperience();
-          const targetBlock = experience.blocks[target_index];
-          if (!targetBlock || targetBlock.type !== 'ais.index') {
-            return {
-              success: false,
-              error: `Target index ${target_index} is not an ais.index block.`,
-            };
-          }
-        }
-
-        const result = callbacks.onAddBlock(type, target_index);
-        const newPath = result.path;
-
-        if (type === 'ais.index') {
-          if (parameters) {
-            for (const [key, value] of Object.entries(parameters)) {
-              callbacks.onParameterChange(newPath, key, value);
-            }
-          }
-
-          return { success: true, path: newPath.join('.'), type };
-        }
-
-        const allowedKeys = new Set([
-          ...Object.keys(config?.defaultParameters ?? {}),
-          ...Object.keys(config?.fieldOverrides ?? {}),
-          'placement',
-        ]);
-
-        const applied: string[] = [];
-        const rejected: string[] = [];
-
-        callbacks.onParameterChange(newPath, 'placement', effectivePlacement);
-        applied.push('placement');
-
-        if (container) {
-          callbacks.onParameterChange(newPath, 'container', container);
-          applied.push('container');
-        }
-
-        if (parameters) {
-          for (const [key, value] of Object.entries(parameters)) {
-            if (key === 'container' || key === 'placement') continue;
-            if (allowedKeys.has(key)) {
-              callbacks.onParameterChange(newPath, key, value);
-              applied.push(key);
-            } else {
-              rejected.push(key);
-            }
-          }
-        }
-
-        return {
-          success: true,
-          path: newPath.join('.'),
-          type,
-          placement: effectivePlacement,
-          container,
-          applied,
-          rejected,
-          ...(result.indexCreated && {
-            note: `An ais.index block was auto-created at path ${newPath[0]} but has no indexName. Ask the user which Algolia index to target, then use edit_widget to set it.`,
-          }),
-        };
-      },
-    }),
-
-    edit_widget: tool({
-      description:
-        'Edit parameters of an existing widget. Address widgets by path (e.g., "0" for top-level, "1.0" for first child of index block 1).',
-      inputSchema: z.object({
-        path: z
-          .string()
-          .describe('The path of the widget to edit (e.g., "0", "1.0")'),
-        parameters: z
-          .record(z.unknown())
-          .describe('Parameters to update (key-value pairs)'),
-      }),
-      execute: async ({ path, parameters }) => {
-        const experience = callbacks.getExperience();
-        const blockPath = parsePath(path);
-
-        if (!blockPath) {
-          return { success: false, error: boundsError(path) };
-        }
-
-        const block = resolveBlock(experience, blockPath);
-        if (!block) {
-          return { success: false, error: boundsError(path) };
-        }
-
-        const config = WIDGET_TYPES[block.type];
-        const allowedKeys = new Set([
-          ...Object.keys(config?.defaultParameters ?? {}),
-          ...Object.keys(config?.fieldOverrides ?? {}),
-          'placement',
-        ]);
-
-        const applied: string[] = [];
-        const rejected: string[] = [];
-
-        for (const [key, value] of Object.entries(parameters)) {
-          if (
-            key === 'cssVariables' &&
-            typeof value === 'object' &&
-            value !== null
-          ) {
-            for (const [cssKey, cssValue] of Object.entries(
-              value as Record<string, string>
-            )) {
-              callbacks.onCssVariableChange(blockPath, cssKey, cssValue);
-              applied.push(`cssVariables.${cssKey}`);
-            }
-          } else if (allowedKeys.has(key)) {
-            callbacks.onParameterChange(blockPath, key, value);
-            applied.push(key);
-          } else {
-            rejected.push(key);
-          }
-        }
-
-        return { success: true, path, applied, rejected };
-      },
-    }),
-
-    remove_widget: tool({
-      description:
-        'Remove a widget from the experience by its path (e.g., "0" for top-level, "1.0" for first child of index block 1).',
-      inputSchema: z.object({
-        path: z
-          .string()
-          .describe('The path of the widget to remove (e.g., "0", "1.0")'),
-      }),
-      execute: async ({ path }) => {
-        const experience = callbacks.getExperience();
-        const blockPath = parsePath(path);
-
-        if (!blockPath) {
-          return { success: false, error: boundsError(path) };
-        }
-
-        const block = resolveBlock(experience, blockPath);
-        if (!block) {
-          return { success: false, error: boundsError(path) };
-        }
-
-        callbacks.onDeleteBlock(blockPath);
-
-        return { success: true, removedType: block.type, removedPath: path };
-      },
-    }),
-
-    move_widget: tool({
-      description:
-        'Move a widget from one ais.index block to another. The widget must be inside an index block (path has two parts, e.g., "1.0").',
-      inputSchema: z.object({
-        path: z
-          .string()
-          .describe(
-            'The path of the widget to move (e.g., "1.0" for first child of index block 1)'
-          ),
-        to_index: z
-          .number()
-          .describe(
-            'The top-level index of the target ais.index block to move the widget to'
-          ),
-      }),
-      execute: async ({ path, to_index }) => {
-        const experience = callbacks.getExperience();
-        const blockPath = parsePath(path);
-
-        if (!blockPath || blockPath.length !== 2) {
-          return {
-            success: false,
-            error: `Invalid path "${path}". Only nested widgets (e.g., "1.0") can be moved between index blocks.`,
-          };
-        }
-
-        const block = resolveBlock(experience, blockPath);
-        if (!block) {
-          return { success: false, error: boundsError(path) };
-        }
-
-        const targetBlock = experience.blocks[to_index];
-        if (!targetBlock || targetBlock.type !== 'ais.index') {
-          return {
-            success: false,
-            error: `Target index ${to_index} is not an ais.index block.`,
-          };
-        }
-
-        callbacks.onMoveBlock(blockPath, to_index);
-
-        return { success: true, movedType: block.type, from: path, to_index };
-      },
+    success: true,
+    path: newPath.join('.'),
+    type,
+    placement: effectivePlacement,
+    container,
+    applied,
+    rejected,
+    ...(result.indexCreated && {
+      note: `An ais.index block was auto-created at path ${newPath[0]} but has no indexName. Ask the user which Algolia index to target, then use edit_widget to set it.`,
     }),
   };
+}
+
+function executeEditWidget(
+  args: Record<string, unknown>,
+  callbacks: ToolCallbacks
+) {
+  const path = args.path as string;
+  const parameters = args.parameters as Record<string, unknown>;
+
+  const experience = callbacks.getExperience();
+  const blockPath = parsePath(path);
+
+  if (!blockPath) {
+    return { success: false, error: boundsError(path) };
+  }
+
+  const block = resolveBlock(experience, blockPath);
+  if (!block) {
+    return { success: false, error: boundsError(path) };
+  }
+
+  const config = WIDGET_TYPES[block.type];
+  const allowedKeys = new Set([
+    ...Object.keys(config?.defaultParameters ?? {}),
+    ...Object.keys(config?.fieldOverrides ?? {}),
+    'placement',
+  ]);
+
+  const applied: string[] = [];
+  const rejected: string[] = [];
+
+  for (const [key, value] of Object.entries(parameters)) {
+    if (key === 'cssVariables' && typeof value === 'object' && value !== null) {
+      for (const [cssKey, cssValue] of Object.entries(
+        value as Record<string, string>
+      )) {
+        callbacks.onCssVariableChange(blockPath, cssKey, cssValue);
+        applied.push(`cssVariables.${cssKey}`);
+      }
+    } else if (allowedKeys.has(key)) {
+      callbacks.onParameterChange(blockPath, key, value);
+      applied.push(key);
+    } else {
+      rejected.push(key);
+    }
+  }
+
+  return { success: true, path, applied, rejected };
+}
+
+function executeRemoveWidget(
+  args: Record<string, unknown>,
+  callbacks: ToolCallbacks
+) {
+  const path = args.path as string;
+
+  const experience = callbacks.getExperience();
+  const blockPath = parsePath(path);
+
+  if (!blockPath) {
+    return { success: false, error: boundsError(path) };
+  }
+
+  const block = resolveBlock(experience, blockPath);
+  if (!block) {
+    return { success: false, error: boundsError(path) };
+  }
+
+  callbacks.onDeleteBlock(blockPath);
+
+  return { success: true, removedType: block.type, removedPath: path };
+}
+
+function executeMoveWidget(
+  args: Record<string, unknown>,
+  callbacks: ToolCallbacks
+) {
+  const path = args.path as string;
+  const to_index = args.to_index as number;
+
+  const experience = callbacks.getExperience();
+  const blockPath = parsePath(path);
+
+  if (!blockPath || blockPath.length !== 2) {
+    return {
+      success: false,
+      error: `Invalid path "${path}". Only nested widgets (e.g., "1.0") can be moved between index blocks.`,
+    };
+  }
+
+  const block = resolveBlock(experience, blockPath);
+  if (!block) {
+    return { success: false, error: boundsError(path) };
+  }
+
+  const targetBlock = experience.blocks[to_index];
+  if (!targetBlock || targetBlock.type !== 'ais.index') {
+    return {
+      success: false,
+      error: `Target index ${to_index} is not an ais.index block.`,
+    };
+  }
+
+  callbacks.onMoveBlock(blockPath, to_index);
+
+  return { success: true, movedType: block.type, from: path, to_index };
+}
+
+const TOOL_EXECUTORS: Record<
+  string,
+  (
+    args: Record<string, unknown>,
+    callbacks: ToolCallbacks
+  ) => Record<string, unknown>
+> = {
+  get_experience: executeGetExperience,
+  add_widget: executeAddWidget,
+  edit_widget: executeEditWidget,
+  remove_widget: executeRemoveWidget,
+  move_widget: executeMoveWidget,
+};
+
+export function buildSystemPrompt(): string {
+  return `You are an AI assistant that helps users edit their Algolia Experience by adding, editing, and removing widgets.
+
+## Available widget types
+
+${describeWidgetTypes()}
+
+## Placement
+
+Each widget has a \`placement\` that controls where it renders relative to a container element:
+- \`inside\` — renders inside the container (replaces its content).
+- \`before\` — renders just before the container element.
+- \`after\` — renders just after the container element.
+- \`replace\` — replaces the container element entirely.
+- \`body\` — appends to the document body (no container needed).
+
+Each widget type has a default placement listed above. When placement is \`body\`, no container CSS selector is needed. For all other placements, a container CSS selector is required — ask the user for one if not provided.
+
+## Rules
+
+- When calling add_widget or edit_widget, widget-specific settings (like \`agentId\`, \`showRecent\`, \`cssVariables\`) MUST go inside the \`parameters\` field as key-value pairs, NOT as top-level arguments. Only \`type\`, \`container\`, \`placement\`, and \`target_index\` are top-level for add_widget, only \`path\` is top-level for edit_widget. When adding a widget, include all known parameters in the same call.
+- Only modify parameters that are listed as editable for each widget type.
+- Keep responses concise and confirm what you did after each action. Do not explain internal mechanics (index blocks, placements, paths) unless the user asks. Just ask for what you need in plain language (e.g., "Where should I place it? (CSS selector)" instead of explaining the placement system).
+- Before editing or removing, ALWAYS call get_experience first to verify current widget paths and state.
+- Refer to widgets by their path from get_experience results.
+- If the user's request is ambiguous, ask for clarification.`;
+}
+
+export function executeToolCall(
+  toolName: string,
+  args: Record<string, unknown>,
+  callbacks: ToolCallbacks
+): Record<string, unknown> {
+  const executor = TOOL_EXECUTORS[toolName];
+  if (!executor) {
+    return { success: false, error: `Unknown tool: ${toolName}` };
+  }
+  return executor(args, callbacks);
 }

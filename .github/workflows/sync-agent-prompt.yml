@@ -1,0 +1,35 @@
+name: Sync Agent Prompt
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - packages/toolbar/src/widget-types.tsx
+      - packages/toolbar/src/ai/tools.ts
+      - scripts/sync-agent-prompt.ts
+  workflow_dispatch:
+
+concurrency:
+  group: sync-agent-prompt
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    name: Sync Agent Studio Prompt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+      - run: npm ci
+      - run: npx tsx scripts/sync-agent-prompt.ts
+        env:
+          TSX_TSCONFIG_PATH: packages/toolbar/tsconfig.json
+          AGENT_STUDIO_STAGING_APP_ID: ${{ secrets.AGENT_STUDIO_STAGING_APP_ID }}
+          AGENT_STUDIO_STAGING_API_KEY: ${{ secrets.AGENT_STUDIO_STAGING_API_KEY }}
+          AGENT_STUDIO_STAGING_AGENT_ID: ${{ secrets.AGENT_STUDIO_STAGING_AGENT_ID }}
+          AGENT_STUDIO_PROD_APP_ID: ${{ secrets.AGENT_STUDIO_PROD_APP_ID }}
+          AGENT_STUDIO_PROD_API_KEY: ${{ secrets.AGENT_STUDIO_PROD_API_KEY }}
+          AGENT_STUDIO_PROD_AGENT_ID: ${{ secrets.AGENT_STUDIO_PROD_AGENT_ID }}

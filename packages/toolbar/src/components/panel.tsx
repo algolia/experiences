@@ -14,6 +14,8 @@ import { Button } from './ui/button';
 import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 
 type PanelProps = {
+  appId: string;
+  apiKey: string;
   experience: ExperienceApiResponse;
   dirty: boolean;
   saveState: SaveState;
@@ -33,6 +35,8 @@ type PanelProps = {
 type Tab = 'manual' | 'ai';
 
 export function Panel({
+  appId,
+  apiKey,
   experience,
   dirty,
   saveState,
@@ -331,6 +335,8 @@ export function Panel({
           class={`flex-1 outline-none flex flex-col overflow-hidden ${tab === 'ai' ? '' : 'hidden'}`}
         >
           <AiChat
+            appId={appId}
+            apiKey={apiKey}
             experience={experience}
             onAddBlock={onAddBlock}
             onParameterChange={onParameterChange}

@@ -1,17 +1,22 @@
-import { createOpenAI } from '@ai-sdk/openai';
 import { useChat } from '@ai-sdk/react';
-import { DirectChatTransport, ToolLoopAgent } from 'ai';
+import {
+  DefaultChatTransport,
+  lastAssistantMessageIsCompleteWithToolCalls,
+} from 'ai';
 import { Marked } from 'marked';
 import { Fragment } from 'preact';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef } from 'preact/hooks';
 
 import type {
   AddBlockResult,
   BlockPath,
   ExperienceApiResponse,
 } from '../types';
-import { buildSystemPrompt } from '../ai/system-prompt';
-import { describeToolAction, getTools, type ToolCallbacks } from '../ai/tools';
+import {
+  describeToolAction,
+  executeToolCall,
+  type ToolCallbacks,
+} from '../ai/tools';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Button } from './ui/button';
 
@@ -21,15 +26,7 @@ const marked = new Marked({
 });
 
 const STORAGE_KEY = 'algolia-experiences-ai-chat';
-const MODEL_STORAGE_KEY = 'algolia-experiences-ai-model';
-const DEFAULT_MODEL = 'gpt-4o';
-const MODELS = [
-  { id: 'gpt-4o', label: 'GPT-4o' },
-  { id: 'gpt-4o-mini', label: 'GPT-4o Mini' },
-  { id: 'gpt-4.1', label: 'GPT-4.1' },
-  { id: 'gpt-4.1-mini', label: 'GPT-4.1 Mini' },
-  { id: 'gpt-4.1-nano', label: 'GPT-4.1 Nano' },
-];
+const AGENT_ID = 'e51e9dee-6d2a-4a9b-ae95-1e24292d8458';
 
 type ToolCallDetailsProps = {
   toolName: string;
@@ -72,101 +69,9 @@ function ToolCallDetails({ toolName, input, output }: ToolCallDetailsProps) {
   );
 }
 
-type ModelPickerProps = {
-  model: string;
-  open: boolean;
-  disabled: boolean;
-  onToggle: () => void;
-  onSelect: (id: string) => void;
-  onClose: () => void;
-};
-
-function ModelPicker({
-  model,
-  open,
-  disabled,
-  onToggle,
-  onSelect,
-  onClose,
-}: ModelPickerProps) {
-  return (
-    <div class="relative flex items-center">
-      <button
-        type="button"
-        class="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        onClick={onToggle}
-        disabled={disabled}
-      >
-        <svg
-          class="size-3 shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M12 8V4H8" />
-          <rect width="16" height="12" x="4" y="8" rx="2" />
-          <path d="M2 14h2" />
-          <path d="M20 14h2" />
-          <path d="M15 13v2" />
-          <path d="M9 13v2" />
-        </svg>
-        {MODELS.find((entry) => {
-          return entry.id === model;
-        })?.label ?? model}
-        <svg
-          class="size-3 shrink-0 opacity-50"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="m6 9 6 6 6-6" />
-        </svg>
-      </button>
-      {open && (
-        <>
-          <div class="fixed inset-0 z-40" onClick={onClose} />
-          <div class="absolute bottom-full left-0 z-50 mb-1 min-w-[160px] rounded-lg border bg-background p-1 shadow-md">
-            {MODELS.map((entry) => {
-              return (
-                <button
-                  key={entry.id}
-                  type="button"
-                  class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted"
-                  onClick={() => {
-                    return onSelect(entry.id);
-                  }}
-                >
-                  <span class="flex-1">{entry.label}</span>
-                  {entry.id === model && (
-                    <svg
-                      class="size-3 shrink-0"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M20 6 9 17l-5-5" />
-                    </svg>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
 type AiChatProps = {
+  appId: string;
+  apiKey: string;
   experience: ExperienceApiResponse;
   onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
   onParameterChange: (path: BlockPath, key: string, value: unknown) => void;
@@ -176,6 +81,8 @@ type AiChatProps = {
 };
 
 export function AiChat({
+  appId,
+  apiKey,
   experience,
   onAddBlock,
   onParameterChange,
@@ -183,19 +90,6 @@ export function AiChat({
   onDeleteBlock,
   onMoveBlock,
 }: AiChatProps) {
-  const apiKey = window.__OPENAI_API_KEY__;
-  const [model, setModel] = useState(() => {
-    const stored = localStorage.getItem(MODEL_STORAGE_KEY);
-    if (
-      stored &&
-      MODELS.some((entry) => {
-        return entry.id === stored;
-      })
-    )
-      return stored;
-    return DEFAULT_MODEL;
-  });
-  const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const experienceRef = useRef(experience);
@@ -236,21 +130,14 @@ export function AiChat({
   }, []);
 
   const transport = useMemo(() => {
-    if (!apiKey) {
-      return null;
-    }
-
-    const openai = createOpenAI({ apiKey });
-    const tools = getTools(callbacks);
-
-    const agent = new ToolLoopAgent({
-      model: openai.chat(model),
-      tools,
-      instructions: buildSystemPrompt(),
+    return new DefaultChatTransport({
+      api: `https://agent-studio-staging.eu.algolia.com/1/agents/${AGENT_ID}/completions?compatibilityMode=ai-sdk-5`,
+      headers: {
+        'x-algolia-application-id': appId,
+        'X-Algolia-API-Key': apiKey,
+      },
     });
-
-    return new DirectChatTransport({ agent });
-  }, [apiKey, model, callbacks]);
+  }, [appId, apiKey]);
 
   const initialMessages = useMemo(() => {
     try {
@@ -285,19 +172,35 @@ export function AiChat({
     }
   }, []);
 
+  const chatRef = useRef<ReturnType<typeof useChat>>();
+
   const chat = useChat({
     id: 'algolia-experiences',
-    transport: transport ?? undefined,
+    transport,
     messages: initialMessages,
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+    onToolCall: ({ toolCall }) => {
+      const result = executeToolCall(
+        toolCall.toolName,
+        (toolCall.input as Record<string, unknown>) ?? {},
+        callbacks
+      );
+      // Fire-and-forget: don't await to avoid deadlocking the serial
+      // job executor (onToolCall runs inside a stream processing job).
+      void chatRef.current!.addToolOutput({
+        tool: toolCall.toolName,
+        toolCallId: toolCall.toolCallId,
+        output: result,
+      });
+    },
   });
+  chatRef.current = chat;
 
   const { messages, setMessages, status, error } = chat;
   const isStreaming = status === 'streaming' || status === 'submitted';
 
   useEffect(() => {
-    if (isStreaming) {
-      setModelPickerOpen(false);
-    } else {
+    if (!isStreaming) {
       inputRef.current?.focus();
     }
   }, [isStreaming]);
@@ -313,36 +216,6 @@ export function AiChat({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  if (!apiKey) {
-    return (
-      <div class="flex flex-1 flex-col items-center justify-center gap-3 p-4">
-        <Alert>
-          <svg
-            class="size-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 16v-4" />
-            <path d="M12 8h.01" />
-          </svg>
-          <AlertTitle>API Key Required</AlertTitle>
-          <AlertDescription>
-            Set{' '}
-            <code class="bg-muted rounded px-1 py-0.5 text-xs">
-              window.__OPENAI_API_KEY__
-            </code>{' '}
-            in your browser console to enable AI mode.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
 
   return (
     <div class="flex flex-1 flex-col overflow-hidden">
@@ -467,22 +340,6 @@ export function AiChat({
           />
           <div class="mt-1 flex items-center justify-between">
             <div class="flex items-center gap-1">
-              <ModelPicker
-                model={model}
-                open={modelPickerOpen}
-                disabled={isStreaming}
-                onToggle={() => {
-                  return setModelPickerOpen(!modelPickerOpen);
-                }}
-                onSelect={(id) => {
-                  setModel(id);
-                  localStorage.setItem(MODEL_STORAGE_KEY, id);
-                  setModelPickerOpen(false);
-                }}
-                onClose={() => {
-                  return setModelPickerOpen(false);
-                }}
-              />
               {messages.length > 0 && (
                 <button
                   type="button"
