@@ -142,6 +142,14 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('attribute');
   });
 
+  it('includes trendingItems widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.trendingItems');
+    expect(result).toContain('Trending Items');
+    expect(result).toContain('trending items');
+    expect(result).toContain('limit');
+  });
+
   it('includes currentRefinements widget type', () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.currentRefinements');
@@ -157,6 +165,14 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Range Input');
     expect(result).toContain('numeric range');
     expect(result).toContain('attribute');
+  });
+
+  it('includes breadcrumb widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.breadcrumb');
+    expect(result).toContain('Breadcrumb');
+    expect(result).toContain('navigation trail');
+    expect(result).toContain('attributes');
   });
 });
 
@@ -1068,6 +1084,50 @@ describe('getTools', () => {
       );
     });
 
+    it('adds a trendingItems widget with limit and threshold', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0]);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.trendingItems',
+          container: '#trending',
+          parameters: { limit: 10, threshold: 50 },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'limit',
+          'threshold',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'limit',
+        10
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'threshold',
+        50
+      );
+    });
+
     it('adds a numericMenu widget with attribute and items', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
@@ -1197,6 +1257,61 @@ describe('getTools', () => {
         [0, 0],
         'precision',
         2
+      );
+    });
+
+    it('adds a breadcrumb widget with attributes and separator', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            children: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0]);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.breadcrumb',
+          container: '#breadcrumb',
+          parameters: {
+            attributes: [
+              'hierarchicalCategories.lvl0',
+              'hierarchicalCategories.lvl1',
+              'hierarchicalCategories.lvl2',
+            ],
+            separator: ' > ',
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'attributes',
+          'separator',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'attributes',
+        [
+          'hierarchicalCategories.lvl0',
+          'hierarchicalCategories.lvl1',
+          'hierarchicalCategories.lvl2',
+        ]
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'separator',
+        ' > '
       );
     });
 
@@ -2340,6 +2455,40 @@ describe('getTools', () => {
       );
     });
 
+    it('edits trendingItems limit and threshold parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.trendingItems',
+            parameters: { container: '#trending', limit: 5 },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '0', parameters: { limit: 20, threshold: 80 } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['limit', 'threshold'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'limit',
+        20
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'threshold',
+        80
+      );
+    });
+
     it('edits numericMenu attribute and items', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
@@ -2463,6 +2612,61 @@ describe('getTools', () => {
         [0],
         'precision',
         2
+      );
+    });
+
+    it('edits breadcrumb attributes and separator', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.breadcrumb',
+            parameters: {
+              container: '#breadcrumb',
+              attributes: [
+                'hierarchicalCategories.lvl0',
+                'hierarchicalCategories.lvl1',
+              ],
+              separator: ' > ',
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            attributes: [
+              'hierarchicalCategories.lvl0',
+              'hierarchicalCategories.lvl1',
+              'hierarchicalCategories.lvl2',
+            ],
+            separator: ' / ',
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining(['attributes', 'separator']),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'attributes',
+        [
+          'hierarchicalCategories.lvl0',
+          'hierarchicalCategories.lvl1',
+          'hierarchicalCategories.lvl2',
+        ]
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'separator',
+        ' / '
       );
     });
 

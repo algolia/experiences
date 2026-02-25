@@ -206,6 +206,7 @@ export function BlockEditor({
               <TextField
                 key={key}
                 label={override.label}
+                description={paramDescriptions[key]}
                 value={typeof value === 'string' ? value : ''}
                 placeholder={override.placeholder}
                 onInput={onTextInput}
@@ -230,21 +231,36 @@ export function BlockEditor({
                 onPickElement={onPickElement}
               />
             );
-          case 'json':
+          case 'json': {
+            const jsonEnabled = typeof value === 'object' && value !== null;
+            const jsonValue = jsonEnabled
+              ? (value as Record<string, unknown>)
+              : {};
+            const jsonToggleable = 'disabledValue' in override;
+
             return (
               <JsonField
                 key={key}
                 label={override.label}
-                value={
-                  typeof value === 'object' && value !== null
-                    ? (value as Record<string, unknown>)
-                    : {}
-                }
+                description={paramDescriptions[key]}
+                enabled={jsonToggleable ? jsonEnabled : undefined}
+                value={jsonValue}
                 onChange={(newValue) => {
                   return onParameterChange(key, newValue);
                 }}
+                onToggle={
+                  jsonToggleable
+                    ? (toggled) => {
+                        return onParameterChange(
+                          key,
+                          toggled ? {} : override.disabledValue
+                        );
+                      }
+                    : undefined
+                }
               />
             );
+          }
           case 'items-list': {
             const items = Array.isArray(value)
               ? (value as Array<Record<string, string>>)
@@ -275,6 +291,7 @@ export function BlockEditor({
                 enabled={enabled}
                 items={items}
                 placeholder={override.placeholder}
+                required={override.required}
                 onToggle={(toggled) => {
                   onParameterChange(key, toggled);
                   if (toggled && override.excludes) {
