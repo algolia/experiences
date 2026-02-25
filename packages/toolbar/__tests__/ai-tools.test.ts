@@ -201,7 +201,7 @@ describe('describeExperience', () => {
         {
           type: 'ais.index',
           parameters: { indexName: 'products' },
-          blocks: [
+          children: [
             {
               type: 'ais.autocomplete',
               parameters: { container: '#search' },
@@ -224,7 +224,7 @@ describe('describeExperience', () => {
         {
           type: 'ais.index',
           parameters: { indexName: 'products', indexId: 'main' },
-          blocks: [],
+          children: [],
         },
       ],
       indexName: '',
@@ -241,7 +241,7 @@ describe('describeExperience', () => {
         {
           type: 'ais.index',
           parameters: { indexName: 'products' },
-          blocks: [],
+          children: [],
         },
       ],
       indexName: '',
@@ -273,7 +273,7 @@ describe('describeExperience', () => {
         {
           type: 'ais.index',
           parameters: { indexName: 'products' },
-          blocks: [],
+          children: [],
         },
       ],
       indexName: '',
@@ -289,7 +289,7 @@ describe('describeExperience', () => {
         {
           type: 'ais.index',
           parameters: {},
-          blocks: [],
+          children: [],
         },
       ],
       indexName: '',
@@ -463,7 +463,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -959,7 +959,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -1001,7 +1001,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -1077,7 +1077,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -1139,7 +1139,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -1242,7 +1242,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -1365,7 +1365,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [
+            children: [
               {
                 type: 'ais.autocomplete',
                 parameters: { container: '#search' },
@@ -2273,7 +2273,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [
+            children: [
               {
                 type: 'ais.autocomplete',
                 parameters: { container: '#search' },
@@ -2304,7 +2304,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [
+            children: [
               {
                 type: 'ais.autocomplete',
                 parameters: { container: '#search' },
@@ -2382,7 +2382,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [
+            children: [
               {
                 type: 'ais.autocomplete',
                 parameters: { container: '#search' },
@@ -2392,7 +2392,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'articles' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -2439,7 +2439,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [
+            children: [
               {
                 type: 'ais.autocomplete',
                 parameters: { container: '#search' },
@@ -2470,12 +2470,12 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
           {
             type: 'ais.index',
             parameters: { indexName: 'articles' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -2501,7 +2501,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [
+            children: [
               {
                 type: 'ais.autocomplete',
                 parameters: { container: '#search' },
