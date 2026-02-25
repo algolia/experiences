@@ -1235,6 +1235,80 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         'Custom CSS classes to apply to the widget elements for styling.',
     },
   },
+  'ais.currentRefinements': {
+    label: 'Current Refinements',
+    description:
+      'Displays the list of currently active filters and refinements with the ability to remove them individually.',
+    enabled: true,
+    icon: LIST_ICON,
+    defaultParameters: {
+      container: '',
+      includedAttributes: undefined,
+      excludedAttributes: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'includedAttributes',
+      'excludedAttributes',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      includedAttributes: {
+        type: 'list',
+        label: 'Included attributes',
+        placeholder: 'e.g. brand',
+        excludes: 'excludedAttributes',
+      },
+      excludedAttributes: {
+        type: 'list',
+        label: 'Excluded attributes',
+        placeholder: 'e.g. query',
+        excludes: 'includedAttributes',
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          item: '',
+          label: '',
+          category: '',
+          categoryLabel: '',
+          delete: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'label', label: 'Label' },
+          { key: 'category', label: 'Category' },
+          { key: 'categoryLabel', label: 'Category label' },
+          { key: 'delete', label: 'Delete' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      includedAttributes: 'Included attributes',
+      excludedAttributes: 'Excluded attributes',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#current-refinements").',
+      includedAttributes:
+        'Only show refinements from these attributes. When empty, all refinements are shown.',
+      excludedAttributes:
+        'Hide refinements from these attributes. Defaults to hiding the query.',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
+    },
+  },
   'ais.hierarchicalMenu': {
     label: 'Hierarchical Menu',
     enabled: false,

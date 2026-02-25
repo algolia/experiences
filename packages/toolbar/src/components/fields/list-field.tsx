@@ -2,12 +2,14 @@ import { useId } from 'preact/hooks';
 
 import { Button } from '../ui/button';
 import { CollapsibleContent } from '../ui/collapsible';
+import { InfoTooltip } from './info-tooltip';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Switch } from '../ui/switch';
 
 type ListFieldProps = {
   label: string;
+  description?: string;
   enabled: boolean;
   items: string[];
   placeholder?: string;
@@ -17,6 +19,7 @@ type ListFieldProps = {
 
 export function ListField({
   label,
+  description,
   enabled,
   items,
   placeholder,
@@ -28,7 +31,10 @@ export function ListField({
   return (
     <div>
       <div class="flex items-center justify-between">
-        <Label htmlFor={id}>{label}</Label>
+        <Label htmlFor={id}>
+          {label}
+          {description && <InfoTooltip content={description} class="mt-0.5" />}
+        </Label>
         <Switch
           id={id}
           checked={enabled}

@@ -269,6 +269,7 @@ export function BlockEditor({
               <ListField
                 key={key}
                 label={override.label}
+                description={paramDescriptions[key]}
                 enabled={enabled}
                 items={items}
                 placeholder={override.placeholder}
