@@ -1,8 +1,8 @@
 import { useId } from 'preact/hooks';
 
+import { InfoTooltip } from './info-tooltip';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { InfoTooltip } from './info-tooltip';
 
 type NumberFieldProps = {
   label: string;
