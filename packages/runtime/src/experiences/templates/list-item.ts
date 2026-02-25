@@ -3,6 +3,14 @@ import type { TemplateParams } from 'instantsearch.js';
 const SKELETON_STYLE =
   'border-radius:4px;background:linear-gradient(100deg,#e8e8e8,#e8e8e8 50%,#fff 60%,#e8e8e8 70%);background-size:200% 100%;background-attachment:fixed;animation:shimmer 2s ease-out infinite';
 
+function getByPath(obj: Record<string, unknown>, path: string): unknown {
+  return path.split('.').reduce<unknown>((current, segment) => {
+    return current != null && typeof current === 'object'
+      ? (current as Record<string, unknown>)[segment]
+      : undefined;
+  }, obj);
+}
+
 function hasAttributes(template: Record<string, string>): boolean {
   return Object.entries(template).some(([key, value]) => {
     return key !== 'currency' && value !== '';
@@ -45,7 +53,8 @@ export function renderListItem(template: Record<string, string>) {
       template
     ).reduce(
       (acc, [key, attr]) => {
-        acc[key] = key === 'currency' ? attr : attr ? hit[attr] : undefined;
+        acc[key] =
+          key === 'currency' ? attr : attr ? getByPath(hit, attr) : undefined;
 
         return acc;
       },

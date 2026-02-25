@@ -46,4 +46,45 @@ describe('extractAttributeNames', () => {
 
     expect(extractAttributeNames(hits)).toEqual(['brand', 'color', 'name']);
   });
+
+  it('extracts nested object paths with dot notation', () => {
+    const hits = [
+      {
+        product: { specs: { weight: 100, color: 'red' } },
+        objectID: '1',
+      },
+    ];
+
+    expect(extractAttributeNames(hits)).toEqual([
+      'product.specs.color',
+      'product.specs.weight',
+    ]);
+  });
+
+  it('extracts array indices with dot notation', () => {
+    const hits = [
+      {
+        tags: ['electronics', 'sale'],
+        objectID: '1',
+      },
+    ];
+
+    expect(extractAttributeNames(hits)).toEqual(['tags.0', 'tags.1']);
+  });
+
+  it('handles mixed nested and flat attributes', () => {
+    const hits = [
+      {
+        name: 'Widget',
+        meta: { brand: 'Acme', rating: 4.5 },
+        objectID: '1',
+      },
+    ];
+
+    expect(extractAttributeNames(hits)).toEqual([
+      'meta.brand',
+      'meta.rating',
+      'name',
+    ]);
+  });
 });
