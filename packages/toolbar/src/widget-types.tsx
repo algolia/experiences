@@ -1168,10 +1168,72 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   },
   'ais.rangeSlider': {
     label: 'Range Slider',
-    enabled: false,
+    description:
+      'A draggable slider that lets users filter results by a numeric range (e.g., price).',
+    enabled: true,
     icon: SLIDER_ICON,
     defaultParameters: {
       container: '',
+      attribute: '',
+      min: undefined,
+      max: undefined,
+      step: undefined,
+      precision: undefined,
+      pips: true,
+      tooltips: true,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'attribute',
+      'min',
+      'max',
+      'step',
+      'precision',
+      'pips',
+      'tooltips',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      min: { type: 'number', label: 'Min', placeholder: 'Auto' },
+      max: { type: 'number', label: 'Max', placeholder: 'Auto' },
+      step: { type: 'number', label: 'Step', placeholder: '1' },
+      precision: {
+        type: 'number',
+        label: 'Precision',
+        placeholder: '0',
+      },
+      pips: { type: 'switch', label: 'Show pips' },
+      tooltips: { type: 'switch', label: 'Show tooltips' },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: { root: '', disabledRoot: '' },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'disabledRoot', label: 'Disabled root' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attribute: 'Attribute',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#price-range").',
+      attribute:
+        'The name of the numeric attribute to filter on (e.g. "price").',
+      min: 'Minimum slider value. Defaults to the lowest value in the result set.',
+      max: 'Maximum slider value. Defaults to the highest value in the result set.',
+      step: 'The number of steps between each slider handle movement.',
+      precision: 'Number of digits after the decimal point. Defaults to 0.',
+      pips: 'Whether to show reference marks along the slider track.',
+      tooltips: 'Whether to show value tooltips above the slider handles.',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
     },
   },
   'ais.toggleRefinement': {

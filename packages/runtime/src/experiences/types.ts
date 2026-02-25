@@ -73,6 +73,7 @@ export type ExperienceWidget = Widget & {
     'ais.stats': SupportedWidget<Parameters<StatsWidget>[0]>;
     'ais.toggleRefinement': SupportedWidget;
     'ais.hitsPerPage': SupportedWidget;
+    'ais.rangeSlider': SupportedWidget;
     'ais.ratingMenu': SupportedWidget;
   } & Record<
     | 'ais.chat'
@@ -83,6 +84,7 @@ export type ExperienceWidget = Widget & {
     | 'ais.infiniteHits'
     | 'ais.menu'
     | 'ais.pagination'
+    | 'ais.rangeSlider'
     | 'ais.ratingMenu'
     | 'ais.refinementList'
     | 'ais.searchBox'
