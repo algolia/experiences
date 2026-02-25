@@ -23,7 +23,7 @@ import ratingMenu from 'instantsearch.js/es/widgets/rating-menu/rating-menu';
 import numericMenu from 'instantsearch.js/es/widgets/numeric-menu/numeric-menu';
 
 import { renderTemplate, renderTool } from './renderer';
-import { renderListItem } from './templates/list-item';
+import { SKELETON_CSS, renderListItem } from './templates/list-item';
 import type { ExperienceWidget } from './types';
 
 import type { ChatTransport } from 'instantsearch.js/es/connectors/chat/connectChat';
@@ -41,7 +41,8 @@ declare const __AUTOCOMPLETE_CSS__: string;
 declare const __SATELLITE_CSS__: string;
 (() => {
   const style = document.createElement('style');
-  style.textContent = __CHAT_CSS__ + __AUTOCOMPLETE_CSS__ + __SATELLITE_CSS__;
+  style.textContent =
+    __CHAT_CSS__ + __AUTOCOMPLETE_CSS__ + __SATELLITE_CSS__ + SKELETON_CSS;
   document.head.appendChild(style);
 })();
 

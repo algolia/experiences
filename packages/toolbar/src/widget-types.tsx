@@ -486,7 +486,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         label: 'Template',
         defaultValue: {
           name: '',
-          brand: '',
+          category: '',
           description: '',
           image: '',
           price: '',
@@ -1003,7 +1003,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         label: 'Template',
         defaultValue: {
           name: '',
-          brand: '',
+          category: '',
           description: '',
           image: '',
           price: '',
