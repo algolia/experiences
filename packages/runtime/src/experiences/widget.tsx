@@ -20,6 +20,7 @@ import hitsPerPage from 'instantsearch.js/es/widgets/hits-per-page/hits-per-page
 import currentRefinements from 'instantsearch.js/es/widgets/current-refinements/current-refinements';
 import rangeInput from 'instantsearch.js/es/widgets/range-input/range-input';
 import ratingMenu from 'instantsearch.js/es/widgets/rating-menu/rating-menu';
+import hierarchicalMenu from 'instantsearch.js/es/widgets/hierarchical-menu/hierarchical-menu';
 import numericMenu from 'instantsearch.js/es/widgets/numeric-menu/numeric-menu';
 
 import { renderTemplate, renderTool } from './renderer';
@@ -279,6 +280,14 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
       // TODO: Add support for `transformItems` (bucket 3 function)
       'ais.currentRefinements': {
         widget: currentRefinements,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
+      // TODO: Add support for `templates` (item, showMoreText)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.hierarchicalMenu': {
+        widget: hierarchicalMenu,
         async transformParams(parameters) {
           return parameters;
         },

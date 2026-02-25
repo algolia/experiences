@@ -80,6 +80,7 @@ export type ExperienceWidget = Widget & {
     'ais.currentRefinements': SupportedWidget<
       Parameters<CurrentRefinementsWidget>[0]
     >;
+    'ais.hierarchicalMenu': SupportedWidget;
   } & Record<
     | 'ais.chat'
     | 'ais.configure'
@@ -99,6 +100,7 @@ export type ExperienceWidget = Widget & {
     | 'ais.toggleRefinement'
     | 'ais.hitsPerPage'
     | 'ais.numericMenu'
+    | 'ais.hierarchicalMenu'
     | (string & {}),
     SupportedWidget
   >;

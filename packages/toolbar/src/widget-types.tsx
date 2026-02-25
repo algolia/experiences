@@ -41,7 +41,13 @@ export type FieldOverride = FieldOverrideBase &
           inputType?: 'text' | 'number';
         }>;
       }
-    | { type: 'list'; label: string; placeholder?: string; excludes?: string }
+    | {
+        type: 'list';
+        label: string;
+        placeholder?: string;
+        excludes?: string;
+        required?: boolean;
+      }
     | {
         type: 'select-list';
         label: string;
@@ -1311,10 +1317,124 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   },
   'ais.hierarchicalMenu': {
     label: 'Hierarchical Menu',
-    enabled: false,
+    description:
+      'A hierarchical facet navigation that lets users drill down through nested category levels.',
+    enabled: true,
     icon: CHEVRON_RIGHT_ICON,
     defaultParameters: {
       container: '',
+      attributes: [],
+      separator: undefined,
+      showParentLevel: true,
+      limit: undefined,
+      showMore: false,
+      showMoreLimit: undefined,
+      sortBy: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'attributes',
+      'separator',
+      'showParentLevel',
+      'limit',
+      'showMore',
+      'showMoreLimit',
+      'sortBy',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      attributes: {
+        type: 'list',
+        label: 'Attributes',
+        placeholder: 'e.g. categories.lvl0',
+        required: true,
+      },
+      separator: {
+        type: 'text',
+        label: 'Separator',
+        placeholder: ' > ',
+      },
+      showParentLevel: { type: 'switch', label: 'Show parent level' },
+      limit: { type: 'number', label: 'Limit', placeholder: '10' },
+      showMore: { type: 'switch', label: 'Show more' },
+      showMoreLimit: {
+        type: 'number',
+        label: 'Show more limit',
+        placeholder: '20',
+        visibleIf: { key: 'showMore', value: true },
+      },
+      sortBy: {
+        type: 'select-list',
+        label: 'Sort by',
+        options: [
+          { value: 'count:asc', label: 'Count (asc)' },
+          { value: 'count:desc', label: 'Count (desc)' },
+          { value: 'name:asc', label: 'Name (asc)' },
+          { value: 'name:desc', label: 'Name (desc)' },
+          { value: 'isRefined:asc', label: 'Is refined (asc)' },
+          { value: 'isRefined:desc', label: 'Is refined (desc)' },
+        ],
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          childList: '',
+          item: '',
+          selectedItem: '',
+          parentItem: '',
+          link: '',
+          selectedItemLink: '',
+          label: '',
+          count: '',
+          showMore: '',
+          disabledShowMore: '',
+        },
+        disabledValue: undefined,
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'childList', label: 'Child list' },
+          { key: 'item', label: 'Item' },
+          { key: 'selectedItem', label: 'Selected item' },
+          { key: 'parentItem', label: 'Parent item' },
+          { key: 'link', label: 'Link' },
+          { key: 'selectedItemLink', label: 'Selected item link' },
+          { key: 'label', label: 'Label' },
+          { key: 'count', label: 'Count' },
+          { key: 'showMore', label: 'Show more' },
+          { key: 'disabledShowMore', label: 'Disabled show more' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attributes: 'Attributes',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#hierarchical-menu").',
+      attributes:
+        'Ordered list of attribute names for each hierarchy level (e.g. "categories.lvl0", "categories.lvl1").',
+      separator:
+        'Character used to split hierarchy values in each attribute. Defaults to " > ".',
+      showParentLevel:
+        'When enabled, shows the parent level alongside the current refinement.',
+      limit: 'Maximum number of facet values to display. Defaults to 10.',
+      showMore:
+        'When enabled, shows a "Show more" button to reveal additional facet values.',
+      showMoreLimit:
+        'Maximum number of facet values when "Show more" is expanded. Defaults to 20.',
+      sortBy:
+        'Ordered list of sort criteria. Available values: "count:asc", "count:desc", "name:asc", "name:desc", "isRefined:asc", "isRefined:desc".',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
     },
   },
   'ais.rangeSlider': {
