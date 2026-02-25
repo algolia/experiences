@@ -134,7 +134,7 @@ export function IndexBlockGroup({
             </div>
 
             {/* Child widgets */}
-            {(block.blocks ?? []).map((child, childIndex) => {
+            {(block.children ?? []).map((child, childIndex) => {
               return (
                 <BlockCard
                   key={childIndex}

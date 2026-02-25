@@ -50,7 +50,7 @@ function updateBlockAtPath(
     return idx === parentIdx
       ? {
           ...block,
-          blocks: (block.blocks ?? []).map((child, ci) => {
+          children: (block.children ?? []).map((child, ci) => {
             return ci === childIdx ? updater(child) : child;
           }),
         }
@@ -72,7 +72,7 @@ function deleteBlockAtPath(
     return idx === parentIdx
       ? {
           ...block,
-          blocks: (block.blocks ?? []).filter((_, ci) => {
+          children: (block.children ?? []).filter((_, ci) => {
             return ci !== childIdx;
           }),
         }
@@ -139,8 +139,8 @@ export function App({ config, initialExperience }: AppProps) {
             }
           });
 
-          if (block.blocks) {
-            collectVars(block.blocks, i);
+          if (block.children) {
+            collectVars(block.children, i);
           }
         });
       };
@@ -201,7 +201,7 @@ export function App({ config, initialExperience }: AppProps) {
           const parentBlock = updated.blocks[path[0]];
           if (parentBlock?.type === 'ais.index') {
             for (const [childIndex, child] of (
-              parentBlock.blocks ?? []
+              parentBlock.children ?? []
             ).entries()) {
               if (child.type !== 'ais.sortBy') continue;
               const items = Array.isArray(child.parameters.items)
@@ -392,7 +392,8 @@ export function App({ config, initialExperience }: AppProps) {
           result = { path: [prev.blocks.length], indexCreated: false };
           updated = { ...prev, blocks: [...prev.blocks, newBlock] };
         } else if (targetParentIndex !== undefined) {
-          const childIdx = prev.blocks[targetParentIndex]?.blocks?.length ?? 0;
+          const childIdx =
+            prev.blocks[targetParentIndex]?.children?.length ?? 0;
           result = {
             path: [targetParentIndex, childIdx],
             indexCreated: false,
@@ -401,7 +402,7 @@ export function App({ config, initialExperience }: AppProps) {
             ...prev,
             blocks: prev.blocks.map((block, i) => {
               return i === targetParentIndex
-                ? { ...block, blocks: [...(block.blocks ?? []), newBlock] }
+                ? { ...block, children: [...(block.children ?? []), newBlock] }
                 : block;
             }),
           };
@@ -422,12 +423,12 @@ export function App({ config, initialExperience }: AppProps) {
                 {
                   type: 'ais.index',
                   parameters: { indexName: '', indexId: '' },
-                  blocks: [newBlock],
+                  children: [newBlock],
                 },
               ],
             };
           } else {
-            const childIdx = prev.blocks[lastIndexIdx]?.blocks?.length ?? 0;
+            const childIdx = prev.blocks[lastIndexIdx]?.children?.length ?? 0;
             result = {
               path: [lastIndexIdx, childIdx],
               indexCreated: false,
@@ -436,7 +437,10 @@ export function App({ config, initialExperience }: AppProps) {
               ...prev,
               blocks: prev.blocks.map((block, i) => {
                 return i === lastIndexIdx
-                  ? { ...block, blocks: [...(block.blocks ?? []), newBlock] }
+                  ? {
+                      ...block,
+                      children: [...(block.children ?? []), newBlock],
+                    }
                   : block;
               }),
             };
@@ -462,7 +466,7 @@ export function App({ config, initialExperience }: AppProps) {
         const [srcParent, srcChild] = fromPath;
         if (srcParent === toParentIndex) return prev;
 
-        const block = prev.blocks[srcParent]?.blocks?.[srcChild];
+        const block = prev.blocks[srcParent]?.children?.[srcChild];
         if (!block) return prev;
 
         const withRemoved = deleteBlockAtPath(prev.blocks, fromPath);
@@ -470,7 +474,7 @@ export function App({ config, initialExperience }: AppProps) {
           ...prev,
           blocks: withRemoved.map((bl, idx) => {
             return idx === toParentIndex
-              ? { ...bl, blocks: [...(bl.blocks ?? []), block] }
+              ? { ...bl, children: [...(bl.children ?? []), block] }
               : bl;
           }),
         };

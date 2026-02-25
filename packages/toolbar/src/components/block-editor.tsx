@@ -175,6 +175,7 @@ export function BlockEditor({
               <NumberField
                 key={key}
                 label={override.label}
+                description={paramDescriptions[key]}
                 placeholder={override.placeholder}
                 value={typeof value === 'number' ? String(value) : ''}
                 onInput={(text) => {
@@ -270,6 +271,7 @@ export function BlockEditor({
               <ListField
                 key={key}
                 label={override.label}
+                description={paramDescriptions[key]}
                 enabled={enabled}
                 items={items}
                 placeholder={override.placeholder}

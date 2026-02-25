@@ -5,6 +5,7 @@ import type {
 } from 'instantsearch.js/es/types';
 import type { ChatWidget } from 'instantsearch.js/es/widgets/chat/chat';
 import type { ClearRefinementsWidget } from 'instantsearch.js/es/widgets/clear-refinements/clear-refinements';
+import type { CurrentRefinementsWidget } from 'instantsearch.js/es/widgets/current-refinements/current-refinements';
 import type { ConfigureWidget } from 'instantsearch.js/es/widgets/configure/configure';
 import type { HitsWidget } from 'instantsearch.js/es/widgets/hits/hits';
 import type { InfiniteHitsWidget } from 'instantsearch.js/es/widgets/infinite-hits/infinite-hits';
@@ -28,7 +29,7 @@ type ExperienceApiBlockParameters = {
 type ExperienceApiBlock = {
   type: string;
   parameters: ExperienceApiBlockParameters;
-  blocks?: ExperienceApiBlock[];
+  children?: ExperienceApiBlock[];
 };
 
 export type ExperienceApiResponse = {
@@ -73,16 +74,23 @@ export type ExperienceWidget = Widget & {
     'ais.stats': SupportedWidget<Parameters<StatsWidget>[0]>;
     'ais.toggleRefinement': SupportedWidget;
     'ais.hitsPerPage': SupportedWidget;
+    'ais.rangeInput': SupportedWidget;
     'ais.ratingMenu': SupportedWidget;
+    'ais.numericMenu': SupportedWidget;
+    'ais.currentRefinements': SupportedWidget<
+      Parameters<CurrentRefinementsWidget>[0]
+    >;
   } & Record<
     | 'ais.chat'
     | 'ais.configure'
     | 'ais.autocomplete'
     | 'ais.clearRefinements'
+    | 'ais.currentRefinements'
     | 'ais.hits'
     | 'ais.infiniteHits'
     | 'ais.menu'
     | 'ais.pagination'
+    | 'ais.rangeInput'
     | 'ais.ratingMenu'
     | 'ais.refinementList'
     | 'ais.searchBox'
@@ -90,6 +98,7 @@ export type ExperienceWidget = Widget & {
     | 'ais.stats'
     | 'ais.toggleRefinement'
     | 'ais.hitsPerPage'
+    | 'ais.numericMenu'
     | (string & {}),
     SupportedWidget
   >;
