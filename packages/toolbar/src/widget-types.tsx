@@ -464,7 +464,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       escapeHTML: true,
       template: {
         name: '',
-        brand: '',
+        category: '',
         description: '',
         image: '',
         price: '',
@@ -494,7 +494,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         },
         fields: [
           { key: 'name', label: 'Name' },
-          { key: 'brand', label: 'Category' },
+          { key: 'category', label: 'Category' },
           { key: 'description', label: 'Description' },
           { key: 'image', label: 'Image' },
           { key: 'price', label: 'Price' },
@@ -979,7 +979,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       showPrevious: false,
       template: {
         name: '',
-        brand: '',
+        category: '',
         description: '',
         image: '',
         price: '',
@@ -1011,7 +1011,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         },
         fields: [
           { key: 'name', label: 'Name' },
-          { key: 'brand', label: 'Category' },
+          { key: 'category', label: 'Category' },
           { key: 'description', label: 'Description' },
           { key: 'image', label: 'Image' },
           { key: 'price', label: 'Price' },

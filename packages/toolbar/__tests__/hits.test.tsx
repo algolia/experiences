@@ -45,7 +45,7 @@ describe('ais.hits field behavior', () => {
       const { onParameterChange, container } = render({
         template: {
           name: '',
-          brand: '',
+          category: '',
           description: '',
           image: '',
           price: '',
@@ -66,7 +66,7 @@ describe('ais.hits field behavior', () => {
       const { onParameterChange, container } = render({
         template: {
           name: '',
-          brand: '',
+          category: '',
           description: '',
           image: '',
           price: '',

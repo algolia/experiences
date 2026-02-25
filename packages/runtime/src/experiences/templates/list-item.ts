@@ -49,7 +49,7 @@ export function renderListItem(template: Record<string, string>) {
       `;
     }
 
-    const { name, brand, description, image, price } = Object.entries(
+    const { name, category, description, image, price } = Object.entries(
       template
     ).reduce(
       (acc, [key, attr]) => {
@@ -77,7 +77,7 @@ export function renderListItem(template: Record<string, string>) {
               attribute: template.name!,
             })}</span
           >`}
-          ${brand && html`<span style="color:#6b7280">${brand}</span>`}
+          ${category && html`<span style="color:#6b7280">${category}</span>`}
           ${description &&
           html`<span
             style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden"
