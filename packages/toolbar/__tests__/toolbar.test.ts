@@ -173,6 +173,7 @@ describe('toolbar', () => {
         expect(popoverText).toContain('Toggle Refinement');
         expect(popoverText).toContain('Hits Per Page');
         expect(popoverText).toContain('Rating Menu');
+        expect(popoverText).toContain('Trending Items');
         expect(popoverText).toContain('Numeric Menu');
         expect(popoverText).toContain('Current Refinements');
         expect(popoverText).toContain('Range Input');

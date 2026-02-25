@@ -76,6 +76,7 @@ export type ExperienceWidget = Widget & {
     'ais.hitsPerPage': SupportedWidget;
     'ais.rangeInput': SupportedWidget;
     'ais.ratingMenu': SupportedWidget;
+    'ais.trendingItems': SupportedWidget;
     'ais.numericMenu': SupportedWidget;
     'ais.currentRefinements': SupportedWidget<
       Parameters<CurrentRefinementsWidget>[0]
@@ -98,6 +99,7 @@ export type ExperienceWidget = Widget & {
     | 'ais.sortBy'
     | 'ais.stats'
     | 'ais.toggleRefinement'
+    | 'ais.trendingItems'
     | 'ais.hitsPerPage'
     | 'ais.numericMenu'
     | 'ais.breadcrumb'
