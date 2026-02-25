@@ -41,7 +41,13 @@ export type FieldOverride = FieldOverrideBase &
           inputType?: 'text' | 'number';
         }>;
       }
-    | { type: 'list'; label: string; placeholder?: string; excludes?: string }
+    | {
+        type: 'list';
+        label: string;
+        placeholder?: string;
+        excludes?: string;
+        required?: boolean;
+      }
     | {
         type: 'select-list';
         label: string;
@@ -1305,6 +1311,76 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         'Only show refinements from these attributes. When empty, all refinements are shown.',
       excludedAttributes:
         'Hide refinements from these attributes. Defaults to hiding the query.',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
+    },
+  },
+  'ais.breadcrumb': {
+    label: 'Breadcrumb',
+    description:
+      'A navigation trail showing the hierarchy of the current refinement, letting users navigate back to parent levels.',
+    enabled: true,
+    icon: CHEVRON_RIGHT_ICON,
+    defaultParameters: {
+      container: '',
+      attributes: [],
+      separator: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'attributes',
+      'separator',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      attributes: {
+        type: 'list',
+        label: 'Attributes',
+        placeholder: 'e.g. hierarchicalCategories.lvl0',
+        required: true,
+      },
+      separator: {
+        type: 'text',
+        label: 'Separator',
+        placeholder: ' > ',
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          item: '',
+          selectedItem: '',
+          separator: '',
+          link: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'selectedItem', label: 'Selected item' },
+          { key: 'separator', label: 'Separator' },
+          { key: 'link', label: 'Link' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attributes: 'Attributes',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#breadcrumb").',
+      attributes:
+        'Array of attributes to use to generate the hierarchy, one per level (e.g. "hierarchicalCategories.lvl0", "hierarchicalCategories.lvl1").',
+      separator:
+        'The character used to separate hierarchy levels in the records. Defaults to " > ".',
       cssClasses:
         'Custom CSS classes to apply to the widget elements for styling.',
     },

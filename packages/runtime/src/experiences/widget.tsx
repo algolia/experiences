@@ -20,6 +20,7 @@ import hitsPerPage from 'instantsearch.js/es/widgets/hits-per-page/hits-per-page
 import currentRefinements from 'instantsearch.js/es/widgets/current-refinements/current-refinements';
 import rangeInput from 'instantsearch.js/es/widgets/range-input/range-input';
 import ratingMenu from 'instantsearch.js/es/widgets/rating-menu/rating-menu';
+import breadcrumb from 'instantsearch.js/es/widgets/breadcrumb/breadcrumb';
 import numericMenu from 'instantsearch.js/es/widgets/numeric-menu/numeric-menu';
 
 import { renderTemplate, renderTool } from './renderer';
@@ -286,6 +287,14 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
       // TODO: Add support for `templates` (separatorText, submitText)
       'ais.rangeInput': {
         widget: rangeInput,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
+      // TODO: Add support for `templates` (home, separator)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.breadcrumb': {
+        widget: breadcrumb,
         async transformParams(parameters) {
           return parameters;
         },
