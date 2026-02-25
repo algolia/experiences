@@ -148,6 +148,14 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('includedAttributes');
     expect(result).toContain('excludedAttributes');
   });
+
+  it('includes rangeInput widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.rangeInput');
+    expect(result).toContain('Range Input');
+    expect(result).toContain('numeric range');
+    expect(result).toContain('attribute');
+  });
 });
 
 describe('describeExperience', () => {
@@ -1131,6 +1139,62 @@ describe('getTools', () => {
         [0],
         'includedAttributes',
         ['brand', 'color']
+      );
+    });
+
+    it('adds a rangeInput widget with attribute and number parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            children: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0]);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.rangeInput',
+          container: '#range',
+          parameters: { attribute: 'price', min: 0, max: 1000, precision: 2 },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'attribute',
+          'min',
+          'max',
+          'precision',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'attribute',
+        'price'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'min',
+        0
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'max',
+        1000
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'precision',
+        2
       );
     });
 
@@ -2361,6 +2425,42 @@ describe('getTools', () => {
         [0],
         'excludedAttributes',
         ['query']
+      );
+    });
+
+    it('edits rangeInput number parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.rangeInput',
+            parameters: {
+              container: '#range',
+              attribute: 'price',
+              min: 0,
+              max: 1000,
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '0', parameters: { min: 10, max: 500, precision: 2 } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining(['min', 'max', 'precision']),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'min', 10);
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'max', 500);
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'precision',
+        2
       );
     });
 

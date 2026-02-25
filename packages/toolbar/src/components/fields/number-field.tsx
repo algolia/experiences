@@ -2,9 +2,11 @@ import { useId } from 'preact/hooks';
 
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { InfoTooltip } from './info-tooltip';
 
 type NumberFieldProps = {
   label: string;
+  description?: string;
   value: string;
   placeholder?: string;
   onInput: (value: string) => void;
@@ -12,6 +14,7 @@ type NumberFieldProps = {
 
 export function NumberField({
   label,
+  description,
   value,
   placeholder,
   onInput,
@@ -20,7 +23,10 @@ export function NumberField({
 
   return (
     <div class="group space-y-1">
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={id}>
+        {label}
+        {description && <InfoTooltip content={description} class="mt-0.5" />}
+      </Label>
       <Input
         id={id}
         type="number"

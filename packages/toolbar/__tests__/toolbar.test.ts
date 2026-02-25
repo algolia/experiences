@@ -175,6 +175,7 @@ describe('toolbar', () => {
         expect(popoverText).toContain('Rating Menu');
         expect(popoverText).toContain('Numeric Menu');
         expect(popoverText).toContain('Current Refinements');
+        expect(popoverText).toContain('Range Input');
         expect(popoverText).toContain('Hits');
         expect(popoverText).toContain('Infinite Hits');
         expect(popoverText).toContain('Coming Soon');

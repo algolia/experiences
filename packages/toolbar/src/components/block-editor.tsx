@@ -174,6 +174,7 @@ export function BlockEditor({
               <NumberField
                 key={key}
                 label={override.label}
+                description={paramDescriptions[key]}
                 placeholder={override.placeholder}
                 value={typeof value === 'number' ? String(value) : ''}
                 onInput={(text) => {
