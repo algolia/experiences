@@ -1325,6 +1325,78 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       container: '',
     },
   },
+  'ais.rangeInput': {
+    label: 'Range Input',
+    description:
+      'A numeric range filter with min and max text inputs that lets users refine results within a value range.',
+    enabled: true,
+    icon: SLIDER_ICON,
+    defaultParameters: {
+      container: '',
+      attribute: '',
+      min: undefined,
+      max: undefined,
+      precision: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'attribute',
+      'min',
+      'max',
+      'precision',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      min: { type: 'number', label: 'Min', placeholder: 'Auto' },
+      max: { type: 'number', label: 'Max', placeholder: 'Auto' },
+      precision: { type: 'number', label: 'Precision', placeholder: '0' },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinement: '',
+          form: '',
+          label: '',
+          input: '',
+          inputMin: '',
+          separator: '',
+          inputMax: '',
+          submit: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinement', label: 'No refinement' },
+          { key: 'form', label: 'Form' },
+          { key: 'label', label: 'Label' },
+          { key: 'input', label: 'Input' },
+          { key: 'inputMin', label: 'Input min' },
+          { key: 'separator', label: 'Separator' },
+          { key: 'inputMax', label: 'Input max' },
+          { key: 'submit', label: 'Submit' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attribute: 'Attribute',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#range").',
+      attribute:
+        'The name of the numeric attribute to filter on (e.g. "price").',
+      min: 'Minimum value for the range. When empty, computed automatically from the result set.',
+      max: 'Maximum value for the range. When empty, computed automatically from the result set.',
+      precision:
+        'Number of digits after the decimal point. Defaults to 0 (integers only).',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
+    },
+  },
   'ais.toggleRefinement': {
     label: 'Toggle Refinement',
     description:
