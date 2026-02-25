@@ -30,7 +30,7 @@ export type FieldOverride = FieldOverrideBase &
         disabledValue?: false | undefined;
         fields: Array<{ key: string; label: string }>;
       }
-    | { type: 'json'; label: string }
+    | { type: 'json'; label: string; disabledValue?: false | undefined }
     | {
         type: 'items-list';
         label: string;
@@ -1232,10 +1232,112 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   },
   'ais.trendingItems': {
     label: 'Trending Items',
-    enabled: false,
+    description:
+      'Displays trending items from the Algolia Recommend API based on popularity.',
+    enabled: true,
     icon: TRENDING_ICON,
     defaultParameters: {
       container: '',
+      limit: undefined,
+      threshold: undefined,
+      facetName: undefined,
+      facetValue: undefined,
+      escapeHTML: true,
+      queryParameters: undefined,
+      fallbackParameters: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'limit',
+      'threshold',
+      'facetName',
+      'facetValue',
+      'escapeHTML',
+      'queryParameters',
+      'fallbackParameters',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      limit: {
+        type: 'number',
+        label: 'Limit',
+        placeholder: 'Auto',
+      },
+      threshold: {
+        type: 'number',
+        label: 'Threshold',
+        placeholder: '0',
+      },
+      facetName: {
+        type: 'text',
+        label: 'Facet name',
+        placeholder: 'e.g. category',
+      },
+      facetValue: {
+        type: 'text',
+        label: 'Facet value',
+        placeholder: 'e.g. Shoes',
+      },
+      escapeHTML: {
+        type: 'switch',
+        label: 'Escape HTML',
+      },
+      queryParameters: {
+        type: 'json',
+        label: 'Query parameters',
+        disabledValue: undefined,
+      },
+      fallbackParameters: {
+        type: 'json',
+        label: 'Fallback parameters',
+        disabledValue: undefined,
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          emptyRoot: '',
+          title: '',
+          container: '',
+          list: '',
+          item: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'emptyRoot', label: 'Empty root' },
+          { key: 'title', label: 'Title' },
+          { key: 'container', label: 'Container' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      facetName: 'Facet name',
+      facetValue: 'Facet value',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#trending").',
+      limit: 'Maximum number of trending items to display.',
+      threshold:
+        'Confidence score threshold between 0 and 100 for filtering recommendations.',
+      facetName:
+        'Facet attribute to scope trending items to (e.g. "category").',
+      facetValue:
+        'Specific facet value to scope trending items to (e.g. "Shoes").',
+      escapeHTML:
+        'Whether to escape HTML entities in item values for security.',
+      queryParameters:
+        'Additional Algolia search parameters as JSON (e.g. {"filters": "category:Books"}).',
+      fallbackParameters:
+        'Fallback Algolia search parameters used when there are no recommendations.',
+      cssClasses: 'Custom CSS classes for the widget markup.',
     },
   },
   'ais.clearRefinements': {

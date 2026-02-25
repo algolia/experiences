@@ -129,6 +129,14 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('star-based rating');
     expect(result).toContain('attribute');
   });
+
+  it('includes trendingItems widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.trendingItems');
+    expect(result).toContain('Trending Items');
+    expect(result).toContain('trending items');
+    expect(result).toContain('limit');
+  });
 });
 
 describe('describeExperience', () => {
@@ -1036,6 +1044,50 @@ describe('getTools', () => {
         [0, 0],
         'max',
         5
+      );
+    });
+
+    it('adds a trendingItems widget with limit and threshold', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            blocks: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0]);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.trendingItems',
+          container: '#trending',
+          parameters: { limit: 10, threshold: 50 },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'limit',
+          'threshold',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'limit',
+        10
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'threshold',
+        50
       );
     });
 
@@ -2176,6 +2228,40 @@ describe('getTools', () => {
         [0],
         'attribute',
         'score'
+      );
+    });
+
+    it('edits trendingItems limit and threshold parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.trendingItems',
+            parameters: { container: '#trending', limit: 5 },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '0', parameters: { limit: 20, threshold: 80 } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['limit', 'threshold'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'limit',
+        20
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'threshold',
+        80
       );
     });
 
