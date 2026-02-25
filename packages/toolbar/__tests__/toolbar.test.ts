@@ -232,20 +232,18 @@ describe('toolbar', () => {
         });
 
         // Disabled items are rendered as <div> elements, not <button>
-        // Check that "Hierarchical Menu" is not a button
+        // Check that "Range Slider" is not a button
         const buttons = Array.from(
           host.shadowRoot?.querySelectorAll('button') ?? []
         );
         const disabledButton = buttons.find((btn) => {
-          return (
-            btn.textContent?.includes('Hierarchical Menu') && btn !== addButton
-          );
+          return btn.textContent?.includes('Range Slider') && btn !== addButton;
         });
         expect(disabledButton).toBeUndefined();
 
         // Verify the text is still rendered (as a div)
         const popoverText = host.shadowRoot?.innerHTML ?? '';
-        expect(popoverText).toContain('Hierarchical Menu');
+        expect(popoverText).toContain('Range Slider');
       });
     });
 
