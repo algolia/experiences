@@ -2,42 +2,53 @@ import { useId } from 'preact/hooks';
 
 import { Button } from '../ui/button';
 import { CollapsibleContent } from '../ui/collapsible';
+import { InfoTooltip } from './info-tooltip';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Switch } from '../ui/switch';
 
 type ListFieldProps = {
   label: string;
+  description?: string;
   enabled: boolean;
   items: string[];
   placeholder?: string;
+  required?: boolean;
   onToggle: (value: string[] | undefined) => void;
   onItemsChange: (items: string[]) => void;
 };
 
 export function ListField({
   label,
+  description,
   enabled,
   items,
   placeholder,
+  required,
   onToggle,
   onItemsChange,
 }: ListFieldProps) {
   const id = useId();
+  const isOpen = required || enabled;
 
   return (
     <div>
       <div class="flex items-center justify-between">
-        <Label htmlFor={id}>{label}</Label>
-        <Switch
-          id={id}
-          checked={enabled}
-          onCheckedChange={(checked) => {
-            return onToggle(checked ? [] : undefined);
-          }}
-        />
+        <Label htmlFor={id}>
+          {label}
+          {description && <InfoTooltip content={description} class="mt-0.5" />}
+        </Label>
+        {!required && (
+          <Switch
+            id={id}
+            checked={enabled}
+            onCheckedChange={(checked) => {
+              return onToggle(checked ? [] : undefined);
+            }}
+          />
+        )}
       </div>
-      <CollapsibleContent open={enabled}>
+      <CollapsibleContent open={isOpen}>
         <div class="mt-2 space-y-1.5">
           {items.map((item, index) => {
             return (

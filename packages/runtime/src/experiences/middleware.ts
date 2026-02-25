@@ -169,9 +169,9 @@ function processBlocks({
         return parent.removeWidgets([indexWidget]);
       });
 
-      if (block.blocks) {
+      if (block.children) {
         processBlocks({
-          blocks: block.blocks,
+          blocks: block.children,
           parent: indexWidget,
           widget,
           env,

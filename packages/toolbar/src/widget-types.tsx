@@ -41,7 +41,13 @@ export type FieldOverride = FieldOverrideBase &
           inputType?: 'text' | 'number';
         }>;
       }
-    | { type: 'list'; label: string; placeholder?: string; excludes?: string }
+    | {
+        type: 'list';
+        label: string;
+        placeholder?: string;
+        excludes?: string;
+        required?: boolean;
+      }
     | {
         type: 'select-list';
         label: string;
@@ -1158,6 +1164,227 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         'Custom CSS classes to apply to the widget elements for styling.',
     },
   },
+  'ais.numericMenu': {
+    label: 'Numeric Menu',
+    description:
+      'A list of numeric ranges that lets users filter results by selecting a price range, rating, or other numeric attribute.',
+    enabled: true,
+    icon: HASH_ICON,
+    defaultParameters: {
+      container: '',
+      attribute: '',
+      items: [],
+      cssClasses: undefined,
+    },
+    fieldOrder: ['container', 'placement', 'attribute', 'items', 'cssClasses'],
+    fieldOverrides: {
+      items: {
+        type: 'items-list',
+        label: 'Ranges',
+        fields: [
+          {
+            key: 'label',
+            label: 'Label',
+            placeholder: 'e.g. All',
+          },
+          {
+            key: 'start',
+            label: 'Min (>=)',
+            placeholder: 'No min',
+            inputType: 'number',
+          },
+          {
+            key: 'end',
+            label: 'Max (<=)',
+            placeholder: 'No max',
+            inputType: 'number',
+          },
+        ],
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          item: '',
+          selectedItem: '',
+          label: '',
+          labelText: '',
+          radio: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'selectedItem', label: 'Selected item' },
+          { key: 'label', label: 'Label' },
+          { key: 'labelText', label: 'Label text' },
+          { key: 'radio', label: 'Radio' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attribute: 'Attribute',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#numeric-menu").',
+      attribute: 'The numeric attribute to filter on (e.g. "price").',
+      items:
+        'List of numeric ranges, each with a label and optional min/max bounds. Omit min for "up to X", omit max for "X and above", omit both for "All".',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
+    },
+  },
+  'ais.currentRefinements': {
+    label: 'Current Refinements',
+    description:
+      'Displays the list of currently active filters and refinements with the ability to remove them individually.',
+    enabled: true,
+    icon: LIST_ICON,
+    defaultParameters: {
+      container: '',
+      includedAttributes: undefined,
+      excludedAttributes: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'includedAttributes',
+      'excludedAttributes',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      includedAttributes: {
+        type: 'list',
+        label: 'Included attributes',
+        placeholder: 'e.g. brand',
+        excludes: 'excludedAttributes',
+      },
+      excludedAttributes: {
+        type: 'list',
+        label: 'Excluded attributes',
+        placeholder: 'e.g. query',
+        excludes: 'includedAttributes',
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          item: '',
+          label: '',
+          category: '',
+          categoryLabel: '',
+          delete: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'label', label: 'Label' },
+          { key: 'category', label: 'Category' },
+          { key: 'categoryLabel', label: 'Category label' },
+          { key: 'delete', label: 'Delete' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      includedAttributes: 'Included attributes',
+      excludedAttributes: 'Excluded attributes',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#current-refinements").',
+      includedAttributes:
+        'Only show refinements from these attributes. When empty, all refinements are shown.',
+      excludedAttributes:
+        'Hide refinements from these attributes. Defaults to hiding the query.',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
+    },
+  },
+  'ais.breadcrumb': {
+    label: 'Breadcrumb',
+    description:
+      'A navigation trail showing the hierarchy of the current refinement, letting users navigate back to parent levels.',
+    enabled: true,
+    icon: CHEVRON_RIGHT_ICON,
+    defaultParameters: {
+      container: '',
+      attributes: [],
+      separator: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'attributes',
+      'separator',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      attributes: {
+        type: 'list',
+        label: 'Attributes',
+        placeholder: 'e.g. hierarchicalCategories.lvl0',
+        required: true,
+      },
+      separator: {
+        type: 'text',
+        label: 'Separator',
+        placeholder: ' > ',
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          item: '',
+          selectedItem: '',
+          separator: '',
+          link: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'selectedItem', label: 'Selected item' },
+          { key: 'separator', label: 'Separator' },
+          { key: 'link', label: 'Link' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attributes: 'Attributes',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#breadcrumb").',
+      attributes:
+        'Array of attributes to use to generate the hierarchy, one per level (e.g. "hierarchicalCategories.lvl0", "hierarchicalCategories.lvl1").',
+      separator:
+        'The character used to separate hierarchy levels in the records. Defaults to " > ".',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
+    },
+  },
   'ais.hierarchicalMenu': {
     label: 'Hierarchical Menu',
     enabled: false,
@@ -1172,6 +1399,78 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     icon: SLIDER_ICON,
     defaultParameters: {
       container: '',
+    },
+  },
+  'ais.rangeInput': {
+    label: 'Range Input',
+    description:
+      'A numeric range filter with min and max text inputs that lets users refine results within a value range.',
+    enabled: true,
+    icon: SLIDER_ICON,
+    defaultParameters: {
+      container: '',
+      attribute: '',
+      min: undefined,
+      max: undefined,
+      precision: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'attribute',
+      'min',
+      'max',
+      'precision',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      min: { type: 'number', label: 'Min', placeholder: 'Auto' },
+      max: { type: 'number', label: 'Max', placeholder: 'Auto' },
+      precision: { type: 'number', label: 'Precision', placeholder: '0' },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinement: '',
+          form: '',
+          label: '',
+          input: '',
+          inputMin: '',
+          separator: '',
+          inputMax: '',
+          submit: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinement', label: 'No refinement' },
+          { key: 'form', label: 'Form' },
+          { key: 'label', label: 'Label' },
+          { key: 'input', label: 'Input' },
+          { key: 'inputMin', label: 'Input min' },
+          { key: 'separator', label: 'Separator' },
+          { key: 'inputMax', label: 'Input max' },
+          { key: 'submit', label: 'Submit' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attribute: 'Attribute',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#range").',
+      attribute:
+        'The name of the numeric attribute to filter on (e.g. "price").',
+      min: 'Minimum value for the range. When empty, computed automatically from the result set.',
+      max: 'Maximum value for the range. When empty, computed automatically from the result set.',
+      precision:
+        'Number of digits after the decimal point. Defaults to 0 (integers only).',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
     },
   },
   'ais.toggleRefinement': {

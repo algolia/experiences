@@ -17,8 +17,12 @@ import sortBy from 'instantsearch.js/es/widgets/sort-by/sort-by';
 import stats from 'instantsearch.js/es/widgets/stats/stats';
 import toggleRefinement from 'instantsearch.js/es/widgets/toggle-refinement/toggle-refinement';
 import hitsPerPage from 'instantsearch.js/es/widgets/hits-per-page/hits-per-page';
+import currentRefinements from 'instantsearch.js/es/widgets/current-refinements/current-refinements';
+import rangeInput from 'instantsearch.js/es/widgets/range-input/range-input';
 import ratingMenu from 'instantsearch.js/es/widgets/rating-menu/rating-menu';
 import trendingItems from 'instantsearch.js/es/widgets/trending-items/trending-items';
+import breadcrumb from 'instantsearch.js/es/widgets/breadcrumb/breadcrumb';
+import numericMenu from 'instantsearch.js/es/widgets/numeric-menu/numeric-menu';
 
 import { renderTemplate, renderTool } from './renderer';
 import type { ExperienceWidget } from './types';
@@ -249,6 +253,57 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
       // TODO: Add support for `transformItems` (bucket 3 function)
       'ais.trendingItems': {
         widget: trendingItems,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
+      // TODO: Add support for `templates` (item)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.numericMenu': {
+        widget: numericMenu,
+        async transformParams(parameters) {
+          const { items, ...rest } = parameters as typeof parameters & {
+            items?: Array<{
+              label: string;
+              start?: string | number;
+              end?: string | number;
+            }>;
+          };
+
+          return {
+            ...rest,
+            items: items?.map(({ label, start, end }) => {
+              return {
+                label,
+                ...(start !== undefined && start !== ''
+                  ? { start: Number(start) }
+                  : {}),
+                ...(end !== undefined && end !== ''
+                  ? { end: Number(end) }
+                  : {}),
+              };
+            }),
+          };
+        },
+      },
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.currentRefinements': {
+        widget: currentRefinements,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
+      // TODO: Add support for `templates` (separatorText, submitText)
+      'ais.rangeInput': {
+        widget: rangeInput,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
+      // TODO: Add support for `templates` (home, separator)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.breadcrumb': {
+        widget: breadcrumb,
         async transformParams(parameters) {
           return parameters;
         },
