@@ -82,7 +82,7 @@ function describeBlock(
   if (block.type === 'ais.index') {
     const indexName = block.parameters.indexName || '(unnamed)';
     const indexId = block.parameters.indexId;
-    const children = block.blocks ?? [];
+    const children = block.children ?? [];
     let desc = `${indent}[${path}] Index (ais.index) — indexName: ${indexName}`;
     if (indexId) {
       desc += `, indexId: ${indexId}`;
@@ -162,7 +162,7 @@ function resolveBlock(
     return experience.blocks[path[0]] ?? null;
   }
   const [parentIdx, childIdx] = path;
-  return experience.blocks[parentIdx]?.blocks?.[childIdx] ?? null;
+  return experience.blocks[parentIdx]?.children?.[childIdx] ?? null;
 }
 
 export function describeToolAction(

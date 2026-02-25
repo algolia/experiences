@@ -15,7 +15,7 @@ export type ExperienceApiBlockParameters = {
 export type ExperienceApiBlock = {
   type: string;
   parameters: ExperienceApiBlockParameters;
-  blocks?: ExperienceApiBlock[];
+  children?: ExperienceApiBlock[];
 };
 
 export type BlockPath = [number] | [number, number];
