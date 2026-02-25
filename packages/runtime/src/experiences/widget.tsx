@@ -20,6 +20,7 @@ import hitsPerPage from 'instantsearch.js/es/widgets/hits-per-page/hits-per-page
 import ratingMenu from 'instantsearch.js/es/widgets/rating-menu/rating-menu';
 
 import { renderTemplate, renderTool } from './renderer';
+import { renderListItem } from './templates/list-item';
 import type { ExperienceWidget } from './types';
 
 import type { ChatTransport } from 'instantsearch.js/es/connectors/chat/connectChat';
@@ -181,52 +182,7 @@ export default (function experience(
           return {
             ...params,
             ...(template
-              ? {
-                  templates: {
-                    item(hit, { html }) {
-                      const { name, brand, description, image, price } =
-                        Object.entries(template).reduce(
-                          (acc, [key, attr]) => {
-                            acc[key] =
-                              key === 'currency'
-                                ? attr
-                                : attr
-                                  ? hit[attr]
-                                  : undefined;
-                            return acc;
-                          },
-                          {} as Record<string, unknown>
-                        );
-                      const currency = template.currency || '';
-
-                      return html`
-                        <div
-                          style="display:flex;width:100%;align-items:center;gap:12px"
-                        >
-                          ${image &&
-                          html`<img
-                            src=${image}
-                            style="width:80px;height:80px;object-fit:cover;border-radius:5px;flex-shrink:0"
-                          />`}
-                          <div
-                            style="display:flex;flex-direction:column;justify-content:center;flex-shrink:0"
-                          >
-                            ${name &&
-                            html`<span style="font-weight:bold">${name}</span>`}
-                            ${brand &&
-                            html`<span style="color:#6b7280">${brand}</span>`}
-                            ${description && html`<span>${description}</span>`}
-                          </div>
-                          <div style="flex-grow:1"></div>
-                          ${price &&
-                          html`<span style="flex-shrink:0;font-weight:bold"
-                            >${currency}${price}</span
-                          >`}
-                        </div>
-                      `;
-                    },
-                  },
-                }
+              ? { templates: { item: renderListItem(template) } }
               : {}),
           };
         },
@@ -237,7 +193,16 @@ export default (function experience(
       'ais.infiniteHits': {
         widget: infiniteHits,
         async transformParams(parameters) {
-          return parameters;
+          const { template, ...params } = parameters as typeof parameters & {
+            template?: Record<string, string>;
+          };
+
+          return {
+            ...params,
+            ...(template
+              ? { templates: { item: renderListItem(template) } }
+              : {}),
+          };
         },
       },
       // TODO: Add support for `templates` (item, showMoreText, searchableNoResults, searchableSubmit, searchableReset, searchableLoadingIndicator)

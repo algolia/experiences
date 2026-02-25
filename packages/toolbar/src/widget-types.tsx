@@ -494,7 +494,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         },
         fields: [
           { key: 'name', label: 'Name' },
-          { key: 'brand', label: 'Brand' },
+          { key: 'brand', label: 'Category' },
           { key: 'description', label: 'Description' },
           { key: 'image', label: 'Image' },
           { key: 'price', label: 'Price' },
@@ -977,6 +977,14 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       container: '',
       escapeHTML: true,
       showPrevious: false,
+      template: {
+        name: '',
+        brand: '',
+        description: '',
+        image: '',
+        price: '',
+        currency: '',
+      },
       cssClasses: undefined,
     },
     fieldOrder: [
@@ -984,11 +992,32 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'placement',
       'escapeHTML',
       'showPrevious',
+      'template',
       'cssClasses',
     ],
     fieldOverrides: {
       escapeHTML: { type: 'switch', label: 'Escape HTML' },
       showPrevious: { type: 'switch', label: 'Show previous' },
+      template: {
+        type: 'item-template',
+        label: 'Template',
+        defaultValue: {
+          name: '',
+          brand: '',
+          description: '',
+          image: '',
+          price: '',
+          currency: '',
+        },
+        fields: [
+          { key: 'name', label: 'Name' },
+          { key: 'brand', label: 'Category' },
+          { key: 'description', label: 'Description' },
+          { key: 'image', label: 'Image' },
+          { key: 'price', label: 'Price' },
+          { key: 'currency', label: 'Currency' },
+        ],
+      },
       cssClasses: {
         type: 'object',
         label: 'CSS classes',
@@ -1031,6 +1060,8 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         'When enabled, escapes HTML entities in hit string values for safety.',
       showPrevious:
         'When enabled, shows a button to load previous results above the list.',
+      template:
+        'Maps Algolia record attributes to display roles for rendering items.',
       cssClasses: 'Custom CSS classes to apply to the widget elements.',
     },
   },
