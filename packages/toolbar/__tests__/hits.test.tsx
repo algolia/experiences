@@ -40,6 +40,78 @@ describe('ais.hits field behavior', () => {
     });
   });
 
+  describe('object field (template)', () => {
+    it('renders the toggle when template is present', () => {
+      const { container } = render({
+        template: {
+          name: '',
+          brand: '',
+          description: '',
+          image: '',
+          price: '',
+        },
+      });
+      const toggle = getSwitch(container, 'Template');
+
+      expect(toggle).not.toBeNull();
+    });
+
+    it('sends undefined when toggled off', () => {
+      const { onParameterChange, container } = render({
+        template: {
+          name: 'title',
+          brand: '',
+          description: '',
+          image: '',
+          price: '',
+        },
+      });
+      const toggle = getSwitch(container, 'Template');
+
+      toggle.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith('template', undefined);
+    });
+
+    it('sends the default object merged with existing values when toggled on', () => {
+      const { onParameterChange, container } = render();
+      const toggle = getSwitch(container, 'Template');
+
+      toggle.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith(
+        'template',
+        expect.objectContaining({
+          name: '',
+          brand: '',
+          description: '',
+          image: '',
+          price: '',
+        })
+      );
+    });
+
+    it('sends the updated object when a sub-field changes', () => {
+      const { onParameterChange, container } = render({
+        template: {
+          name: '',
+          brand: '',
+          description: '',
+          image: '',
+          price: '',
+        },
+      });
+      const input = getInput(container, 'Name');
+
+      fireInput(input, 'product_name');
+
+      expect(onParameterChange).toHaveBeenCalledWith(
+        'template',
+        expect.objectContaining({ name: 'product_name' })
+      );
+    });
+  });
+
   describe('object field with disabledValue undefined (cssClasses)', () => {
     it('renders the toggle even when cssClasses is absent from parameters', () => {
       const { container } = render();

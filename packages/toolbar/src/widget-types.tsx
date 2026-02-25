@@ -456,11 +456,37 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     defaultParameters: {
       container: '',
       escapeHTML: true,
+      template: { name: '', brand: '', description: '', image: '', price: '' },
       cssClasses: undefined,
     },
-    fieldOrder: ['container', 'placement', 'escapeHTML', 'cssClasses'],
+    fieldOrder: [
+      'container',
+      'placement',
+      'escapeHTML',
+      'template',
+      'cssClasses',
+    ],
     fieldOverrides: {
       escapeHTML: { type: 'switch', label: 'Escape HTML' },
+      template: {
+        type: 'object',
+        label: 'Template',
+        disabledValue: undefined,
+        defaultValue: {
+          name: '',
+          brand: '',
+          description: '',
+          image: '',
+          price: '',
+        },
+        fields: [
+          { key: 'name', label: 'Name' },
+          { key: 'brand', label: 'Brand' },
+          { key: 'description', label: 'Description' },
+          { key: 'image', label: 'Image' },
+          { key: 'price', label: 'Price' },
+        ],
+      },
       cssClasses: {
         type: 'object',
         label: 'CSS classes',
@@ -493,6 +519,8 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         'CSS selector for the DOM element to render into (e.g. "#hits").',
       escapeHTML:
         'When enabled, escapes HTML tags in hit string values to prevent XSS.',
+      template:
+        'Maps Algolia record attributes to display roles for rendering items.',
       cssClasses:
         'Custom CSS classes to apply to specific parts of the widget.',
     },

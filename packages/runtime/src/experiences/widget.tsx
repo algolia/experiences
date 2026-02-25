@@ -43,7 +43,9 @@ declare const __SATELLITE_CSS__: string;
 
 const withUsage = createDocumentationMessageGenerator({ name: 'experience' });
 
-export default (function experience(widgetParams: ExperienceWidgetParams) {
+export default (function experience(
+  widgetParams: ExperienceWidgetParams
+): ExperienceWidget {
   const { id } = widgetParams || {};
 
   if (!id) {
@@ -167,12 +169,65 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
           return parameters;
         },
       },
-      // TODO: Add support for `templates` (item, empty, banner)
+      // TODO: Add support for `templates` (empty, banner)
       // TODO: Add support for `transformItems` (bucket 3 function)
       'ais.hits': {
         widget: hits,
         async transformParams(parameters) {
-          return parameters;
+          const { template, ...params } = parameters as typeof parameters & {
+            template?: Record<string, string>;
+          };
+
+          return {
+            ...params,
+            ...(template
+              ? {
+                  templates: {
+                    item(hit, { html }) {
+                      const { name, brand, description, image, price } =
+                        Object.entries(template).reduce(
+                          (acc, [key, attr]) => {
+                            acc[key] = attr ? hit[attr] : undefined;
+                            return acc;
+                          },
+                          {} as Record<string, unknown>
+                        );
+
+                      console.log({
+                        template,
+                        map: { name, brand, description, image, price },
+                      });
+
+                      return html`
+                        <div
+                          style="display:flex;width:100%;align-items:center;gap:12px"
+                        >
+                          ${image &&
+                          html`<img
+                            src=${image}
+                            style="width:80px;height:80px;object-fit:cover;border-radius:5px;flex-shrink:0"
+                          />`}
+                          <div
+                            style="display:flex;flex-direction:column;justify-content:center;flex-shrink:0"
+                          >
+                            ${name &&
+                            html`<span style="font-weight:bold">${name}</span>`}
+                            ${brand &&
+                            html`<span style="color:#6b7280">${brand}</span>`}
+                            ${description && html`<span>${description}</span>`}
+                          </div>
+                          <div style="flex-grow:1"></div>
+                          ${price &&
+                          html`<span style="flex-shrink:0;font-weight:bold"
+                            >${price}</span
+                          >`}
+                        </div>
+                      `;
+                    },
+                  },
+                }
+              : {}),
+          };
         },
       },
       // TODO: Add support for `templates` (item, empty, showMoreText)
