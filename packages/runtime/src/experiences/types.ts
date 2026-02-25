@@ -28,7 +28,7 @@ type ExperienceApiBlockParameters = {
 type ExperienceApiBlock = {
   type: string;
   parameters: ExperienceApiBlockParameters;
-  blocks?: ExperienceApiBlock[];
+  children?: ExperienceApiBlock[];
 };
 
 export type ExperienceApiResponse = {
