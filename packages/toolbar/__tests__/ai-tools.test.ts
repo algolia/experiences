@@ -139,6 +139,15 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('star-based rating');
     expect(result).toContain('attribute');
   });
+
+  it('includes currentRefinements widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.currentRefinements');
+    expect(result).toContain('Current Refinements');
+    expect(result).toContain('currently active filters');
+    expect(result).toContain('includedAttributes');
+    expect(result).toContain('excludedAttributes');
+  });
 });
 
 describe('describeExperience', () => {
@@ -1092,6 +1101,37 @@ describe('getTools', () => {
         { label: 'Under $50', end: 50 },
         { label: '$50–$100', start: 50, end: 100 },
       ]);
+    });
+
+    it('adds a currentRefinements widget with list parameters', async () => {
+      const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.currentRefinements',
+          container: '#current-refinements',
+          parameters: {
+            includedAttributes: ['brand', 'color'],
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'includedAttributes',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'includedAttributes',
+        ['brand', 'color']
+      );
     });
 
     it('adds a sortBy widget with items parameter', async () => {
@@ -2275,6 +2315,53 @@ describe('getTools', () => {
         { label: 'All' },
         { label: '4 stars and up', start: 4 },
       ]);
+    });
+
+    it('applies list parameter changes on currentRefinements', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.currentRefinements',
+            parameters: {
+              container: '#current-refinements',
+              includedAttributes: [],
+              excludedAttributes: [],
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            includedAttributes: ['brand'],
+            excludedAttributes: ['query'],
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'includedAttributes',
+          'excludedAttributes',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'includedAttributes',
+        ['brand']
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'excludedAttributes',
+        ['query']
+      );
     });
 
     it('edits sortBy items parameter', async () => {
