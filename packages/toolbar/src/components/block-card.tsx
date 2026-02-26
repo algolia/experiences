@@ -1,9 +1,12 @@
+import { useState } from 'preact/hooks';
+
 import type {
   ExperienceApiBlock,
   ExperienceApiBlockParameters,
 } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 import { BlockEditor } from './block-editor';
+import { InfoTooltip } from './fields/info-tooltip';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader } from './ui/card';
@@ -12,6 +15,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from './ui/collapsible';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 type BlockCardProps = {
   type: string;
@@ -26,7 +31,9 @@ type BlockCardProps = {
   indexBlocks?: Array<{ index: number; block: ExperienceApiBlock }>;
   parentIndex?: number;
   parentIndexName?: string;
-  onMoveToIndex?: (toParentIndex: number) => void;
+  onChangeIndex?: (targetIndexName: string) => void;
+  onParentIndexNameChange?: (value: string) => void;
+  siblingCount?: number;
 };
 
 const PLACEMENT_LABELS: Record<string, string> = {
@@ -71,12 +78,28 @@ export function BlockCard({
   indexBlocks,
   parentIndex,
   parentIndexName,
-  onMoveToIndex,
+  onChangeIndex,
+  onParentIndexNameChange,
+  siblingCount,
 }: BlockCardProps) {
   const widgetType = WIDGET_TYPES[type];
   const label = widgetType?.label ?? type;
   const icon = widgetType?.icon;
   const badge = getBadgeInfo(parameters);
+  const [indexInputValue, setIndexInputValue] = useState('');
+  const [isEditingIndex, setIsEditingIndex] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const indexSuggestions = (indexBlocks ?? []).filter(
+    ({ block: indexBlock, index }) => {
+      const name = (indexBlock.parameters.indexName as string) || '';
+      return (
+        index !== parentIndex &&
+        name &&
+        name.toLowerCase().includes(indexInputValue.toLowerCase())
+      );
+    }
+  );
 
   return (
     <Card>
@@ -184,45 +207,96 @@ export function BlockCard({
         </CollapsibleTrigger>
         <CollapsibleContent open={open}>
           <CardContent class="border-t px-4 py-3">
-            {indexBlocks &&
-              indexBlocks.length > 1 &&
-              onMoveToIndex &&
-              parentIndex !== undefined && (
-                <div class="mb-3">
-                  <label class="block text-xs font-medium text-foreground">
-                    Index
-                    <select
-                      class="mt-1 block w-full rounded-md border bg-transparent px-2 py-1.5 text-sm font-normal outline-none focus:ring-2 focus:ring-ring/50"
-                      value={parentIndex}
-                      onChange={(event) => {
-                        const target = Number(
-                          (event.target as HTMLSelectElement).value
-                        );
-                        if (target !== parentIndex) {
-                          onMoveToIndex(target);
-                        }
-                      }}
-                    >
-                      {indexBlocks.map(({ index, block }) => {
+            {indexBlocks && onChangeIndex && parentIndex !== undefined && (
+              <div class="mb-3 space-y-1">
+                <Label>
+                  Index
+                  <InfoTooltip
+                    content="The Algolia index this widget queries."
+                    class="mt-0.5"
+                  />
+                </Label>
+                <div class="relative">
+                  <Input
+                    value={
+                      isEditingIndex ? indexInputValue : parentIndexName || ''
+                    }
+                    placeholder="Index name"
+                    onFocus={() => {
+                      setIndexInputValue(parentIndexName || '');
+                      setIsEditingIndex(true);
+                      setShowSuggestions(true);
+                    }}
+                    onInput={(event) => {
+                      const value = (event.target as HTMLInputElement).value;
+                      setIndexInputValue(value);
+                      setShowSuggestions(true);
+                      // Live-rename when this is the only widget in the index
+                      if (siblingCount === 1) {
+                        onParentIndexNameChange?.(value);
+                      }
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        (event.target as HTMLInputElement).blur();
+                      } else if (event.key === 'Escape') {
+                        setIsEditingIndex(false);
+                        setShowSuggestions(false);
+                        setIndexInputValue('');
+                      }
+                    }}
+                    onBlur={() => {
+                      const value = indexInputValue.trim();
+                      if (
+                        value &&
+                        value !== parentIndexName &&
+                        siblingCount !== 1
+                      ) {
+                        onChangeIndex(value);
+                      }
+                      setIsEditingIndex(false);
+                      setShowSuggestions(false);
+                      setIndexInputValue('');
+                    }}
+                  />
+                  {showSuggestions && indexSuggestions.length > 0 && (
+                    <div class="absolute z-10 mt-1 w-full rounded-md border bg-background shadow-lg">
+                      {indexSuggestions.map(({ block: suggBlock, index }) => {
+                        const name =
+                          (suggBlock.parameters.indexName as string) ||
+                          `Index ${index}`;
                         return (
-                          <option key={index} value={index}>
-                            {(block.parameters.indexName as string) ||
-                              `Index ${index}`}
-                          </option>
+                          <button
+                            key={index}
+                            type="button"
+                            class="block w-full px-3 py-1.5 text-left text-sm hover:bg-accent"
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                              onChangeIndex(name);
+                              setIsEditingIndex(false);
+                              setShowSuggestions(false);
+                              setIndexInputValue('');
+                            }}
+                          >
+                            {name}
+                          </button>
                         );
                       })}
-                    </select>
-                  </label>
+                    </div>
+                  )}
                 </div>
-              )}
-            <BlockEditor
-              type={type}
-              parameters={parameters}
-              onParameterChange={onParameterChange}
-              onCssVariableChange={onCssVariableChange}
-              onPickElement={onPickElement}
-              parentIndexName={parentIndexName}
-            />
+              </div>
+            )}
+            {(parentIndex === undefined || parentIndexName) && (
+              <BlockEditor
+                type={type}
+                parameters={parameters}
+                onParameterChange={onParameterChange}
+                onCssVariableChange={onCssVariableChange}
+                onPickElement={onPickElement}
+                parentIndexName={parentIndexName}
+              />
+            )}
           </CardContent>
         </CollapsibleContent>
       </Collapsible>

@@ -134,6 +134,14 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('attribute');
   });
 
+  it('includes hierarchicalMenu widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.hierarchicalMenu');
+    expect(result).toContain('Hierarchical Menu');
+    expect(result).toContain('hierarchical facet');
+    expect(result).toContain('attributes');
+  });
+
   it('includes ratingMenu widget type', () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.ratingMenu');
@@ -1090,7 +1098,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -1125,6 +1133,57 @@ describe('getTools', () => {
         [0, 0],
         'threshold',
         50
+      );
+    });
+
+    it('adds a hierarchicalMenu widget with attributes and separator', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            children: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0]);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.hierarchicalMenu',
+          container: '#hierarchical-menu',
+          parameters: {
+            attributes: [
+              'categories.lvl0',
+              'categories.lvl1',
+              'categories.lvl2',
+            ],
+            separator: ' / ',
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'attributes',
+          'separator',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'attributes',
+        ['categories.lvl0', 'categories.lvl1', 'categories.lvl2']
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'separator',
+        ' / '
       );
     });
 
@@ -2423,6 +2482,50 @@ describe('getTools', () => {
         [0],
         'attribute',
         'brand'
+      );
+    });
+
+    it('edits hierarchicalMenu attributes and separator', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.hierarchicalMenu',
+            parameters: {
+              container: '#hierarchical-menu',
+              attributes: ['categories.lvl0', 'categories.lvl1'],
+              separator: ' > ',
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            attributes: ['tags.lvl0', 'tags.lvl1', 'tags.lvl2'],
+            separator: ' / ',
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['attributes', 'separator'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'attributes',
+        ['tags.lvl0', 'tags.lvl1', 'tags.lvl2']
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'separator',
+        ' / '
       );
     });
 
