@@ -76,10 +76,13 @@ export type ExperienceWidget = Widget & {
     'ais.hitsPerPage': SupportedWidget;
     'ais.rangeInput': SupportedWidget;
     'ais.ratingMenu': SupportedWidget;
+    'ais.trendingItems': SupportedWidget;
     'ais.numericMenu': SupportedWidget;
     'ais.currentRefinements': SupportedWidget<
       Parameters<CurrentRefinementsWidget>[0]
     >;
+    'ais.breadcrumb': SupportedWidget;
+    'ais.hierarchicalMenu': SupportedWidget;
   } & Record<
     | 'ais.chat'
     | 'ais.configure'
@@ -97,8 +100,11 @@ export type ExperienceWidget = Widget & {
     | 'ais.sortBy'
     | 'ais.stats'
     | 'ais.toggleRefinement'
+    | 'ais.trendingItems'
     | 'ais.hitsPerPage'
     | 'ais.numericMenu'
+    | 'ais.breadcrumb'
+    | 'ais.hierarchicalMenu'
     | (string & {}),
     SupportedWidget
   >;

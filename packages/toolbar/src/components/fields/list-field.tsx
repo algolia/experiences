@@ -13,6 +13,7 @@ type ListFieldProps = {
   enabled: boolean;
   items: string[];
   placeholder?: string;
+  required?: boolean;
   onToggle: (value: string[] | undefined) => void;
   onItemsChange: (items: string[]) => void;
 };
@@ -23,10 +24,12 @@ export function ListField({
   enabled,
   items,
   placeholder,
+  required,
   onToggle,
   onItemsChange,
 }: ListFieldProps) {
   const id = useId();
+  const isOpen = required || enabled;
 
   return (
     <div>
@@ -35,15 +38,17 @@ export function ListField({
           {label}
           {description && <InfoTooltip content={description} class="mt-0.5" />}
         </Label>
-        <Switch
-          id={id}
-          checked={enabled}
-          onCheckedChange={(checked) => {
-            return onToggle(checked ? [] : undefined);
-          }}
-        />
+        {!required && (
+          <Switch
+            id={id}
+            checked={enabled}
+            onCheckedChange={(checked) => {
+              return onToggle(checked ? [] : undefined);
+            }}
+          />
+        )}
       </div>
-      <CollapsibleContent open={enabled}>
+      <CollapsibleContent open={isOpen}>
         <div class="mt-2 space-y-1.5">
           {items.map((item, index) => {
             return (

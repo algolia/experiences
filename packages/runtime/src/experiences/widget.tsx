@@ -20,6 +20,9 @@ import hitsPerPage from 'instantsearch.js/es/widgets/hits-per-page/hits-per-page
 import currentRefinements from 'instantsearch.js/es/widgets/current-refinements/current-refinements';
 import rangeInput from 'instantsearch.js/es/widgets/range-input/range-input';
 import ratingMenu from 'instantsearch.js/es/widgets/rating-menu/rating-menu';
+import trendingItems from 'instantsearch.js/es/widgets/trending-items/trending-items';
+import breadcrumb from 'instantsearch.js/es/widgets/breadcrumb/breadcrumb';
+import hierarchicalMenu from 'instantsearch.js/es/widgets/hierarchical-menu/hierarchical-menu';
 import numericMenu from 'instantsearch.js/es/widgets/numeric-menu/numeric-menu';
 
 import { renderTemplate, renderTool } from './renderer';
@@ -247,6 +250,14 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
           return parameters;
         },
       },
+      // TODO: Add support for `templates` (item, header, empty, layout)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.trendingItems': {
+        widget: trendingItems,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
       // TODO: Add support for `templates` (item)
       // TODO: Add support for `transformItems` (bucket 3 function)
       'ais.numericMenu': {
@@ -283,9 +294,25 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
           return parameters;
         },
       },
+      // TODO: Add support for `templates` (item, showMoreText)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.hierarchicalMenu': {
+        widget: hierarchicalMenu,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
       // TODO: Add support for `templates` (separatorText, submitText)
       'ais.rangeInput': {
         widget: rangeInput,
+        async transformParams(parameters) {
+          return parameters;
+        },
+      },
+      // TODO: Add support for `templates` (home, separator)
+      // TODO: Add support for `transformItems` (bucket 3 function)
+      'ais.breadcrumb': {
+        widget: breadcrumb,
         async transformParams(parameters) {
           return parameters;
         },
