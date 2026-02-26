@@ -35,7 +35,7 @@ const MOCK_EXPERIENCE_WITH_INDICES = {
     {
       type: 'ais.index',
       parameters: { indexName: 'products', indexId: '' },
-      blocks: [
+      children: [
         {
           type: 'ais.hits',
           parameters: { container: '#hits' },
@@ -49,7 +49,7 @@ const MOCK_EXPERIENCE_WITH_INDICES = {
     {
       type: 'ais.index',
       parameters: { indexName: 'articles', indexId: '' },
-      blocks: [
+      children: [
         {
           type: 'ais.searchBox',
           parameters: { container: '#search' },
@@ -201,6 +201,12 @@ describe('toolbar', () => {
         expect(popoverText).toContain('Menu');
         expect(popoverText).toContain('Toggle Refinement');
         expect(popoverText).toContain('Hits Per Page');
+        expect(popoverText).toContain('Rating Menu');
+        expect(popoverText).toContain('Trending Items');
+        expect(popoverText).toContain('Numeric Menu');
+        expect(popoverText).toContain('Current Refinements');
+        expect(popoverText).toContain('Range Input');
+        expect(popoverText).toContain('Breadcrumb');
         expect(popoverText).toContain('Hits');
         expect(popoverText).toContain('Infinite Hits');
         expect(popoverText).toContain('Coming Soon');
@@ -255,20 +261,18 @@ describe('toolbar', () => {
         });
 
         // Disabled items are rendered as <div> elements, not <button>
-        // Check that "Hierarchical Menu" is not a button
+        // Check that "Range Slider" is not a button
         const buttons = Array.from(
           host.shadowRoot?.querySelectorAll('button') ?? []
         );
         const disabledButton = buttons.find((btn) => {
-          return (
-            btn.textContent?.includes('Hierarchical Menu') && btn !== addButton
-          );
+          return btn.textContent?.includes('Range Slider') && btn !== addButton;
         });
         expect(disabledButton).toBeUndefined();
 
         // Verify the text is still rendered (as a div)
         const popoverText = host.shadowRoot?.innerHTML ?? '';
-        expect(popoverText).toContain('Hierarchical Menu');
+        expect(popoverText).toContain('Range Slider');
       });
     });
 
@@ -868,7 +872,7 @@ describe('toolbar', () => {
                   {
                     type: 'ais.index',
                     parameters: { indexName: '', indexId: '' },
-                    blocks: [
+                    children: [
                       {
                         type: 'ais.hits',
                         parameters: { container: '#hits' },

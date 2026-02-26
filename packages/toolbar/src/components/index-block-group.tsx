@@ -150,7 +150,7 @@ export function IndexBlockGroup({
       </div>
 
       {/* Child widgets */}
-      {(block.blocks ?? []).map((child, childIndex) => {
+      {(block.children ?? []).map((child, childIndex) => {
         return (
           <BlockCard
             key={childIndex}
@@ -188,7 +188,7 @@ export function IndexBlockGroup({
             onParentIndexNameChange={(value) => {
               return onParameterChange([parentIndex], 'indexName', value);
             }}
-            siblingCount={block.blocks?.length ?? 0}
+            siblingCount={block.children?.length ?? 0}
           />
         );
       })}

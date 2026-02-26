@@ -30,7 +30,7 @@ export type FieldOverride = FieldOverrideBase &
         disabledValue?: false | undefined;
         fields: Array<{ key: string; label: string }>;
       }
-    | { type: 'json'; label: string }
+    | { type: 'json'; label: string; disabledValue?: false | undefined }
     | {
         type: 'items-list';
         label: string;
@@ -41,7 +41,13 @@ export type FieldOverride = FieldOverrideBase &
           inputType?: 'text' | 'number';
         }>;
       }
-    | { type: 'list'; label: string; placeholder?: string; excludes?: string }
+    | {
+        type: 'list';
+        label: string;
+        placeholder?: string;
+        excludes?: string;
+        required?: boolean;
+      }
     | {
         type: 'select-list';
         label: string;
@@ -282,6 +288,20 @@ const CONFIGURE_ICON = (
   >
     <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
     <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+const STAR_ICON = (
+  <svg
+    class="size-4 shrink-0"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
   </svg>
 );
 
@@ -1081,12 +1101,410 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       cssClasses: 'Custom CSS classes for the widget markup.',
     },
   },
-  'ais.hierarchicalMenu': {
-    label: 'Hierarchical Menu',
-    enabled: false,
+  'ais.ratingMenu': {
+    label: 'Rating Menu',
+    description:
+      'A star-based rating filter that lets users refine results by minimum rating value.',
+    enabled: true,
+    icon: STAR_ICON,
+    defaultParameters: {
+      container: '',
+      attribute: '',
+      max: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: ['container', 'placement', 'attribute', 'max', 'cssClasses'],
+    fieldOverrides: {
+      max: { type: 'number', label: 'Max rating', placeholder: '5' },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          item: '',
+          selectedItem: '',
+          disabledItem: '',
+          link: '',
+          starIcon: '',
+          fullStarIcon: '',
+          emptyStarIcon: '',
+          label: '',
+          count: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'selectedItem', label: 'Selected item' },
+          { key: 'disabledItem', label: 'Disabled item' },
+          { key: 'link', label: 'Link' },
+          { key: 'starIcon', label: 'Star icon' },
+          { key: 'fullStarIcon', label: 'Full star icon' },
+          { key: 'emptyStarIcon', label: 'Empty star icon' },
+          { key: 'label', label: 'Label' },
+          { key: 'count', label: 'Count' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attribute: 'Attribute',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#rating").',
+      attribute:
+        'The name of the numeric attribute that contains ratings (e.g. "rating").',
+      max: 'The maximum rating value. Defaults to 5.',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
+    },
+  },
+  'ais.numericMenu': {
+    label: 'Numeric Menu',
+    description:
+      'A list of numeric ranges that lets users filter results by selecting a price range, rating, or other numeric attribute.',
+    enabled: true,
+    icon: HASH_ICON,
+    defaultParameters: {
+      container: '',
+      attribute: '',
+      items: [],
+      cssClasses: undefined,
+    },
+    fieldOrder: ['container', 'placement', 'attribute', 'items', 'cssClasses'],
+    fieldOverrides: {
+      items: {
+        type: 'items-list',
+        label: 'Ranges',
+        fields: [
+          {
+            key: 'label',
+            label: 'Label',
+            placeholder: 'e.g. All',
+          },
+          {
+            key: 'start',
+            label: 'Min (>=)',
+            placeholder: 'No min',
+            inputType: 'number',
+          },
+          {
+            key: 'end',
+            label: 'Max (<=)',
+            placeholder: 'No max',
+            inputType: 'number',
+          },
+        ],
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          item: '',
+          selectedItem: '',
+          label: '',
+          labelText: '',
+          radio: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'selectedItem', label: 'Selected item' },
+          { key: 'label', label: 'Label' },
+          { key: 'labelText', label: 'Label text' },
+          { key: 'radio', label: 'Radio' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attribute: 'Attribute',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#numeric-menu").',
+      attribute: 'The numeric attribute to filter on (e.g. "price").',
+      items:
+        'List of numeric ranges, each with a label and optional min/max bounds. Omit min for "up to X", omit max for "X and above", omit both for "All".',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
+    },
+  },
+  'ais.currentRefinements': {
+    label: 'Current Refinements',
+    description:
+      'Displays the list of currently active filters and refinements with the ability to remove them individually.',
+    enabled: true,
+    icon: LIST_ICON,
+    defaultParameters: {
+      container: '',
+      includedAttributes: undefined,
+      excludedAttributes: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'includedAttributes',
+      'excludedAttributes',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      includedAttributes: {
+        type: 'list',
+        label: 'Included attributes',
+        placeholder: 'e.g. brand',
+        excludes: 'excludedAttributes',
+      },
+      excludedAttributes: {
+        type: 'list',
+        label: 'Excluded attributes',
+        placeholder: 'e.g. query',
+        excludes: 'includedAttributes',
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          item: '',
+          label: '',
+          category: '',
+          categoryLabel: '',
+          delete: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'label', label: 'Label' },
+          { key: 'category', label: 'Category' },
+          { key: 'categoryLabel', label: 'Category label' },
+          { key: 'delete', label: 'Delete' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      includedAttributes: 'Included attributes',
+      excludedAttributes: 'Excluded attributes',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#current-refinements").',
+      includedAttributes:
+        'Only show refinements from these attributes. When empty, all refinements are shown.',
+      excludedAttributes:
+        'Hide refinements from these attributes. Defaults to hiding the query.',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
+    },
+  },
+  'ais.breadcrumb': {
+    label: 'Breadcrumb',
+    description:
+      'A navigation trail showing the hierarchy of the current refinement, letting users navigate back to parent levels.',
+    enabled: true,
     icon: CHEVRON_RIGHT_ICON,
     defaultParameters: {
       container: '',
+      attributes: [],
+      separator: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'attributes',
+      'separator',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      attributes: {
+        type: 'list',
+        label: 'Attributes',
+        placeholder: 'e.g. hierarchicalCategories.lvl0',
+        required: true,
+      },
+      separator: {
+        type: 'text',
+        label: 'Separator',
+        placeholder: ' > ',
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          item: '',
+          selectedItem: '',
+          separator: '',
+          link: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+          { key: 'selectedItem', label: 'Selected item' },
+          { key: 'separator', label: 'Separator' },
+          { key: 'link', label: 'Link' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attributes: 'Attributes',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#breadcrumb").',
+      attributes:
+        'Array of attributes to use to generate the hierarchy, one per level (e.g. "hierarchicalCategories.lvl0", "hierarchicalCategories.lvl1").',
+      separator:
+        'The character used to separate hierarchy levels in the records. Defaults to " > ".',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
+    },
+  },
+  'ais.hierarchicalMenu': {
+    label: 'Hierarchical Menu',
+    description:
+      'A hierarchical facet navigation that lets users drill down through nested category levels.',
+    enabled: true,
+    icon: CHEVRON_RIGHT_ICON,
+    defaultParameters: {
+      container: '',
+      attributes: [],
+      separator: undefined,
+      showParentLevel: true,
+      limit: undefined,
+      showMore: false,
+      showMoreLimit: undefined,
+      sortBy: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'attributes',
+      'separator',
+      'showParentLevel',
+      'limit',
+      'showMore',
+      'showMoreLimit',
+      'sortBy',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      attributes: {
+        type: 'list',
+        label: 'Attributes',
+        placeholder: 'e.g. categories.lvl0',
+        required: true,
+      },
+      separator: {
+        type: 'text',
+        label: 'Separator',
+        placeholder: ' > ',
+      },
+      showParentLevel: { type: 'switch', label: 'Show parent level' },
+      limit: { type: 'number', label: 'Limit', placeholder: '10' },
+      showMore: { type: 'switch', label: 'Show more' },
+      showMoreLimit: {
+        type: 'number',
+        label: 'Show more limit',
+        placeholder: '20',
+        visibleIf: { key: 'showMore', value: true },
+      },
+      sortBy: {
+        type: 'select-list',
+        label: 'Sort by',
+        options: [
+          { value: 'count:asc', label: 'Count (asc)' },
+          { value: 'count:desc', label: 'Count (desc)' },
+          { value: 'name:asc', label: 'Name (asc)' },
+          { value: 'name:desc', label: 'Name (desc)' },
+          { value: 'isRefined:asc', label: 'Is refined (asc)' },
+          { value: 'isRefined:desc', label: 'Is refined (desc)' },
+        ],
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        defaultValue: {
+          root: '',
+          noRefinementRoot: '',
+          list: '',
+          childList: '',
+          item: '',
+          selectedItem: '',
+          parentItem: '',
+          link: '',
+          selectedItemLink: '',
+          label: '',
+          count: '',
+          showMore: '',
+          disabledShowMore: '',
+        },
+        disabledValue: undefined,
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinementRoot', label: 'No refinement root' },
+          { key: 'list', label: 'List' },
+          { key: 'childList', label: 'Child list' },
+          { key: 'item', label: 'Item' },
+          { key: 'selectedItem', label: 'Selected item' },
+          { key: 'parentItem', label: 'Parent item' },
+          { key: 'link', label: 'Link' },
+          { key: 'selectedItemLink', label: 'Selected item link' },
+          { key: 'label', label: 'Label' },
+          { key: 'count', label: 'Count' },
+          { key: 'showMore', label: 'Show more' },
+          { key: 'disabledShowMore', label: 'Disabled show more' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attributes: 'Attributes',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#hierarchical-menu").',
+      attributes:
+        'Ordered list of attribute names for each hierarchy level (e.g. "categories.lvl0", "categories.lvl1").',
+      separator:
+        'Character used to split hierarchy values in each attribute. Defaults to " > ".',
+      showParentLevel:
+        'When enabled, shows the parent level alongside the current refinement.',
+      limit: 'Maximum number of facet values to display. Defaults to 10.',
+      showMore:
+        'When enabled, shows a "Show more" button to reveal additional facet values.',
+      showMoreLimit:
+        'Maximum number of facet values when "Show more" is expanded. Defaults to 20.',
+      sortBy:
+        'Ordered list of sort criteria. Available values: "count:asc", "count:desc", "name:asc", "name:desc", "isRefined:asc", "isRefined:desc".',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
     },
   },
   'ais.rangeSlider': {
@@ -1095,6 +1513,78 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     icon: SLIDER_ICON,
     defaultParameters: {
       container: '',
+    },
+  },
+  'ais.rangeInput': {
+    label: 'Range Input',
+    description:
+      'A numeric range filter with min and max text inputs that lets users refine results within a value range.',
+    enabled: true,
+    icon: SLIDER_ICON,
+    defaultParameters: {
+      container: '',
+      attribute: '',
+      min: undefined,
+      max: undefined,
+      precision: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'attribute',
+      'min',
+      'max',
+      'precision',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      min: { type: 'number', label: 'Min', placeholder: 'Auto' },
+      max: { type: 'number', label: 'Max', placeholder: 'Auto' },
+      precision: { type: 'number', label: 'Precision', placeholder: '0' },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          noRefinement: '',
+          form: '',
+          label: '',
+          input: '',
+          inputMin: '',
+          separator: '',
+          inputMax: '',
+          submit: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'noRefinement', label: 'No refinement' },
+          { key: 'form', label: 'Form' },
+          { key: 'label', label: 'Label' },
+          { key: 'input', label: 'Input' },
+          { key: 'inputMin', label: 'Input min' },
+          { key: 'separator', label: 'Separator' },
+          { key: 'inputMax', label: 'Input max' },
+          { key: 'submit', label: 'Submit' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      attribute: 'Attribute',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#range").',
+      attribute:
+        'The name of the numeric attribute to filter on (e.g. "price").',
+      min: 'Minimum value for the range. When empty, computed automatically from the result set.',
+      max: 'Maximum value for the range. When empty, computed automatically from the result set.',
+      precision:
+        'Number of digits after the decimal point. Defaults to 0 (integers only).',
+      cssClasses:
+        'Custom CSS classes to apply to the widget elements for styling.',
     },
   },
   'ais.toggleRefinement': {
@@ -1155,10 +1645,112 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   },
   'ais.trendingItems': {
     label: 'Trending Items',
-    enabled: false,
+    description:
+      'Displays trending items from the Algolia Recommend API based on popularity.',
+    enabled: true,
     icon: TRENDING_ICON,
     defaultParameters: {
       container: '',
+      limit: undefined,
+      threshold: undefined,
+      facetName: undefined,
+      facetValue: undefined,
+      escapeHTML: true,
+      queryParameters: undefined,
+      fallbackParameters: undefined,
+      cssClasses: undefined,
+    },
+    fieldOrder: [
+      'container',
+      'placement',
+      'limit',
+      'threshold',
+      'facetName',
+      'facetValue',
+      'escapeHTML',
+      'queryParameters',
+      'fallbackParameters',
+      'cssClasses',
+    ],
+    fieldOverrides: {
+      limit: {
+        type: 'number',
+        label: 'Limit',
+        placeholder: 'Auto',
+      },
+      threshold: {
+        type: 'number',
+        label: 'Threshold',
+        placeholder: '0',
+      },
+      facetName: {
+        type: 'text',
+        label: 'Facet name',
+        placeholder: 'e.g. category',
+      },
+      facetValue: {
+        type: 'text',
+        label: 'Facet value',
+        placeholder: 'e.g. Shoes',
+      },
+      escapeHTML: {
+        type: 'switch',
+        label: 'Escape HTML',
+      },
+      queryParameters: {
+        type: 'json',
+        label: 'Query parameters',
+        disabledValue: undefined,
+      },
+      fallbackParameters: {
+        type: 'json',
+        label: 'Fallback parameters',
+        disabledValue: undefined,
+      },
+      cssClasses: {
+        type: 'object',
+        label: 'CSS classes',
+        disabledValue: undefined,
+        defaultValue: {
+          root: '',
+          emptyRoot: '',
+          title: '',
+          container: '',
+          list: '',
+          item: '',
+        },
+        fields: [
+          { key: 'root', label: 'Root' },
+          { key: 'emptyRoot', label: 'Empty root' },
+          { key: 'title', label: 'Title' },
+          { key: 'container', label: 'Container' },
+          { key: 'list', label: 'List' },
+          { key: 'item', label: 'Item' },
+        ],
+      },
+    },
+    paramLabels: {
+      container: 'Container',
+      facetName: 'Facet name',
+      facetValue: 'Facet value',
+    },
+    paramDescriptions: {
+      container:
+        'CSS selector for the DOM element to render into (e.g. "#trending").',
+      limit: 'Maximum number of trending items to display.',
+      threshold:
+        'Confidence score threshold between 0 and 100 for filtering recommendations.',
+      facetName:
+        'Facet attribute to scope trending items to (e.g. "category").',
+      facetValue:
+        'Specific facet value to scope trending items to (e.g. "Shoes").',
+      escapeHTML:
+        'Whether to escape HTML entities in item values for security.',
+      queryParameters:
+        'Additional Algolia search parameters as JSON (e.g. {"filters": "category:Books"}).',
+      fallbackParameters:
+        'Fallback Algolia search parameters used when there are no recommendations.',
+      cssClasses: 'Custom CSS classes for the widget markup.',
     },
   },
   'ais.clearRefinements': {

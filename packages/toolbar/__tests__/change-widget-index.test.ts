@@ -10,7 +10,7 @@ function makeIndex(
   return {
     type: 'ais.index',
     parameters: { indexName, indexId: '' },
-    blocks: children,
+    children,
   };
 }
 
@@ -44,10 +44,10 @@ describe('changeWidgetIndex', () => {
     const result = changeWidgetIndex(blocks, [0, 0], 'articles');
 
     expect(result).toHaveLength(2);
-    expect(result[0]!.blocks).toHaveLength(1);
-    expect(result[0]!.blocks![0]!.type).toBe('ais.pagination');
-    expect(result[1]!.blocks).toHaveLength(2);
-    expect(result[1]!.blocks![1]!.type).toBe('ais.hits');
+    expect(result[0]!.children).toHaveLength(1);
+    expect(result[0]!.children![0]!.type).toBe('ais.pagination');
+    expect(result[1]!.children).toHaveLength(2);
+    expect(result[1]!.children![1]!.type).toBe('ais.hits');
   });
 
   it('creates a new index block when target does not exist', () => {
@@ -61,11 +61,11 @@ describe('changeWidgetIndex', () => {
     const result = changeWidgetIndex(blocks, [0, 0], 'articles');
 
     expect(result).toHaveLength(2);
-    expect(result[0]!.blocks).toHaveLength(1);
+    expect(result[0]!.children).toHaveLength(1);
     expect(result[1]!.type).toBe('ais.index');
     expect(result[1]!.parameters.indexName).toBe('articles');
-    expect(result[1]!.blocks).toHaveLength(1);
-    expect(result[1]!.blocks![0]!.type).toBe('ais.hits');
+    expect(result[1]!.children).toHaveLength(1);
+    expect(result[1]!.children![0]!.type).toBe('ais.hits');
   });
 
   it('removes the source index when it becomes empty', () => {
@@ -78,8 +78,8 @@ describe('changeWidgetIndex', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]!.parameters.indexName).toBe('articles');
-    expect(result[0]!.blocks).toHaveLength(2);
-    expect(result[0]!.blocks![1]!.type).toBe('ais.hits');
+    expect(result[0]!.children).toHaveLength(2);
+    expect(result[0]!.children![1]!.type).toBe('ais.hits');
   });
 
   it('adjusts target index after source removal when target comes after source', () => {
@@ -93,7 +93,7 @@ describe('changeWidgetIndex', () => {
     // Source (index 0) was removed, so articles (originally index 1) shifted to index 0
     expect(result).toHaveLength(1);
     expect(result[0]!.parameters.indexName).toBe('articles');
-    expect(result[0]!.blocks![1]!.type).toBe('ais.hits');
+    expect(result[0]!.children![1]!.type).toBe('ais.hits');
   });
 
   it('does not remove source index when it still has children', () => {
@@ -109,8 +109,8 @@ describe('changeWidgetIndex', () => {
 
     expect(result).toHaveLength(2);
     expect(result[0]!.parameters.indexName).toBe('products');
-    expect(result[0]!.blocks).toHaveLength(1);
-    expect(result[0]!.blocks![0]!.type).toBe('ais.pagination');
+    expect(result[0]!.children).toHaveLength(1);
+    expect(result[0]!.children![0]!.type).toBe('ais.pagination');
   });
 
   it('syncs sortBy first item value to the new index name', () => {
@@ -127,7 +127,7 @@ describe('changeWidgetIndex', () => {
 
     const result = changeWidgetIndex(blocks, [0, 0], 'articles');
 
-    const movedWidget = result[0]!.blocks![1]!;
+    const movedWidget = result[0]!.children![1]!;
     expect(movedWidget.type).toBe('ais.sortBy');
     const items = movedWidget.parameters.items as Array<Record<string, string>>;
     expect(items[0]!.value).toBe('articles');
@@ -143,7 +143,7 @@ describe('changeWidgetIndex', () => {
 
     const result = changeWidgetIndex(blocks, [0, 0], 'articles');
 
-    const movedWidget = result[1]!.blocks![0]!;
+    const movedWidget = result[1]!.children![0]!;
     expect(movedWidget.parameters.items).toEqual([]);
   });
 
