@@ -698,8 +698,7 @@ export function App({ config, initialExperience }: AppProps) {
     <>
       <Panel
         panelRef={panelRef}
-        appId={config.appId}
-        apiKey={config.apiKey}
+        env={config.env ?? 'prod'}
         experience={experience}
         dirty={isDirty}
         saveState={saveState}

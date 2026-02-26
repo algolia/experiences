@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef } from 'preact/hooks';
 import type {
   AddBlockResult,
   BlockPath,
+  Environment,
   ExperienceApiResponse,
 } from '../types';
 import {
@@ -26,7 +27,22 @@ const marked = new Marked({
 });
 
 const STORAGE_KEY = 'algolia-experiences-ai-chat';
-const AGENT_ID = 'e51e9dee-6d2a-4a9b-ae95-1e24292d8458';
+
+const AGENT_STUDIO: Record<
+  Environment,
+  { appId: string; api: string; searchApiKey: string }
+> = {
+  beta: {
+    appId: process.env.AGENT_STUDIO_BETA_APP_ID!,
+    api: `https://agent-studio-staging.eu.algolia.com/1/agents/${process.env.AGENT_STUDIO_BETA_AGENT_ID}/completions?compatibilityMode=ai-sdk-5`,
+    searchApiKey: process.env.AGENT_STUDIO_BETA_SEARCH_API_KEY!,
+  },
+  prod: {
+    appId: process.env.AGENT_STUDIO_PROD_APP_ID!,
+    api: `https://${process.env.AGENT_STUDIO_PROD_APP_ID}.algolia.net/agent-studio/1/agents/${process.env.AGENT_STUDIO_PROD_AGENT_ID}/completions?compatibilityMode=ai-sdk-5`,
+    searchApiKey: process.env.AGENT_STUDIO_PROD_SEARCH_API_KEY!,
+  },
+};
 
 type ToolCallDetailsProps = {
   toolName: string;
@@ -70,8 +86,7 @@ function ToolCallDetails({ toolName, input, output }: ToolCallDetailsProps) {
 }
 
 type AiChatProps = {
-  appId: string;
-  apiKey: string;
+  env: Environment;
   experience: ExperienceApiResponse;
   onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
   onParameterChange: (path: BlockPath, key: string, value: unknown) => void;
@@ -81,8 +96,7 @@ type AiChatProps = {
 };
 
 export function AiChat({
-  appId,
-  apiKey,
+  env,
   experience,
   onAddBlock,
   onParameterChange,
@@ -130,14 +144,16 @@ export function AiChat({
   }, []);
 
   const transport = useMemo(() => {
+    const config = AGENT_STUDIO[env];
+
     return new DefaultChatTransport({
-      api: `https://agent-studio-staging.eu.algolia.com/1/agents/${AGENT_ID}/completions?compatibilityMode=ai-sdk-5`,
+      api: config.api,
       headers: {
-        'x-algolia-application-id': appId,
-        'X-Algolia-API-Key': apiKey,
+        'x-algolia-application-id': config.appId,
+        'X-Algolia-API-Key': config.searchApiKey,
       },
     });
-  }, [appId, apiKey]);
+  }, [env]);
 
   const initialMessages = useMemo(() => {
     try {

@@ -1,10 +1,13 @@
 import { execSync } from 'child_process';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { config } from 'dotenv';
 import type { Plugin } from 'rolldown';
 import { defineConfig } from 'tsdown';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const { parsed: env = {} } = config({ path: resolve(__dirname, '.env') });
 const toolbarCssPath = resolve(__dirname, 'src/toolbar.css');
 
 const VIRTUAL_ID = 'virtual:toolbar-css';
@@ -42,6 +45,26 @@ export default defineConfig({
   minify: true,
   sourcemap: true,
   noExternal: [/.*/],
+  define: {
+    'process.env.AGENT_STUDIO_BETA_APP_ID': JSON.stringify(
+      env.AGENT_STUDIO_BETA_APP_ID ?? ''
+    ),
+    'process.env.AGENT_STUDIO_BETA_AGENT_ID': JSON.stringify(
+      env.AGENT_STUDIO_BETA_AGENT_ID ?? ''
+    ),
+    'process.env.AGENT_STUDIO_BETA_SEARCH_API_KEY': JSON.stringify(
+      env.AGENT_STUDIO_BETA_SEARCH_API_KEY ?? ''
+    ),
+    'process.env.AGENT_STUDIO_PROD_APP_ID': JSON.stringify(
+      env.AGENT_STUDIO_PROD_APP_ID ?? ''
+    ),
+    'process.env.AGENT_STUDIO_PROD_AGENT_ID': JSON.stringify(
+      env.AGENT_STUDIO_PROD_AGENT_ID ?? ''
+    ),
+    'process.env.AGENT_STUDIO_PROD_SEARCH_API_KEY': JSON.stringify(
+      env.AGENT_STUDIO_PROD_SEARCH_API_KEY ?? ''
+    ),
+  },
   alias: {
     react: 'preact/compat',
     'react-dom': 'preact/compat',
