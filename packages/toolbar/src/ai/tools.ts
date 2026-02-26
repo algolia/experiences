@@ -426,19 +426,156 @@ function executeMoveWidget(
   return { success: true, movedType: block.type, from: path, to_index };
 }
 
-const TOOL_EXECUTORS: Record<
-  string,
-  (
-    args: Record<string, unknown>,
-    callbacks: ToolCallbacks
-  ) => Record<string, unknown>
-> = {
+type ToolExecutor = (
+  args: Record<string, unknown>,
+  callbacks: ToolCallbacks
+) => Record<string, unknown>;
+
+const TOOL_EXECUTORS = {
   get_experience: executeGetExperience,
   add_widget: executeAddWidget,
   edit_widget: executeEditWidget,
   remove_widget: executeRemoveWidget,
   move_widget: executeMoveWidget,
+} satisfies Record<string, ToolExecutor>;
+
+type ExecutorToolName = keyof typeof TOOL_EXECUTORS;
+type ToolName = ExecutorToolName | 'scan_page';
+
+type AgentStudioTool<Name extends ToolName = ToolName> = {
+  name: Name;
+  description: string;
+  inputSchema: Record<string, unknown>;
+  type: 'client_side';
 };
+
+export function buildToolDefinitions(): AgentStudioTool[] {
+  const tools: { [Key in ToolName]: AgentStudioTool<Key> } = {
+    get_experience: {
+      name: 'get_experience',
+      description:
+        'Get the current experience state, including all widgets and their parameters. Widgets are addressed by path (e.g., "0" for top-level, "1.0" for first child of index block 1)',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+        required: [],
+      },
+      type: 'client_side',
+    },
+    add_widget: {
+      name: 'add_widget',
+      description:
+        'Add a new widget. Index-dependent widgets are auto-placed inside an ais.index block. When placement is "body", no container is needed. Otherwise a container CSS selector is required.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          type: {
+            type: 'string',
+            description: 'The widget type to add',
+          },
+          container: {
+            type: 'string',
+            description:
+              'CSS selector for the container element (required unless placement is "body" or type is "ais.index")',
+          },
+          placement: {
+            type: 'string',
+            enum: ['inside', 'before', 'after', 'replace', 'body'],
+            description:
+              'Where to place the widget relative to the container. Uses the widget type default placement if not specified.',
+          },
+          parameters: {
+            type: 'object',
+            description: 'Additional parameters for the widget',
+          },
+          target_index: {
+            type: 'number',
+            description:
+              'Index of the ais.index block to add this widget to. Only for index-dependent widgets. If omitted, uses the last index block or auto-creates one.',
+          },
+        },
+        required: ['type'],
+      },
+      type: 'client_side',
+    },
+    edit_widget: {
+      name: 'edit_widget',
+      description:
+        'Edit parameters of an existing widget by path (e.g., "0" for top-level, "1.0" for first child of index block 1).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'The path of the widget to edit (e.g., "0", "1.0")',
+          },
+          parameters: {
+            type: 'object',
+            description: 'Parameters to update (key-value pairs)',
+          },
+        },
+        required: ['path', 'parameters'],
+      },
+      type: 'client_side',
+    },
+    remove_widget: {
+      name: 'remove_widget',
+      description:
+        'Remove a widget from the experience by path (e.g., "0" for top-level, "1.0" for first child of index block 1).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'The path of the widget to remove (e.g., "0", "1.0")',
+          },
+        },
+        required: ['path'],
+      },
+      type: 'client_side',
+    },
+    move_widget: {
+      name: 'move_widget',
+      description:
+        'Move a widget between ais.index blocks. The widget must be nested (path has two parts, e.g., "1.0").',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description:
+              'The path of the widget to move (e.g., "1.0" for first child of index block 1)',
+          },
+          to_index: {
+            type: 'number',
+            description:
+              'The top-level index of the target ais.index block to move the widget to',
+          },
+        },
+        required: ['path', 'to_index'],
+      },
+      type: 'client_side',
+    },
+    scan_page: {
+      name: 'scan_page',
+      description:
+        "Scan the page's HTML structure to discover container elements for widget placement. Returns a simplified HTML tree with key attributes preserved.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          selector: {
+            type: 'string',
+            description: 'CSS selector to scope the scan. Defaults to body.',
+          },
+        },
+        required: [],
+      },
+      type: 'client_side',
+    },
+  };
+
+  return Object.values(tools);
+}
 
 export function buildSystemPrompt(): string {
   return `You are an AI assistant that helps users edit their Algolia Experience by adding, editing, and removing widgets.
@@ -473,7 +610,9 @@ export function executeToolCall(
   args: Record<string, unknown>,
   callbacks: ToolCallbacks
 ): Record<string, unknown> {
-  const executor = TOOL_EXECUTORS[toolName];
+  const executor = TOOL_EXECUTORS[toolName as keyof typeof TOOL_EXECUTORS] as
+    | ToolExecutor
+    | undefined;
   if (!executor) {
     return { success: false, error: `Unknown tool: ${toolName}` };
   }

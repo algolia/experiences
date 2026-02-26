@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  buildToolDefinitions,
   describeExperience,
   describeToolAction,
   describeWidgetTypes,
@@ -3212,5 +3213,39 @@ describe('describeToolAction', () => {
     expect(describeToolAction('remove_widget', undefined, undefined)).toBe(
       'Removed widget '
     );
+  });
+});
+
+describe('buildToolDefinitions', () => {
+  it('returns 6 tools', () => {
+    const tools = buildToolDefinitions();
+    expect(tools).toHaveLength(6);
+  });
+
+  it('returns tools with the expected names', () => {
+    const tools = buildToolDefinitions();
+    const names = tools.map((tool) => {
+      return tool.name;
+    });
+    expect(names).toEqual([
+      'get_experience',
+      'add_widget',
+      'edit_widget',
+      'remove_widget',
+      'move_widget',
+      'scan_page',
+    ]);
+  });
+
+  it('each tool has name, description, inputSchema, and type client_side', () => {
+    const tools = buildToolDefinitions();
+    for (const tool of tools) {
+      expect(tool).toHaveProperty('name');
+      expect(tool).toHaveProperty('description');
+      expect(tool).toHaveProperty('inputSchema');
+      expect(tool.type).toBe('client_side');
+      expect(typeof tool.description).toBe('string');
+      expect(typeof tool.inputSchema).toBe('object');
+    }
   });
 });

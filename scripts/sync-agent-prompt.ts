@@ -1,6 +1,10 @@
-import { buildSystemPrompt } from '../packages/toolbar/src/ai/tools';
+import {
+  buildSystemPrompt,
+  buildToolDefinitions,
+} from '../packages/toolbar/src/ai/tools';
 
 const prompt = buildSystemPrompt();
+const tools = buildToolDefinitions();
 
 const environments = [
   {
@@ -45,7 +49,7 @@ async function main() {
           'x-algolia-application-id': env.appId,
           'x-algolia-api-key': env.apiKey,
         },
-        body: JSON.stringify({ instructions: prompt }),
+        body: JSON.stringify({ instructions: prompt, tools }),
         signal: AbortSignal.timeout(30_000),
       });
 
