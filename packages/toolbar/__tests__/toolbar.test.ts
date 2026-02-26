@@ -30,6 +30,35 @@ afterAll(() => {
   return server.close();
 });
 
+const MOCK_EXPERIENCE_WITH_INDICES = {
+  blocks: [
+    {
+      type: 'ais.index',
+      parameters: { indexName: 'products', indexId: '' },
+      children: [
+        {
+          type: 'ais.hits',
+          parameters: { container: '#hits' },
+        },
+        {
+          type: 'ais.pagination',
+          parameters: { container: '#pagination' },
+        },
+      ],
+    },
+    {
+      type: 'ais.index',
+      parameters: { indexName: 'articles', indexId: '' },
+      children: [
+        {
+          type: 'ais.searchBox',
+          parameters: { container: '#search' },
+        },
+      ],
+    },
+  ],
+};
+
 const MOCK_EXPERIENCE = {
   blocks: [
     {
@@ -686,6 +715,208 @@ describe('toolbar', () => {
 
         const allText = host.shadowRoot?.innerHTML ?? '';
         expect(allText).toContain('Container "#chat" not found on page.');
+      });
+    });
+
+    describe('index management', () => {
+      beforeEach(() => {
+        sessionStorage.setItem('experiences.exp-123.key', 'ADMIN_KEY');
+
+        server.use(
+          http.get(
+            'https://experiences.algolia.com/1/experiences/exp-123',
+            () => {
+              return HttpResponse.json(MOCK_EXPERIENCE_WITH_INDICES);
+            }
+          )
+        );
+      });
+
+      afterEach(() => {
+        sessionStorage.clear();
+      });
+
+      async function openToolbar() {
+        await import('../src/index');
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        const host = document.getElementById('algolia-experiences-toolbar');
+        const pill = host?.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Open Algolia Experiences toolbar"]'
+        );
+        pill?.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        return host!;
+      }
+
+      it('renders index headers with index names', async () => {
+        const host = await openToolbar();
+        const html = host.shadowRoot?.innerHTML ?? '';
+        expect(html).toContain('products');
+        expect(html).toContain('articles');
+      });
+
+      it('counts only child widgets, not index blocks', async () => {
+        const host = await openToolbar();
+        const html = host.shadowRoot?.innerHTML ?? '';
+        expect(html).toContain('3 widgets configured');
+      });
+
+      it('does not show index in the add widget popover', async () => {
+        const host = await openToolbar();
+
+        const addButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Add widget"]'
+        );
+        addButton!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        // Find all widget option buttons/divs in the popover.
+        // Enabled items are <button>, disabled items are <div>.
+        // Neither should contain a standalone "Index" label.
+        const buttons = Array.from(
+          host.shadowRoot?.querySelectorAll('button') ?? []
+        );
+        const indexOption = buttons.find((btn) => {
+          return btn.textContent?.trim() === 'Index' && btn !== addButton;
+        });
+        expect(indexOption).toBeUndefined();
+      });
+
+      it('shows the edit index settings button on index headers', async () => {
+        const host = await openToolbar();
+
+        const editButtons = host.shadowRoot?.querySelectorAll(
+          'button[aria-label="Edit index settings"]'
+        );
+        expect(editButtons?.length).toBe(2);
+      });
+
+      it('reveals index name and index ID fields when clicking edit settings', async () => {
+        const host = await openToolbar();
+
+        const editButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
+          'button[aria-label="Edit index settings"]'
+        );
+        editButton!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        const html = host.shadowRoot?.innerHTML ?? '';
+        expect(html).toContain('Index Name');
+        expect(html).toContain('Index ID');
+      });
+
+      it('shows the index autocomplete field when expanding a child widget', async () => {
+        const host = await openToolbar();
+
+        // Expand the first child widget (ais.hits)
+        const triggers = Array.from(
+          host.shadowRoot?.querySelectorAll<HTMLButtonElement>(
+            '[aria-expanded]'
+          ) ?? []
+        );
+        triggers[0]!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        // The expanded card should have an Index label and input
+        const labels = Array.from(
+          host.shadowRoot?.querySelectorAll('label') ?? []
+        );
+        const indexLabel = labels.find((label) => {
+          return label.textContent?.trim() === 'Index';
+        });
+        expect(indexLabel).not.toBeUndefined();
+      });
+
+      it('removes an empty index block when its last widget is deleted', async () => {
+        const host = await openToolbar();
+
+        // articles index has 1 child — delete it
+        const deleteButtons = Array.from(
+          host.shadowRoot?.querySelectorAll<HTMLButtonElement>(
+            'button[aria-label="Delete block"]'
+          ) ?? []
+        );
+        // The third delete button corresponds to the search box in articles
+        deleteButtons[2]!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        const html = host.shadowRoot?.innerHTML ?? '';
+        // articles index should be gone
+        expect(html).not.toContain('articles');
+        // products index should remain
+        expect(html).toContain('products');
+        expect(html).toContain('2 widgets configured');
+      });
+
+      it('hides widget fields when index has no name', async () => {
+        server.use(
+          http.get(
+            'https://experiences.algolia.com/1/experiences/exp-123',
+            () => {
+              return HttpResponse.json({
+                blocks: [
+                  {
+                    type: 'ais.index',
+                    parameters: { indexName: '', indexId: '' },
+                    children: [
+                      {
+                        type: 'ais.hits',
+                        parameters: { container: '#hits' },
+                      },
+                    ],
+                  },
+                ],
+              });
+            }
+          )
+        );
+
+        const host = await openToolbar();
+
+        // Expand the widget
+        const trigger =
+          host.shadowRoot?.querySelector<HTMLButtonElement>('[aria-expanded]');
+        trigger!.click();
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 50);
+        });
+
+        // The Index autocomplete input should be visible in the widget card
+        const inputs = Array.from(
+          host.shadowRoot?.querySelectorAll<HTMLInputElement>(
+            'input[placeholder="Index name"]'
+          ) ?? []
+        );
+        // 2 inputs: one in the (collapsed) index settings, one in the widget card
+        expect(inputs.length).toBe(2);
+
+        // The widget-specific fields (like container) should NOT be visible
+        // since the index has no name yet
+        const containerInputs = Array.from(
+          host.shadowRoot?.querySelectorAll<HTMLInputElement>(
+            'input[placeholder]'
+          ) ?? []
+        ).filter((input) => {
+          return (
+            input.placeholder !== 'Index name' &&
+            input.placeholder !== 'Optional widget ID'
+          );
+        });
+        expect(containerInputs.length).toBe(0);
       });
     });
   });
