@@ -3338,7 +3338,6 @@ describe('buildToolDefinitions', () => {
       'edit_widget',
       'remove_widget',
       'move_widget',
-      'scan_page',
     ]);
   });
 
