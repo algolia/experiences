@@ -156,6 +156,7 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Trending Items');
     expect(result).toContain('trending items');
     expect(result).toContain('limit');
+    expect(result).toContain('template');
   });
 
   it('includes currentRefinements widget type', () => {

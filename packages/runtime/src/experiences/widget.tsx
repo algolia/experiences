@@ -31,8 +31,8 @@ import type { ExperienceWidget } from './types';
 
 import type { ChatTransport } from 'instantsearch.js/es/connectors/chat/connectChat';
 import type { InstantSearch } from 'instantsearch.js/es/types';
-import type { TemplateChild } from './renderer';
 import type { ExperienceWidgetParams } from './types';
+import { renderCarouselItem } from './templates/carousel-item';
 
 // TODO: Serve CSS from a CDN with proper MIME type and load via <link> from the
 // loader instead of inlining it in JS. GitHub release downloads serve as
@@ -69,11 +69,12 @@ export default (function experience(
         widget: chat,
         async transformParams(params, { env, instantSearchInstance }) {
           const {
-            itemTemplate,
+            template,
             agentId,
             toolRenderings = {},
             ...rest
           } = params as typeof params & {
+            template?: Record<string, string>;
             toolRenderings: { [key: string]: string };
           };
 
@@ -105,9 +106,7 @@ export default (function experience(
             ...rest,
             templates: {
               ...(rest.templates as Record<string, unknown>),
-              ...(itemTemplate
-                ? { item: renderTemplate(itemTemplate as TemplateChild[]) }
-                : {}),
+              ...(template ? { item: renderCarouselItem(template) } : {}),
             },
             tools,
           });
@@ -194,7 +193,7 @@ export default (function experience(
           };
         },
       },
-      // TODO: Add support for `templates` (item, empty, showMoreText)
+      // TODO: Add support for `templates` (empty, showMoreText)
       // TODO: Add support for `transformItems` (bucket 3 function)
       // TODO: Add support for `cache` (bucket 3 function)
       'ais.infiniteHits': {
@@ -272,12 +271,21 @@ export default (function experience(
           return parameters;
         },
       },
-      // TODO: Add support for `templates` (item, header, empty, layout)
+      // TODO: Add support for `templates` (header, empty, layout)
       // TODO: Add support for `transformItems` (bucket 3 function)
       'ais.trendingItems': {
         widget: trendingItems,
         async transformParams(parameters) {
-          return parameters;
+          const { template, ...params } = parameters as typeof parameters & {
+            template?: Record<string, string>;
+          };
+
+          return {
+            ...params,
+            ...(template
+              ? { templates: { item: renderListItem(template) } }
+              : {}),
+          };
         },
       },
       // TODO: Add support for `templates` (item)

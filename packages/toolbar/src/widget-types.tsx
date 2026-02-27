@@ -403,6 +403,37 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       container: '',
       placement: 'body',
       agentId: '',
+      template: {
+        name: '',
+        category: '',
+        description: '',
+        image: '',
+        price: '',
+        currency: '',
+      },
+    },
+    fieldOrder: ['container', 'placement', 'agentId', 'template'],
+    fieldOverrides: {
+      template: {
+        type: 'item-template',
+        label: 'Template',
+        defaultValue: {
+          name: '',
+          category: '',
+          description: '',
+          image: '',
+          price: '',
+          currency: '',
+        },
+        fields: [
+          { key: 'name', label: 'Name' },
+          { key: 'category', label: 'Category' },
+          { key: 'description', label: 'Description' },
+          { key: 'image', label: 'Image' },
+          { key: 'price', label: 'Price' },
+          { key: 'currency', label: 'Currency' },
+        ],
+      },
     },
     paramLabels: {
       container: 'Container',
@@ -412,6 +443,8 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       container:
         'CSS selector for the DOM element to render into (e.g. "#chat").',
       agentId: 'The ID of the Algolia Agent Studio agent to power the chat.',
+      template:
+        'Maps Algolia record attributes to display roles for rendering items.',
     },
   },
   'ais.index': {
@@ -1729,6 +1762,14 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       facetName: undefined,
       facetValue: undefined,
       escapeHTML: true,
+      template: {
+        name: '',
+        category: '',
+        description: '',
+        image: '',
+        price: '',
+        currency: '',
+      },
       queryParameters: undefined,
       fallbackParameters: undefined,
       cssClasses: undefined,
@@ -1741,6 +1782,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'facetName',
       'facetValue',
       'escapeHTML',
+      'template',
       'queryParameters',
       'fallbackParameters',
       'cssClasses',
@@ -1769,6 +1811,26 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       escapeHTML: {
         type: 'switch',
         label: 'Escape HTML',
+      },
+      template: {
+        type: 'item-template',
+        label: 'Template',
+        defaultValue: {
+          name: '',
+          category: '',
+          description: '',
+          image: '',
+          price: '',
+          currency: '',
+        },
+        fields: [
+          { key: 'name', label: 'Name' },
+          { key: 'category', label: 'Category' },
+          { key: 'description', label: 'Description' },
+          { key: 'image', label: 'Image' },
+          { key: 'price', label: 'Price' },
+          { key: 'currency', label: 'Currency' },
+        ],
       },
       queryParameters: {
         type: 'json',
@@ -1819,6 +1881,8 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         'Specific facet value to scope trending items to (e.g. "Shoes").',
       escapeHTML:
         'Whether to escape HTML entities in item values for security.',
+      template:
+        'Maps Algolia record attributes to display roles for rendering items.',
       queryParameters:
         'Additional Algolia search parameters as JSON (e.g. {"filters": "category:Books"}).',
       fallbackParameters:
