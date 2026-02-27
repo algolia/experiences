@@ -143,6 +143,22 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('attribute');
   });
 
+  it('includes rangeSlider widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.rangeSlider');
+    expect(result).toContain('Range Slider');
+    expect(result).toContain('draggable slider');
+    expect(result).toContain('attribute');
+  });
+
+  it('includes trendingItems widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.trendingItems');
+    expect(result).toContain('Trending Items');
+    expect(result).toContain('trending items');
+    expect(result).toContain('limit');
+  });
+
   it('includes currentRefinements widget type', () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.currentRefinements');
@@ -1101,7 +1117,63 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('adds a trendingItems widget with limit and threshold', () => {
+    it('adds a rangeSlider widget with attribute and number parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            children: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0]);
+
+      const result = executeToolCall(
+        'add_widget',
+        {
+          type: 'ais.rangeSlider',
+          container: '#price-range',
+          parameters: { attribute: 'price', min: 0, max: 1000, step: 10 },
+        },
+        callbacks
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'attribute',
+          'min',
+          'max',
+          'step',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'attribute',
+        'price'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'min',
+        0
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'max',
+        1000
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'step',
+        10
+      );
+    });
+
+    it('adds a trendingItems widget with limit and threshold', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2523,7 +2595,38 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('edits trendingItems limit and threshold parameters', () => {
+    it('edits rangeSlider number parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.rangeSlider',
+            parameters: {
+              container: '#price-range',
+              attribute: 'price',
+              min: 0,
+              max: 1000,
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+
+      const result = executeToolCall(
+        'edit_widget',
+        { path: '0', parameters: { min: 10, max: 500 } },
+        callbacks
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining(['min', 'max']),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'min', 10);
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'max', 500);
+    });
+
+    it('edits trendingItems limit and threshold parameters', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
