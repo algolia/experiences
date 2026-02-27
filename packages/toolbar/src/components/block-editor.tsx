@@ -2,6 +2,7 @@ import type { ExperienceApiBlockParameters, Placement } from '../types';
 import type { IndexSuggestKind } from '../widget-types';
 import { WIDGET_TYPES } from '../widget-types';
 import type { SuggestLists } from './panel';
+import { AttributeField } from './fields/attribute-field';
 import { CssVariablesEditor } from './fields/css-variables-editor';
 import { FacetValueField } from './fields/facet-value-field';
 import { JsonField } from './fields/json-field';
@@ -98,6 +99,30 @@ export function BlockEditor({
                 onChange={onCssVariableChange}
               />
             </div>
+          );
+        }
+
+        if (key === 'attribute') {
+          const override = overrides[key];
+
+          return (
+            <AttributeField
+              key={key}
+              label={override?.label ?? paramLabels[key] ?? key}
+              description={paramDescriptions[key]}
+              value={
+                typeof parameters.attribute === 'string'
+                  ? parameters.attribute
+                  : ''
+              }
+              placeholder={
+                override?.type === 'text' ? override.placeholder : undefined
+              }
+              onInput={(text) => {
+                return onParameterChange(key, text === '' ? undefined : text);
+              }}
+              indexName={parentIndexName}
+            />
           );
         }
 

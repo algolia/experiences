@@ -191,3 +191,38 @@ export async function fetchQuerySuggestionConfigs({
 
   return [];
 }
+
+type FetchIndexSettingsParams = {
+  appId: string;
+  apiKey: string;
+  indexName: string;
+};
+
+export async function fetchIndexSettings({
+  appId,
+  apiKey,
+  indexName,
+}: FetchIndexSettingsParams): Promise<{
+  attributesForFaceting?: string[];
+}> {
+  const res = await fetch(
+    `https://${appId}-dsn.algolia.net/1/indexes/${indexName}/settings`,
+    {
+      method: 'GET',
+      headers: {
+        'X-Algolia-Application-ID': appId,
+        'X-Algolia-API-Key': apiKey,
+      },
+    }
+  );
+
+  if (!res.ok) {
+    return {};
+  }
+
+  const data = (await res.json()) as {
+    attributesForFaceting?: string[];
+  };
+
+  return data;
+}
