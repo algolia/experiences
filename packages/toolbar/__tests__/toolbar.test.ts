@@ -202,6 +202,7 @@ describe('toolbar', () => {
         expect(popoverText).toContain('Toggle Refinement');
         expect(popoverText).toContain('Hits Per Page');
         expect(popoverText).toContain('Rating Menu');
+        expect(popoverText).toContain('Range Slider');
         expect(popoverText).toContain('Trending Items');
         expect(popoverText).toContain('Numeric Menu');
         expect(popoverText).toContain('Current Refinements');
@@ -261,18 +262,21 @@ describe('toolbar', () => {
         });
 
         // Disabled items are rendered as <div> elements, not <button>
-        // Check that "Range Slider" is not a button
+        // Check that "Frequently Bought Together" is not a button
         const buttons = Array.from(
           host.shadowRoot?.querySelectorAll('button') ?? []
         );
         const disabledButton = buttons.find((btn) => {
-          return btn.textContent?.includes('Range Slider') && btn !== addButton;
+          return (
+            btn.textContent?.includes('Frequently Bought Together') &&
+            btn !== addButton
+          );
         });
         expect(disabledButton).toBeUndefined();
 
         // Verify the text is still rendered (as a div)
         const popoverText = host.shadowRoot?.innerHTML ?? '';
-        expect(popoverText).toContain('Range Slider');
+        expect(popoverText).toContain('Frequently Bought Together');
       });
     });
 
