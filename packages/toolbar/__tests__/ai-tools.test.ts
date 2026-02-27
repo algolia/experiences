@@ -3323,9 +3323,9 @@ describe('describeToolAction', () => {
 });
 
 describe('buildToolDefinitions', () => {
-  it('returns 6 tools', () => {
+  it('returns 5 tools', () => {
     const tools = buildToolDefinitions();
-    expect(tools).toHaveLength(6);
+    expect(tools).toHaveLength(5);
   });
 
   it('returns tools with the expected names', () => {
@@ -3339,7 +3339,6 @@ describe('buildToolDefinitions', () => {
       'edit_widget',
       'remove_widget',
       'move_widget',
-      'scan_page',
     ]);
   });
 
