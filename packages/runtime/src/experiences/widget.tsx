@@ -28,13 +28,12 @@ import hierarchicalMenu from 'instantsearch.js/es/widgets/hierarchical-menu/hier
 import numericMenu from 'instantsearch.js/es/widgets/numeric-menu/numeric-menu';
 
 import { renderTool } from './renderer';
-import { SKELETON_CSS, renderListItem } from './templates/list-item';
+import { renderCarouselItem, renderListItem, SKELETON_CSS } from './templates';
 import type { ExperienceWidget } from './types';
 
 import type { ChatTransport } from 'instantsearch.js/es/connectors/chat/connectChat';
 import type { InstantSearch } from 'instantsearch.js/es/types';
 import type { ExperienceWidgetParams } from './types';
-import { renderCarouselItem } from './templates/carousel-item';
 
 // TODO: Serve CSS from a CDN with proper MIME type and load via <link> from the
 // loader instead of inlining it in JS. GitHub release downloads serve as

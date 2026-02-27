@@ -2,8 +2,6 @@ import type { Hit, TemplateParams } from 'instantsearch.js/es/types';
 
 import { getByPath, hasAttributes } from './utils';
 
-export { SKELETON_CSS } from './utils';
-
 export function renderCarouselItem(template: Record<string, string>) {
   return function item(hit: Hit, { html }: TemplateParams) {
     if (!hasAttributes(template)) {
