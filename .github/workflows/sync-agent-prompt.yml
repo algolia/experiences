@@ -28,9 +28,9 @@ jobs:
       - run: npx tsx scripts/sync-agent-prompt.ts
         env:
           TSX_TSCONFIG_PATH: packages/toolbar/tsconfig.json
-          AGENT_STUDIO_BETA_APP_ID: ${{ secrets.AGENT_STUDIO_STAGING_APP_ID }}
-          AGENT_STUDIO_BETA_WRITE_API_KEY: ${{ secrets.AGENT_STUDIO_STAGING_API_KEY }}
-          AGENT_STUDIO_BETA_AGENT_ID: ${{ secrets.AGENT_STUDIO_STAGING_AGENT_ID }}
+          AGENT_STUDIO_BETA_APP_ID: ${{ secrets.AGENT_STUDIO_BETA_APP_ID }}
+          AGENT_STUDIO_BETA_WRITE_API_KEY: ${{ secrets.AGENT_STUDIO_BETA_WRITE_API_KEY }}
+          AGENT_STUDIO_BETA_AGENT_ID: ${{ secrets.AGENT_STUDIO_BETA_AGENT_ID }}
           AGENT_STUDIO_PROD_APP_ID: ${{ secrets.AGENT_STUDIO_PROD_APP_ID }}
           AGENT_STUDIO_PROD_WRITE_API_KEY: ${{ secrets.AGENT_STUDIO_PROD_WRITE_API_KEY }}
           AGENT_STUDIO_PROD_AGENT_ID: ${{ secrets.AGENT_STUDIO_PROD_AGENT_ID }}
