@@ -26,6 +26,7 @@ import hierarchicalMenu from 'instantsearch.js/es/widgets/hierarchical-menu/hier
 import numericMenu from 'instantsearch.js/es/widgets/numeric-menu/numeric-menu';
 
 import { renderTemplate, renderTool } from './renderer';
+import { SKELETON_CSS, renderListItem } from './templates/list-item';
 import type { ExperienceWidget } from './types';
 
 import type { ChatTransport } from 'instantsearch.js/es/connectors/chat/connectChat';
@@ -43,13 +44,16 @@ declare const __AUTOCOMPLETE_CSS__: string;
 declare const __SATELLITE_CSS__: string;
 (() => {
   const style = document.createElement('style');
-  style.textContent = __CHAT_CSS__ + __AUTOCOMPLETE_CSS__ + __SATELLITE_CSS__;
+  style.textContent =
+    __CHAT_CSS__ + __AUTOCOMPLETE_CSS__ + __SATELLITE_CSS__ + SKELETON_CSS;
   document.head.appendChild(style);
 })();
 
 const withUsage = createDocumentationMessageGenerator({ name: 'experience' });
 
-export default (function experience(widgetParams: ExperienceWidgetParams) {
+export default (function experience(
+  widgetParams: ExperienceWidgetParams
+): ExperienceWidget {
   const { id } = widgetParams || {};
 
   if (!id) {
@@ -173,12 +177,21 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
           return parameters;
         },
       },
-      // TODO: Add support for `templates` (item, empty, banner)
+      // TODO: Add support for `templates` (empty, banner)
       // TODO: Add support for `transformItems` (bucket 3 function)
       'ais.hits': {
         widget: hits,
         async transformParams(parameters) {
-          return parameters;
+          const { template, ...params } = parameters as typeof parameters & {
+            template?: Record<string, string>;
+          };
+
+          return {
+            ...params,
+            ...(template
+              ? { templates: { item: renderListItem(template) } }
+              : {}),
+          };
         },
       },
       // TODO: Add support for `templates` (item, empty, showMoreText)
@@ -187,7 +200,16 @@ export default (function experience(widgetParams: ExperienceWidgetParams) {
       'ais.infiniteHits': {
         widget: infiniteHits,
         async transformParams(parameters) {
-          return parameters;
+          const { template, ...params } = parameters as typeof parameters & {
+            template?: Record<string, string>;
+          };
+
+          return {
+            ...params,
+            ...(template
+              ? { templates: { item: renderListItem(template) } }
+              : {}),
+          };
         },
       },
       // TODO: Add support for `templates` (item, showMoreText, searchableNoResults, searchableSubmit, searchableReset, searchableLoadingIndicator)

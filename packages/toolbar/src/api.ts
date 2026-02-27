@@ -61,3 +61,40 @@ export async function saveExperience({
     );
   }
 }
+
+type FetchIndexRecordsParams = {
+  appId: string;
+  apiKey: string;
+  indexName: string;
+};
+
+export async function fetchIndexRecords({
+  appId,
+  apiKey,
+  indexName,
+}: FetchIndexRecordsParams): Promise<Array<Record<string, unknown>>> {
+  const res = await fetch(
+    `https://${appId}-dsn.algolia.net/1/indexes/${indexName}/query`,
+    {
+      method: 'POST',
+      headers: {
+        'X-Algolia-Application-ID': appId,
+        'X-Algolia-API-Key': apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        hitsPerPage: 10,
+        attributesToHighlight: [],
+        attributesToSnippet: [],
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    return [];
+  }
+
+  const data = (await res.json()) as { hits?: Array<Record<string, unknown>> };
+
+  return data.hits ?? [];
+}

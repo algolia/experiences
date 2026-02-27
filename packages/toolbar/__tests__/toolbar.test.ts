@@ -728,6 +728,12 @@ describe('toolbar', () => {
             () => {
               return HttpResponse.json(MOCK_EXPERIENCE_WITH_INDICES);
             }
+          ),
+          http.post(
+            'https://APP_ID-dsn.algolia.net/1/indexes/:indexName/query',
+            () => {
+              return HttpResponse.json({ hits: [] });
+            }
           )
         );
       });

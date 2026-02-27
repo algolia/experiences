@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 
 import { saveExperience } from '../api';
 import { useElementPicker } from '../hooks/use-element-picker';
+import { ToolbarProvider } from '../lib/toolbar-context';
 import { sanitizeExperience } from '../lib/utils';
 import type {
   AddBlockResult,
@@ -695,7 +696,7 @@ export function App({ config, initialExperience }: AppProps) {
   }, [toast]);
 
   return (
-    <>
+    <ToolbarProvider value={{ config, experience }}>
       <Panel
         panelRef={panelRef}
         env={config.env ?? 'prod'}
@@ -730,6 +731,6 @@ export function App({ config, initialExperience }: AppProps) {
           {toast}
         </div>
       )}
-    </>
+    </ToolbarProvider>
   );
 }

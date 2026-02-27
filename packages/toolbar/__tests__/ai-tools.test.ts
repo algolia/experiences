@@ -65,6 +65,8 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('search results');
     expect(result).toContain('escapeHTML');
     expect(result).toContain('XSS');
+    expect(result).toContain('template');
+    expect(result).toContain('attribute');
   });
 
   it('includes default placement per widget type', () => {
