@@ -440,9 +440,8 @@ const TOOL_EXECUTORS = {
 } satisfies Record<string, ToolExecutor>;
 
 type ExecutorToolName = keyof typeof TOOL_EXECUTORS;
-type ToolName = ExecutorToolName | 'scan_page';
 
-type AgentStudioTool<Name extends ToolName = ToolName> = {
+type AgentStudioTool<Name extends ExecutorToolName = ExecutorToolName> = {
   name: Name;
   description: string;
   inputSchema: Record<string, unknown>;
@@ -450,7 +449,7 @@ type AgentStudioTool<Name extends ToolName = ToolName> = {
 };
 
 export function buildToolDefinitions(): AgentStudioTool[] {
-  const tools: { [Key in ToolName]: AgentStudioTool<Key> } = {
+  const tools: { [Key in ExecutorToolName]: AgentStudioTool<Key> } = {
     get_experience: {
       name: 'get_experience',
       description:
@@ -553,22 +552,6 @@ export function buildToolDefinitions(): AgentStudioTool[] {
           },
         },
         required: ['path', 'to_index'],
-      },
-      type: 'client_side',
-    },
-    scan_page: {
-      name: 'scan_page',
-      description:
-        "Scan the page's HTML structure to discover container elements for widget placement. Returns a simplified HTML tree with key attributes preserved.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          selector: {
-            type: 'string',
-            description: 'CSS selector to scope the scan. Defaults to body.',
-          },
-        },
-        required: [],
       },
       type: 'client_side',
     },
