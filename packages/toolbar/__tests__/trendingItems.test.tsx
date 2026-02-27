@@ -251,6 +251,78 @@ describe('ais.trendingItems fields', () => {
     });
   });
 
+  describe('item-template field (template)', () => {
+    it('sends the updated object when a sub-field changes', () => {
+      const { onParameterChange, container } = render({
+        template: {
+          name: '',
+          category: '',
+          description: '',
+          image: '',
+          price: '',
+          currency: '',
+        },
+      });
+      const input = getInput(container, 'Name');
+
+      fireInput(input, 'product_name');
+
+      expect(onParameterChange).toHaveBeenCalledWith(
+        'template',
+        expect.objectContaining({ name: 'product_name' })
+      );
+    });
+
+    it('sends the updated object when currency changes', () => {
+      const { onParameterChange, container } = render({
+        template: {
+          name: '',
+          category: '',
+          description: '',
+          image: '',
+          price: '',
+          currency: '',
+        },
+      });
+      const input = getInput(container, 'Currency');
+
+      fireInput(input, '$');
+
+      expect(onParameterChange).toHaveBeenCalledWith(
+        'template',
+        expect.objectContaining({ currency: '$' })
+      );
+    });
+  });
+
+  describe('carouselLayout', () => {
+    it('renders a switch on by default', () => {
+      const { container } = render({ carouselLayout: true });
+      const switchEl = getSwitch(container, 'Carousel layout');
+      expect(switchEl.getAttribute('aria-checked')).toBe('true');
+    });
+
+    it('calls onParameterChange with false when toggling off', () => {
+      const { container, onParameterChange } = render({
+        carouselLayout: true,
+      });
+      const switchEl = getSwitch(container, 'Carousel layout');
+      switchEl.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith('carouselLayout', false);
+    });
+
+    it('calls onParameterChange with true when toggling on', () => {
+      const { container, onParameterChange } = render({
+        carouselLayout: false,
+      });
+      const switchEl = getSwitch(container, 'Carousel layout');
+      switchEl.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith('carouselLayout', true);
+    });
+  });
+
   describe('cssClasses', () => {
     it('renders a toggle off by default', () => {
       const { container } = render();

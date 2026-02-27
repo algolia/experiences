@@ -378,7 +378,7 @@ describe('toolbar', () => {
 
         const triggers = Array.from(
           host.shadowRoot?.querySelectorAll<HTMLButtonElement>(
-            '[aria-expanded]'
+            '[data-slot="card"] > [data-slot="collapsible"] > [aria-expanded]'
           ) ?? []
         );
 

@@ -3,6 +3,7 @@ import {
   getAppIdAndApiKey,
 } from 'instantsearch.js/es/lib/utils';
 import { getExperience } from './get-experience';
+import { carousel } from 'instantsearch.js/es/templates';
 import chat from 'instantsearch.js/es/widgets/chat/chat';
 import configure from 'instantsearch.js/es/widgets/configure/configure';
 import hits from 'instantsearch.js/es/widgets/hits/hits';
@@ -26,13 +27,12 @@ import breadcrumb from 'instantsearch.js/es/widgets/breadcrumb/breadcrumb';
 import hierarchicalMenu from 'instantsearch.js/es/widgets/hierarchical-menu/hierarchical-menu';
 import numericMenu from 'instantsearch.js/es/widgets/numeric-menu/numeric-menu';
 
-import { renderTemplate, renderTool } from './renderer';
-import { SKELETON_CSS, renderListItem } from './templates/list-item';
+import { renderTool } from './renderer';
+import { renderCarouselItem, renderListItem, SKELETON_CSS } from './templates';
 import type { ExperienceWidget } from './types';
 
 import type { ChatTransport } from 'instantsearch.js/es/connectors/chat/connectChat';
 import type { InstantSearch } from 'instantsearch.js/es/types';
-import type { TemplateChild } from './renderer';
 import type { ExperienceWidgetParams } from './types';
 
 // TODO: Serve CSS from a CDN with proper MIME type and load via <link> from the
@@ -70,11 +70,12 @@ export default (function experience(
         widget: chat,
         async transformParams(params, { env, instantSearchInstance }) {
           const {
-            itemTemplate,
+            template,
             agentId,
             toolRenderings = {},
             ...rest
           } = params as typeof params & {
+            template?: Record<string, string>;
             toolRenderings: { [key: string]: string };
           };
 
@@ -106,9 +107,7 @@ export default (function experience(
             ...rest,
             templates: {
               ...(rest.templates as Record<string, unknown>),
-              ...(itemTemplate
-                ? { item: renderTemplate(itemTemplate as TemplateChild[]) }
-                : {}),
+              ...(template ? { item: renderCarouselItem(template) } : {}),
             },
             tools,
           });
@@ -195,7 +194,7 @@ export default (function experience(
           };
         },
       },
-      // TODO: Add support for `templates` (item, empty, showMoreText)
+      // TODO: Add support for `templates` (empty, showMoreText)
       // TODO: Add support for `transformItems` (bucket 3 function)
       // TODO: Add support for `cache` (bucket 3 function)
       'ais.infiniteHits': {
@@ -280,12 +279,30 @@ export default (function experience(
           return parameters;
         },
       },
-      // TODO: Add support for `templates` (item, header, empty, layout)
+      // TODO: Add support for `templates` (header, empty, layout)
       // TODO: Add support for `transformItems` (bucket 3 function)
       'ais.trendingItems': {
         widget: trendingItems,
         async transformParams(parameters) {
-          return parameters;
+          const { template, carouselLayout, ...params } =
+            parameters as typeof parameters & {
+              template?: Record<string, string>;
+              carouselLayout?: boolean;
+            };
+
+          return {
+            ...params,
+            ...(template
+              ? {
+                  templates: {
+                    ...(carouselLayout ? { layout: carousel() } : {}),
+                    item: carouselLayout
+                      ? renderCarouselItem(template)
+                      : renderListItem(template),
+                  },
+                }
+              : {}),
+          };
         },
       },
       // TODO: Add support for `templates` (item)
