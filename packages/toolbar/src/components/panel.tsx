@@ -3,6 +3,7 @@ import { useMemo, useEffect, useRef, useState } from 'preact/hooks';
 import type {
   AddBlockResult,
   BlockPath,
+  Environment,
   ExperienceApiResponse,
   SaveState,
 } from '../types';
@@ -14,6 +15,7 @@ import { Button } from './ui/button';
 import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 
 type PanelProps = {
+  env: Environment;
   experience: ExperienceApiResponse;
   dirty: boolean;
   saveState: SaveState;
@@ -34,6 +36,7 @@ type PanelProps = {
 type Tab = 'manual' | 'ai';
 
 export function Panel({
+  env,
   experience,
   dirty,
   saveState,
@@ -330,6 +333,7 @@ export function Panel({
           class={`flex-1 outline-none flex flex-col overflow-hidden ${tab === 'ai' ? '' : 'hidden'}`}
         >
           <AiChat
+            env={env}
             experience={experience}
             onAddBlock={onAddBlock}
             onParameterChange={onParameterChange}

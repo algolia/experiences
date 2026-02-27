@@ -699,6 +699,7 @@ export function App({ config, initialExperience }: AppProps) {
     <ToolbarProvider value={{ config, experience }}>
       <Panel
         panelRef={panelRef}
+        env={config.env ?? 'prod'}
         experience={experience}
         dirty={isDirty}
         saveState={saveState}
