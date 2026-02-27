@@ -13,6 +13,7 @@ import type {
   Environment,
   ExperienceApiResponse,
 } from '../types';
+import { AGENT_STUDIO } from '../ai/agent-studio-config';
 import {
   describeToolAction,
   executeToolCall,
@@ -27,22 +28,6 @@ const marked = new Marked({
 });
 
 const STORAGE_KEY = 'algolia-experiences-ai-chat';
-
-const AGENT_STUDIO: Record<
-  Environment,
-  { appId: string; api: string; searchApiKey: string }
-> = {
-  beta: {
-    appId: process.env.AGENT_STUDIO_BETA_APP_ID!,
-    api: `https://agent-studio-staging.eu.algolia.com/1/agents/${process.env.AGENT_STUDIO_BETA_AGENT_ID}/completions?compatibilityMode=ai-sdk-5`,
-    searchApiKey: process.env.AGENT_STUDIO_BETA_SEARCH_API_KEY!,
-  },
-  prod: {
-    appId: process.env.AGENT_STUDIO_PROD_APP_ID!,
-    api: `https://${process.env.AGENT_STUDIO_PROD_APP_ID}.algolia.net/agent-studio/1/agents/${process.env.AGENT_STUDIO_PROD_AGENT_ID}/completions?compatibilityMode=ai-sdk-5`,
-    searchApiKey: process.env.AGENT_STUDIO_PROD_SEARCH_API_KEY!,
-  },
-};
 
 type ToolCallDetailsProps = {
   toolName: string;
@@ -147,7 +132,7 @@ export function AiChat({
     const config = AGENT_STUDIO[env];
 
     return new DefaultChatTransport({
-      api: config.api,
+      api: `${config.baseUrl}/completions?compatibilityMode=ai-sdk-5`,
       headers: {
         'x-algolia-application-id': config.appId,
         'X-Algolia-API-Key': config.searchApiKey,

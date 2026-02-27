@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
-import { config } from 'dotenv';
+import { config } from '@dotenvx/dotenvx';
 import type { Plugin } from 'rolldown';
 import { defineConfig } from 'tsdown';
 

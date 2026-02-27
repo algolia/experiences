@@ -2,30 +2,21 @@ import {
   buildSystemPrompt,
   buildToolDefinitions,
 } from '../packages/toolbar/src/ai/tools';
+import { AGENT_STUDIO } from '../packages/toolbar/src/ai/agent-studio-config';
 
 const prompt = buildSystemPrompt();
 const tools = buildToolDefinitions();
 
-const environments = [
-  {
-    name: 'staging',
-    appId: process.env.AGENT_STUDIO_STAGING_APP_ID,
-    apiKey: process.env.AGENT_STUDIO_STAGING_API_KEY,
-    agentId: process.env.AGENT_STUDIO_STAGING_AGENT_ID,
-    url: (_: string, agentId: string) => {
-      return `https://agent-studio-staging.eu.algolia.com/1/agents/${agentId}`;
-    },
-  },
-  {
-    name: 'production',
-    appId: process.env.AGENT_STUDIO_PROD_APP_ID,
-    apiKey: process.env.AGENT_STUDIO_PROD_API_KEY,
-    agentId: process.env.AGENT_STUDIO_PROD_AGENT_ID,
-    url: (appId: string, agentId: string) => {
-      return `https://${appId}.algolia.net/agent-studio/1/agents/${agentId}`;
-    },
-  },
-];
+const environments = Object.entries(AGENT_STUDIO).map(([name, config]) => {
+  return {
+    name,
+    ...config,
+    apiKey:
+      name === 'beta'
+        ? process.env.AGENT_STUDIO_BETA_WRITE_API_KEY
+        : process.env.AGENT_STUDIO_PROD_WRITE_API_KEY,
+  };
+});
 
 async function main() {
   let failed = false;
@@ -39,10 +30,8 @@ async function main() {
       continue;
     }
 
-    const url = env.url(env.appId, env.agentId);
-
     try {
-      const response = await fetch(url, {
+      const response = await fetch(env.baseUrl, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
