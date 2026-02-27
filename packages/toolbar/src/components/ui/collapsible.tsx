@@ -69,7 +69,9 @@ function CollapsibleContent({
       )}
       style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
     >
-      <div class="overflow-hidden">{children}</div>
+      <div class={open ? 'overflow-visible' : 'overflow-hidden'}>
+        {children}
+      </div>
     </div>
   );
 }

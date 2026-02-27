@@ -59,6 +59,9 @@ const SUGGESTION_SOURCES: Record<string, SuggestionSource> = {
 const PARAM_SUGGESTIONS: Record<string, string> = {
   attribute: 'facetAttributes',
   agentId: 'agentStudioAgents',
+  attributes: 'facetAttributes',
+  includedAttributes: 'facetAttributes',
+  excludedAttributes: 'facetAttributes',
 };
 
 export function getSuggestionSourceForParam(param: string): string | undefined {

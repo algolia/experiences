@@ -1,6 +1,6 @@
 import { useId, useState } from 'preact/hooks';
 
-import { useIndexAttributes } from '../../hooks/use-index-attributes';
+import { useIndexAttributes } from '../../hooks/use-indices';
 import { InfoTooltip } from './info-tooltip';
 import { CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
 import { Combobox } from '../ui/combobox';

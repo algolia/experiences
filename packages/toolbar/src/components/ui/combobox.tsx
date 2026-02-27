@@ -98,7 +98,7 @@ export function Combobox({
   }
 
   return (
-    <div class="relative" ref={containerRef}>
+    <div class="relative flex-1" ref={containerRef}>
       <Input
         {...inputProps}
         value={value}

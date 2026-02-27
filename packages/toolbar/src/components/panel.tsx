@@ -7,7 +7,12 @@ import type {
   ExperienceApiResponse,
   SaveState,
 } from '../types';
-import { useAgentStudioAgents, useIndices } from '../hooks/use-indices';
+import {
+  useAgentStudioAgents,
+  useFacetAttributes,
+  useIndexAttributes,
+  useIndices,
+} from '../hooks/use-indices';
 import type { IndexSuggestKind } from '../widget-types';
 import { AddWidgetPopover } from './add-widget-popover';
 import { AiChat } from './ai-chat';
@@ -76,14 +81,24 @@ export function Panel({
       return { value: agent.id, label: agent.name };
     });
   }, [agentStudioAgents]);
+  const facetAttributes = useFacetAttributes(experience.indexName);
+  const indexAttributes = useIndexAttributes(experience.indexName);
   const suggestLists: SuggestLists = useMemo(() => {
     return {
       indices: allIndexNames.length > 0 ? allIndexNames : undefined,
       'indices:qs': qsIndexNames.length > 0 ? qsIndexNames : undefined,
       agentStudioAgents:
         agentSuggestions.length > 0 ? agentSuggestions : undefined,
+      facetAttributes: facetAttributes.length > 0 ? facetAttributes : undefined,
+      indexAttributes: indexAttributes.length > 0 ? indexAttributes : undefined,
     };
-  }, [allIndexNames, qsIndexNames, agentSuggestions]);
+  }, [
+    allIndexNames,
+    qsIndexNames,
+    agentSuggestions,
+    facetAttributes,
+    indexAttributes,
+  ]);
 
   const widgetCount = experience.blocks.reduce((count, block) => {
     return block.type === 'ais.index'

@@ -2,11 +2,14 @@ import { useEffect, useState } from 'preact/hooks';
 
 import {
   fetchAgentStudioAgents,
+  fetchIndexRecords,
+  fetchIndexSettings,
   fetchIndices,
   fetchQuerySuggestionConfigs,
   type IndexInfo,
   type QsConfig,
 } from '../api';
+import { extractAttributeNames } from '../lib/extract-attribute-names';
 import { useToolbarContext } from '../lib/toolbar-context';
 
 const indicesCache = new Map<string, IndexInfo[]>();
@@ -207,4 +210,111 @@ export function useAgentStudioAgents(): Agent[] {
   }, [config.appId, config.apiKey, cacheKey]);
 
   return agents;
+}
+
+const facetCache = new Map<string, string[]>();
+
+function stripModifier(attr: string): string {
+  const match = attr.match(/^\w+\((.+)\)$/);
+
+  return match?.[1] ?? attr;
+}
+
+export function useFacetAttributes(indexName: string | undefined): string[] {
+  const { config, experience } = useToolbarContext();
+  const effectiveIndexName = indexName || experience.indexName;
+  const [attributes, setAttributes] = useState<string[]>(() => {
+    return effectiveIndexName ? (facetCache.get(effectiveIndexName) ?? []) : [];
+  });
+
+  useEffect(() => {
+    if (!effectiveIndexName) {
+      setAttributes([]);
+
+      return;
+    }
+
+    const cached = facetCache.get(effectiveIndexName);
+
+    if (cached) {
+      setAttributes(cached);
+
+      return;
+    }
+
+    let cancelled = false;
+
+    fetchIndexSettings({
+      appId: config.appId,
+      apiKey: config.apiKey,
+      indexName: effectiveIndexName,
+    })
+      .then((settings) => {
+        if (cancelled) {
+          return;
+        }
+
+        const raw = settings.attributesForFaceting ?? [];
+        const names = raw.map(stripModifier).sort();
+        facetCache.set(effectiveIndexName, names);
+        setAttributes(names);
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [config.appId, config.apiKey, effectiveIndexName]);
+
+  return attributes;
+}
+
+const indexAttrCache = new Map<string, string[]>();
+
+export function useIndexAttributes(indexName: string | undefined): string[] {
+  const { config, experience } = useToolbarContext();
+  const effectiveIndexName = indexName || experience.indexName;
+  const [attributes, setAttributes] = useState<string[]>(() => {
+    return effectiveIndexName
+      ? (indexAttrCache.get(effectiveIndexName) ?? [])
+      : [];
+  });
+
+  useEffect(() => {
+    if (!effectiveIndexName) {
+      setAttributes([]);
+
+      return;
+    }
+
+    const cached = indexAttrCache.get(effectiveIndexName);
+
+    if (cached) {
+      setAttributes(cached);
+
+      return;
+    }
+
+    let cancelled = false;
+
+    fetchIndexRecords({
+      appId: config.appId,
+      apiKey: config.apiKey,
+      indexName: effectiveIndexName,
+    }).then((hits) => {
+      if (cancelled) {
+        return;
+      }
+
+      const names = extractAttributeNames(hits);
+      indexAttrCache.set(effectiveIndexName, names);
+      setAttributes(names);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [config.appId, config.apiKey, effectiveIndexName]);
+
+  return attributes;
 }

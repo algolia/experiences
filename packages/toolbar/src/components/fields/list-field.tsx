@@ -2,6 +2,7 @@ import { useId } from 'preact/hooks';
 
 import { Button } from '../ui/button';
 import { CollapsibleContent } from '../ui/collapsible';
+import { Combobox, type Suggestion } from '../ui/combobox';
 import { InfoTooltip } from './info-tooltip';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -14,6 +15,7 @@ type ListFieldProps = {
   items: string[];
   placeholder?: string;
   required?: boolean;
+  suggestions?: Suggestion[];
   onToggle: (value: string[] | undefined) => void;
   onItemsChange: (items: string[]) => void;
 };
@@ -25,6 +27,7 @@ export function ListField({
   items,
   placeholder,
   required,
+  suggestions = [],
   onToggle,
   onItemsChange,
 }: ListFieldProps) {
@@ -53,15 +56,29 @@ export function ListField({
           {items.map((item, index) => {
             return (
               <div key={index} class="flex items-center gap-1.5">
-                <Input
-                  value={item}
-                  placeholder={placeholder}
-                  onInput={(event) => {
-                    const next = [...items];
-                    next[index] = (event.target as HTMLInputElement).value;
-                    onItemsChange(next);
-                  }}
-                />
+                {suggestions.length > 0 ? (
+                  <Combobox
+                    value={item}
+                    placeholder={placeholder}
+                    onInput={(text) => {
+                      const next = [...items];
+                      next[index] = text;
+                      onItemsChange(next);
+                    }}
+                    suggestions={suggestions}
+                    label={`${label} item ${index + 1}`}
+                  />
+                ) : (
+                  <Input
+                    value={item}
+                    placeholder={placeholder}
+                    onInput={(event) => {
+                      const next = [...items];
+                      next[index] = (event.target as HTMLInputElement).value;
+                      onItemsChange(next);
+                    }}
+                  />
+                )}
                 <Button
                   variant="ghost"
                   size="icon"

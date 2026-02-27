@@ -1,6 +1,10 @@
 import { useId, useMemo, useState } from 'preact/hooks';
 
-import { useIndices } from '../hooks/use-indices';
+import {
+  useFacetAttributes,
+  useIndexAttributes,
+  useIndices,
+} from '../hooks/use-indices';
 import type { BlockPath, ExperienceApiBlock } from '../types';
 import { BlockCard } from './block-card';
 import type { SuggestLists } from './panel';
@@ -44,12 +48,16 @@ export function IndexBlockGroup({
 
   const indexNameInputId = useId();
   const replicaNames = useIndices({ type: 'replicas', target: indexName });
+  const facetAttributes = useFacetAttributes(indexName);
+  const indexAttributes = useIndexAttributes(indexName);
   const extendedSuggestLists: SuggestLists = useMemo(() => {
     return {
       ...suggestLists,
       'indices:replicas': replicaNames.length > 0 ? replicaNames : undefined,
+      facetAttributes: facetAttributes.length > 0 ? facetAttributes : undefined,
+      indexAttributes: indexAttributes.length > 0 ? indexAttributes : undefined,
     };
-  }, [suggestLists, replicaNames]);
+  }, [suggestLists, replicaNames, facetAttributes, indexAttributes]);
 
   return (
     <div class="space-y-3">
