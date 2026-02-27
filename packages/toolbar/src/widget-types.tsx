@@ -1770,6 +1770,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         price: '',
         currency: '',
       },
+      carouselLayout: true,
       queryParameters: undefined,
       fallbackParameters: undefined,
       cssClasses: undefined,
@@ -1783,6 +1784,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'facetValue',
       'escapeHTML',
       'template',
+      'carouselLayout',
       'queryParameters',
       'fallbackParameters',
       'cssClasses',
@@ -1831,6 +1833,10 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
           { key: 'price', label: 'Price' },
           { key: 'currency', label: 'Currency' },
         ],
+      },
+      carouselLayout: {
+        type: 'switch',
+        label: 'Carousel layout',
       },
       queryParameters: {
         type: 'json',

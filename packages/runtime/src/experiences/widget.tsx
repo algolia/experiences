@@ -3,6 +3,7 @@ import {
   getAppIdAndApiKey,
 } from 'instantsearch.js/es/lib/utils';
 import { getExperience } from './get-experience';
+import { carousel } from 'instantsearch.js/es/templates';
 import chat from 'instantsearch.js/es/widgets/chat/chat';
 import configure from 'instantsearch.js/es/widgets/configure/configure';
 import hits from 'instantsearch.js/es/widgets/hits/hits';
@@ -25,7 +26,7 @@ import breadcrumb from 'instantsearch.js/es/widgets/breadcrumb/breadcrumb';
 import hierarchicalMenu from 'instantsearch.js/es/widgets/hierarchical-menu/hierarchical-menu';
 import numericMenu from 'instantsearch.js/es/widgets/numeric-menu/numeric-menu';
 
-import { renderTemplate, renderTool } from './renderer';
+import { renderTool } from './renderer';
 import { SKELETON_CSS, renderListItem } from './templates/list-item';
 import type { ExperienceWidget } from './types';
 
@@ -271,19 +272,28 @@ export default (function experience(
           return parameters;
         },
       },
-      // TODO: Add support for `templates` (header, empty, layout)
+      // TODO: Add support for `templates` (header, empty)
       // TODO: Add support for `transformItems` (bucket 3 function)
       'ais.trendingItems': {
         widget: trendingItems,
         async transformParams(parameters) {
-          const { template, ...params } = parameters as typeof parameters & {
-            template?: Record<string, string>;
-          };
+          const { template, carouselLayout, ...params } =
+            parameters as typeof parameters & {
+              template?: Record<string, string>;
+              carouselLayout?: boolean;
+            };
 
           return {
             ...params,
             ...(template
-              ? { templates: { item: renderListItem(template) } }
+              ? {
+                  templates: {
+                    ...(carouselLayout ? { layout: carousel() } : {}),
+                    item: carouselLayout
+                      ? renderCarouselItem(template)
+                      : renderListItem(template),
+                  },
+                }
               : {}),
           };
         },

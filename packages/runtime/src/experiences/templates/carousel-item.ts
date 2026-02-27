@@ -53,7 +53,7 @@ export function renderCarouselItem(template: Record<string, string>) {
         />`}
         ${name &&
         html`<span
-          style="font-weight:bold;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden"
+          style="margin-top:8px;font-weight:bold;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden"
           >${name}</span
         >`}
         ${category &&
