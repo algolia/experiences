@@ -1,7 +1,10 @@
+/** @jsxImportSource preact */
+
 import { render } from 'preact';
 import { vi } from 'vitest';
 
 import { BlockEditor } from '../src/components/block-editor';
+import { ToolbarProvider } from '../src/lib/toolbar-context';
 
 export function renderEditor(
   params: Record<string, unknown>,
@@ -13,14 +16,21 @@ export function renderEditor(
   document.body.appendChild(container);
 
   render(
-    <BlockEditor
-      type={type}
-      parameters={{ container: '', ...params }}
-      onParameterChange={onParameterChange}
-      onCssVariableChange={vi.fn()}
-      onPickElement={vi.fn()}
-      parentIndexName={options?.parentIndexName}
-    />,
+    <ToolbarProvider
+      value={{
+        config: { appId: 'TEST_APP', apiKey: 'TEST_KEY', experienceId: 'test' },
+        experience: { blocks: [], indexName: '' },
+      }}
+    >
+      <BlockEditor
+        type={type}
+        parameters={{ container: '', ...params }}
+        onParameterChange={onParameterChange}
+        onCssVariableChange={vi.fn()}
+        onPickElement={vi.fn()}
+        parentIndexName={options?.parentIndexName}
+      />
+    </ToolbarProvider>,
     container
   );
 

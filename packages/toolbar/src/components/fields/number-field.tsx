@@ -1,22 +1,22 @@
 import { useId } from 'preact/hooks';
 
+import { InfoTooltip } from './info-tooltip';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { InfoTooltip } from './info-tooltip';
 
 type NumberFieldProps = {
   label: string;
+  description?: string;
   value: string;
   placeholder?: string;
-  description?: string;
   onInput: (value: string) => void;
 };
 
 export function NumberField({
   label,
+  description,
   value,
   placeholder,
-  description,
   onInput,
 }: NumberFieldProps) {
   const id = useId();

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 
 import { saveExperience } from '../api';
 import { useElementPicker } from '../hooks/use-element-picker';
+import { ToolbarProvider } from '../lib/toolbar-context';
 import { sanitizeExperience } from '../lib/utils';
 import type {
   AddBlockResult,
@@ -49,7 +50,7 @@ function updateBlockAtPath(
     return idx === parentIdx
       ? {
           ...block,
-          blocks: (block.blocks ?? []).map((child, ci) => {
+          children: (block.children ?? []).map((child, ci) => {
             return ci === childIdx ? updater(child) : child;
           }),
         }
@@ -71,12 +72,95 @@ function deleteBlockAtPath(
     return idx === parentIdx
       ? {
           ...block,
-          blocks: (block.blocks ?? []).filter((_, ci) => {
+          children: (block.children ?? []).filter((_, ci) => {
             return ci !== childIdx;
           }),
         }
       : block;
   });
+}
+
+export function changeWidgetIndex(
+  blocks: ExperienceApiBlock[],
+  widgetPath: BlockPath,
+  targetIndexName: string
+): ExperienceApiBlock[] {
+  if (widgetPath.length !== 2) return blocks;
+  const [srcParent, srcChild] = widgetPath;
+
+  const widget = blocks[srcParent]?.children?.[srcChild];
+  if (!widget) return blocks;
+
+  // No-op if moving to the same index
+  const srcIndexName = blocks[srcParent]?.parameters.indexName as string;
+  if (srcIndexName === targetIndexName) return blocks;
+
+  // Find existing target index block by name
+  const targetIdx = blocks.findIndex((block) => {
+    return (
+      block.type === 'ais.index' &&
+      (block.parameters.indexName as string) === targetIndexName
+    );
+  });
+
+  // Remove widget from source
+  let result = deleteBlockAtPath(blocks, widgetPath);
+
+  // If source index is now empty, remove it
+  const sourceBlock = result[srcParent];
+  if (
+    sourceBlock?.type === 'ais.index' &&
+    (sourceBlock.children?.length ?? 0) === 0
+  ) {
+    result = result.filter((_, idx) => {
+      return idx !== srcParent;
+    });
+  }
+
+  // Sync sortBy first item to new index name
+  let widgetToAdd = widget;
+  if (widget.type === 'ais.sortBy') {
+    const items = Array.isArray(widget.parameters.items)
+      ? (widget.parameters.items as Array<Record<string, string>>)
+      : [];
+    if (items.length > 0) {
+      widgetToAdd = {
+        ...widget,
+        parameters: {
+          ...widget.parameters,
+          items: items.map((item, idx) => {
+            return idx === 0 ? { ...item, value: targetIndexName } : item;
+          }),
+        },
+      };
+    }
+  }
+
+  if (targetIdx !== -1) {
+    // Adjust target index after potential source removal
+    const adjustedTarget =
+      sourceBlock?.type === 'ais.index' &&
+      (sourceBlock.children?.length ?? 0) === 0 &&
+      targetIdx > srcParent
+        ? targetIdx - 1
+        : targetIdx;
+
+    return result.map((bl, idx) => {
+      return idx === adjustedTarget
+        ? { ...bl, children: [...(bl.children ?? []), widgetToAdd] }
+        : bl;
+    });
+  }
+
+  // Create new index block with the target name
+  return [
+    ...result,
+    {
+      type: 'ais.index',
+      parameters: { indexName: targetIndexName, indexId: '' },
+      children: [widgetToAdd],
+    },
+  ];
 }
 
 export function App({ config, initialExperience }: AppProps) {
@@ -138,8 +222,8 @@ export function App({ config, initialExperience }: AppProps) {
             }
           });
 
-          if (block.blocks) {
-            collectVars(block.blocks, i);
+          if (block.children) {
+            collectVars(block.children, i);
           }
         });
       };
@@ -200,7 +284,7 @@ export function App({ config, initialExperience }: AppProps) {
           const parentBlock = updated.blocks[path[0]];
           if (parentBlock?.type === 'ais.index') {
             for (const [childIndex, child] of (
-              parentBlock.blocks ?? []
+              parentBlock.children ?? []
             ).entries()) {
               if (child.type !== 'ais.sortBy') continue;
               const items = Array.isArray(child.parameters.items)
@@ -326,10 +410,23 @@ export function App({ config, initialExperience }: AppProps) {
   const onDeleteBlock = useCallback(
     (path: BlockPath) => {
       setExperience((value) => {
-        const updated = {
-          ...value,
-          blocks: deleteBlockAtPath(value.blocks, path),
-        };
+        let blocks = deleteBlockAtPath(value.blocks, path);
+
+        // Auto-remove empty index blocks after child deletion
+        if (path.length === 2) {
+          const parentIdx = path[0];
+          const parent = blocks[parentIdx];
+          if (
+            parent?.type === 'ais.index' &&
+            (parent.children?.length ?? 0) === 0
+          ) {
+            blocks = blocks.filter((_, idx) => {
+              return idx !== parentIdx;
+            });
+          }
+        }
+
+        const updated = { ...value, blocks };
 
         scheduleRun(updated);
 
@@ -391,7 +488,8 @@ export function App({ config, initialExperience }: AppProps) {
           result = { path: [prev.blocks.length], indexCreated: false };
           updated = { ...prev, blocks: [...prev.blocks, newBlock] };
         } else if (targetParentIndex !== undefined) {
-          const childIdx = prev.blocks[targetParentIndex]?.blocks?.length ?? 0;
+          const childIdx =
+            prev.blocks[targetParentIndex]?.children?.length ?? 0;
           result = {
             path: [targetParentIndex, childIdx],
             indexCreated: false,
@@ -400,7 +498,7 @@ export function App({ config, initialExperience }: AppProps) {
             ...prev,
             blocks: prev.blocks.map((block, i) => {
               return i === targetParentIndex
-                ? { ...block, blocks: [...(block.blocks ?? []), newBlock] }
+                ? { ...block, children: [...(block.children ?? []), newBlock] }
                 : block;
             }),
           };
@@ -421,12 +519,12 @@ export function App({ config, initialExperience }: AppProps) {
                 {
                   type: 'ais.index',
                   parameters: { indexName: '', indexId: '' },
-                  blocks: [newBlock],
+                  children: [newBlock],
                 },
               ],
             };
           } else {
-            const childIdx = prev.blocks[lastIndexIdx]?.blocks?.length ?? 0;
+            const childIdx = prev.blocks[lastIndexIdx]?.children?.length ?? 0;
             result = {
               path: [lastIndexIdx, childIdx],
               indexCreated: false,
@@ -435,7 +533,10 @@ export function App({ config, initialExperience }: AppProps) {
               ...prev,
               blocks: prev.blocks.map((block, i) => {
                 return i === lastIndexIdx
-                  ? { ...block, blocks: [...(block.blocks ?? []), newBlock] }
+                  ? {
+                      ...block,
+                      children: [...(block.children ?? []), newBlock],
+                    }
                   : block;
               }),
             };
@@ -454,6 +555,23 @@ export function App({ config, initialExperience }: AppProps) {
     [scheduleRun]
   );
 
+  const onChangeWidgetIndex = useCallback(
+    (widgetPath: BlockPath, targetIndexName: string) => {
+      setExperience((prev) => {
+        const updated = {
+          ...prev,
+          blocks: changeWidgetIndex(prev.blocks, widgetPath, targetIndexName),
+        };
+
+        scheduleRun(updated);
+
+        return updated;
+      });
+      setIsDirty(true);
+    },
+    [scheduleRun]
+  );
+
   const onMoveBlock = useCallback(
     (fromPath: BlockPath, toParentIndex: number) => {
       setExperience((prev) => {
@@ -461,15 +579,33 @@ export function App({ config, initialExperience }: AppProps) {
         const [srcParent, srcChild] = fromPath;
         if (srcParent === toParentIndex) return prev;
 
-        const block = prev.blocks[srcParent]?.blocks?.[srcChild];
+        const block = prev.blocks[srcParent]?.children?.[srcChild];
         if (!block) return prev;
 
-        const withRemoved = deleteBlockAtPath(prev.blocks, fromPath);
+        let withRemoved = deleteBlockAtPath(prev.blocks, fromPath);
+
+        // Auto-remove empty source index
+        const sourceBlock = withRemoved[srcParent];
+        const sourceEmpty =
+          sourceBlock?.type === 'ais.index' &&
+          (sourceBlock.children?.length ?? 0) === 0;
+        if (sourceEmpty) {
+          withRemoved = withRemoved.filter((_, idx) => {
+            return idx !== srcParent;
+          });
+        }
+
+        // Adjust target index after potential source removal
+        const adjustedTarget =
+          sourceEmpty && toParentIndex > srcParent
+            ? toParentIndex - 1
+            : toParentIndex;
+
         const updated = {
           ...prev,
           blocks: withRemoved.map((bl, idx) => {
-            return idx === toParentIndex
-              ? { ...bl, blocks: [...(bl.blocks ?? []), block] }
+            return idx === adjustedTarget
+              ? { ...bl, children: [...(bl.children ?? []), block] }
               : bl;
           }),
         };
@@ -560,7 +696,7 @@ export function App({ config, initialExperience }: AppProps) {
   }, [toast]);
 
   return (
-    <>
+    <ToolbarProvider value={{ config, experience }}>
       <Panel
         panelRef={panelRef}
         experience={experience}
@@ -576,6 +712,7 @@ export function App({ config, initialExperience }: AppProps) {
         onLocate={onLocate}
         onDeleteBlock={onDeleteBlock}
         onAddBlock={onAddBlock}
+        onChangeWidgetIndex={onChangeWidgetIndex}
         onMoveBlock={onMoveBlock}
         onPickElement={picker.startPicking}
       />
@@ -593,6 +730,6 @@ export function App({ config, initialExperience }: AppProps) {
           {toast}
         </div>
       )}
-    </>
+    </ToolbarProvider>
   );
 }

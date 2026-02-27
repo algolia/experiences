@@ -25,6 +25,7 @@ type PanelProps = {
   onLocate: (container: string, placement: string | undefined) => void;
   onDeleteBlock: (path: BlockPath) => void;
   onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
+  onChangeWidgetIndex: (widgetPath: BlockPath, targetIndexName: string) => void;
   onMoveBlock: (fromPath: BlockPath, toParentIndex: number) => void;
   onPickElement: (callback: (selector: string) => void) => void;
   panelRef?: Ref<HTMLDivElement>;
@@ -44,6 +45,7 @@ export function Panel({
   onLocate,
   onDeleteBlock,
   onAddBlock,
+  onChangeWidgetIndex,
   onMoveBlock,
   onPickElement,
   panelRef,
@@ -55,7 +57,7 @@ export function Panel({
 
   const widgetCount = experience.blocks.reduce((count, block) => {
     return block.type === 'ais.index'
-      ? count + (block.blocks?.length ?? 0)
+      ? count + (block.children?.length ?? 0)
       : count + 1;
   }, 0);
 
@@ -80,12 +82,15 @@ export function Panel({
 
       if (
         lastBlock.type === 'ais.index' &&
-        (lastBlock.blocks?.length ?? 0) > 0
+        (lastBlock.children?.length ?? 0) > 0
       ) {
-        setExpandedBlock(`${lastIdx}.${lastBlock.blocks!.length - 1}`);
+        setExpandedBlock(`${lastIdx}.${lastBlock.children!.length - 1}`);
       } else {
         setExpandedBlock(String(lastIdx));
       }
+    } else if (curr.length < prev.length) {
+      // Blocks were removed (e.g. empty index auto-cleanup) — reset
+      setExpandedBlock(null);
     } else {
       for (let i = 0; i < curr.length; i++) {
         const currBlock = curr[i]!;
@@ -93,9 +98,9 @@ export function Panel({
         if (
           currBlock.type === 'ais.index' &&
           prevBlock?.type === 'ais.index' &&
-          (currBlock.blocks?.length ?? 0) > (prevBlock.blocks?.length ?? 0)
+          (currBlock.children?.length ?? 0) > (prevBlock.children?.length ?? 0)
         ) {
-          const childIdx = currBlock.blocks!.length - 1;
+          const childIdx = currBlock.children!.length - 1;
           setExpandedBlock(`${i}.${childIdx}`);
           break;
         }
@@ -110,17 +115,7 @@ export function Panel({
   }, [tab]);
 
   const handleToggleExpand = (key: string) => {
-    const isChild = key.indexOf('.') !== -1;
-
-    if (expandedBlock === key) {
-      // Closing a child widget should keep the parent index group open
-      setExpandedBlock(isChild ? key.slice(0, key.indexOf('.')) : null);
-    } else if (!isChild && expandedBlock?.startsWith(`${key}.`)) {
-      // Clicking parent heading while a child is expanded — collapse everything
-      setExpandedBlock(null);
-    } else {
-      setExpandedBlock(key);
-    }
+    setExpandedBlock(expandedBlock === key ? null : key);
   };
 
   return (
@@ -283,8 +278,7 @@ export function Panel({
                     onCssVariableChange={onCssVariableChange}
                     onLocate={onLocate}
                     onDeleteBlock={onDeleteBlock}
-                    onAddBlock={onAddBlock}
-                    onMoveBlock={onMoveBlock}
+                    onChangeWidgetIndex={onChangeWidgetIndex}
                     onPickElement={onPickElement}
                   />
                 );
@@ -318,7 +312,12 @@ export function Panel({
                 />
               );
             })}
-            <AddWidgetPopover onSelect={onAddBlock} />
+            <AddWidgetPopover
+              onSelect={onAddBlock}
+              filter={(widgetType) => {
+                return widgetType !== 'ais.index';
+              }}
+            />
           </div>
         </div>
       </TabsContent>

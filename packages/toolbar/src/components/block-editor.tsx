@@ -13,6 +13,7 @@ import { SwitchField } from './fields/switch-field';
 import { TextField } from './fields/text-field';
 import { TextPickerField } from './fields/text-picker-field';
 import { ItemsListField } from './fields/items-list-field';
+import { ItemTemplateField } from './fields/item-template-field';
 import { ToggleableTextField } from './fields/toggleable-text-field';
 
 type BlockEditorProps = {
@@ -205,6 +206,7 @@ export function BlockEditor({
               <TextField
                 key={key}
                 label={override.label}
+                description={paramDescriptions[key]}
                 value={typeof value === 'string' ? value : ''}
                 placeholder={override.placeholder}
                 onInput={onTextInput}
@@ -229,21 +231,36 @@ export function BlockEditor({
                 onPickElement={onPickElement}
               />
             );
-          case 'json':
+          case 'json': {
+            const jsonEnabled = typeof value === 'object' && value !== null;
+            const jsonValue = jsonEnabled
+              ? (value as Record<string, unknown>)
+              : {};
+            const jsonToggleable = 'disabledValue' in override;
+
             return (
               <JsonField
                 key={key}
                 label={override.label}
-                value={
-                  typeof value === 'object' && value !== null
-                    ? (value as Record<string, unknown>)
-                    : {}
-                }
+                description={paramDescriptions[key]}
+                enabled={jsonToggleable ? jsonEnabled : undefined}
+                value={jsonValue}
                 onChange={(newValue) => {
                   return onParameterChange(key, newValue);
                 }}
+                onToggle={
+                  jsonToggleable
+                    ? (toggled) => {
+                        return onParameterChange(
+                          key,
+                          toggled ? {} : override.disabledValue
+                        );
+                      }
+                    : undefined
+                }
               />
             );
+          }
           case 'items-list': {
             const items = Array.isArray(value)
               ? (value as Array<Record<string, string>>)
@@ -270,9 +287,11 @@ export function BlockEditor({
               <ListField
                 key={key}
                 label={override.label}
+                description={paramDescriptions[key]}
                 enabled={enabled}
                 items={items}
                 placeholder={override.placeholder}
+                required={override.required}
                 onToggle={(toggled) => {
                   onParameterChange(key, toggled);
                   if (toggled && override.excludes) {
@@ -304,6 +323,28 @@ export function BlockEditor({
                 onItemsChange={(newItems) => {
                   return onParameterChange(key, newItems);
                 }}
+              />
+            );
+          }
+          case 'item-template': {
+            const templateValue =
+              typeof value === 'object' && value !== null
+                ? (value as Record<string, unknown>)
+                : {};
+            return (
+              <ItemTemplateField
+                key={key}
+                label={override.label}
+                description={paramDescriptions[key]}
+                value={templateValue}
+                fields={override.fields}
+                onFieldChange={(subKey, subValue) => {
+                  return onParameterChange(key, {
+                    ...templateValue,
+                    [subKey]: subValue,
+                  });
+                }}
+                indexName={parentIndexName}
               />
             );
           }

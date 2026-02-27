@@ -51,6 +51,8 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Stats');
     expect(result).toContain('ais.hitsPerPage');
     expect(result).toContain('Hits Per Page');
+    expect(result).toContain('ais.numericMenu');
+    expect(result).toContain('Numeric Menu');
   });
 
   it('includes widget descriptions and parameter descriptions', () => {
@@ -62,6 +64,8 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('search results');
     expect(result).toContain('escapeHTML');
     expect(result).toContain('XSS');
+    expect(result).toContain('template');
+    expect(result).toContain('attribute');
   });
 
   it('includes default placement per widget type', () => {
@@ -98,6 +102,14 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('showFirst');
   });
 
+  it('includes numericMenu widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.numericMenu');
+    expect(result).toContain('Numeric Menu');
+    expect(result).toContain('attribute');
+    expect(result).toContain('items');
+  });
+
   it('includes clearRefinements widget type', () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.clearRefinements');
@@ -122,6 +134,14 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('attribute');
   });
 
+  it('includes hierarchicalMenu widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.hierarchicalMenu');
+    expect(result).toContain('Hierarchical Menu');
+    expect(result).toContain('hierarchical facet');
+    expect(result).toContain('attributes');
+  });
+
   it('includes ratingMenu widget type', () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.ratingMenu');
@@ -136,6 +156,39 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Range Slider');
     expect(result).toContain('draggable slider');
     expect(result).toContain('attribute');
+  });
+
+  it('includes trendingItems widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.trendingItems');
+    expect(result).toContain('Trending Items');
+    expect(result).toContain('trending items');
+    expect(result).toContain('limit');
+  });
+
+  it('includes currentRefinements widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.currentRefinements');
+    expect(result).toContain('Current Refinements');
+    expect(result).toContain('currently active filters');
+    expect(result).toContain('includedAttributes');
+    expect(result).toContain('excludedAttributes');
+  });
+
+  it('includes rangeInput widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.rangeInput');
+    expect(result).toContain('Range Input');
+    expect(result).toContain('numeric range');
+    expect(result).toContain('attribute');
+  });
+
+  it('includes breadcrumb widget type', () => {
+    const result = describeWidgetTypes();
+    expect(result).toContain('ais.breadcrumb');
+    expect(result).toContain('Breadcrumb');
+    expect(result).toContain('navigation trail');
+    expect(result).toContain('attributes');
   });
 });
 
@@ -209,7 +262,7 @@ describe('describeExperience', () => {
         {
           type: 'ais.index',
           parameters: { indexName: 'products' },
-          blocks: [
+          children: [
             {
               type: 'ais.autocomplete',
               parameters: { container: '#search' },
@@ -232,7 +285,7 @@ describe('describeExperience', () => {
         {
           type: 'ais.index',
           parameters: { indexName: 'products', indexId: 'main' },
-          blocks: [],
+          children: [],
         },
       ],
       indexName: '',
@@ -249,7 +302,7 @@ describe('describeExperience', () => {
         {
           type: 'ais.index',
           parameters: { indexName: 'products' },
-          blocks: [],
+          children: [],
         },
       ],
       indexName: '',
@@ -281,7 +334,7 @@ describe('describeExperience', () => {
         {
           type: 'ais.index',
           parameters: { indexName: 'products' },
-          blocks: [],
+          children: [],
         },
       ],
       indexName: '',
@@ -297,7 +350,7 @@ describe('describeExperience', () => {
         {
           type: 'ais.index',
           parameters: {},
-          blocks: [],
+          children: [],
         },
       ],
       indexName: '',
@@ -471,7 +524,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -967,7 +1020,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -1009,7 +1062,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -1053,7 +1106,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -1103,6 +1156,288 @@ describe('getTools', () => {
       );
     });
 
+    it('adds a trendingItems widget with limit and threshold', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            children: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0]);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.trendingItems',
+          container: '#trending',
+          parameters: { limit: 10, threshold: 50 },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'limit',
+          'threshold',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'limit',
+        10
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'threshold',
+        50
+      );
+    });
+
+    it('adds a hierarchicalMenu widget with attributes and separator', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            children: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0]);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.hierarchicalMenu',
+          container: '#hierarchical-menu',
+          parameters: {
+            attributes: [
+              'categories.lvl0',
+              'categories.lvl1',
+              'categories.lvl2',
+            ],
+            separator: ' / ',
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'attributes',
+          'separator',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'attributes',
+        ['categories.lvl0', 'categories.lvl1', 'categories.lvl2']
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'separator',
+        ' / '
+      );
+    });
+
+    it('adds a numericMenu widget with attribute and items', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.numericMenu',
+          container: '#numeric-menu',
+          parameters: {
+            attribute: 'price',
+            items: [
+              { label: 'All' },
+              { label: 'Under $50', end: 50 },
+              { label: '$50–$100', start: 50, end: 100 },
+            ],
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'attribute',
+          'items',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'attribute',
+        'price'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'items', [
+        { label: 'All' },
+        { label: 'Under $50', end: 50 },
+        { label: '$50–$100', start: 50, end: 100 },
+      ]);
+    });
+
+    it('adds a currentRefinements widget with list parameters', async () => {
+      const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.currentRefinements',
+          container: '#current-refinements',
+          parameters: {
+            includedAttributes: ['brand', 'color'],
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'includedAttributes',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'includedAttributes',
+        ['brand', 'color']
+      );
+    });
+
+    it('adds a rangeInput widget with attribute and number parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            children: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0]);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.rangeInput',
+          container: '#range',
+          parameters: { attribute: 'price', min: 0, max: 1000, precision: 2 },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'attribute',
+          'min',
+          'max',
+          'precision',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'attribute',
+        'price'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'min',
+        0
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'max',
+        1000
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'precision',
+        2
+      );
+    });
+
+    it('adds a breadcrumb widget with attributes and separator', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.index',
+            parameters: { indexName: 'products' },
+            children: [],
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience, [0, 0]);
+      const tools = getTools(callbacks);
+
+      const result = await tools.add_widget.execute!(
+        {
+          type: 'ais.breadcrumb',
+          container: '#breadcrumb',
+          parameters: {
+            attributes: [
+              'hierarchicalCategories.lvl0',
+              'hierarchicalCategories.lvl1',
+              'hierarchicalCategories.lvl2',
+            ],
+            separator: ' > ',
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'placement',
+          'container',
+          'attributes',
+          'separator',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'attributes',
+        [
+          'hierarchicalCategories.lvl0',
+          'hierarchicalCategories.lvl1',
+          'hierarchicalCategories.lvl2',
+        ]
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0, 0],
+        'separator',
+        ' > '
+      );
+    });
+
     it('adds a sortBy widget with items parameter', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
@@ -1141,7 +1476,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -1203,7 +1538,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -1306,7 +1641,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -1429,7 +1764,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [
+            children: [
               {
                 type: 'ais.autocomplete',
                 parameters: { container: '#search' },
@@ -2214,6 +2549,50 @@ describe('getTools', () => {
       );
     });
 
+    it('edits hierarchicalMenu attributes and separator', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.hierarchicalMenu',
+            parameters: {
+              container: '#hierarchical-menu',
+              attributes: ['categories.lvl0', 'categories.lvl1'],
+              separator: ' > ',
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            attributes: ['tags.lvl0', 'tags.lvl1', 'tags.lvl2'],
+            separator: ' / ',
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['attributes', 'separator'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'attributes',
+        ['tags.lvl0', 'tags.lvl1', 'tags.lvl2']
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'separator',
+        ' / '
+      );
+    });
+
     it('edits ratingMenu attribute parameter', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
@@ -2272,6 +2651,221 @@ describe('getTools', () => {
       });
       expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'min', 10);
       expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'max', 500);
+    });
+
+    it('edits trendingItems limit and threshold parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.trendingItems',
+            parameters: { container: '#trending', limit: 5 },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '0', parameters: { limit: 20, threshold: 80 } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: ['limit', 'threshold'],
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'limit',
+        20
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'threshold',
+        80
+      );
+    });
+
+    it('edits numericMenu attribute and items', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.numericMenu',
+            parameters: {
+              container: '#numeric-menu',
+              attribute: 'price',
+              items: [{ label: 'All' }],
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            attribute: 'rating',
+            items: [{ label: 'All' }, { label: '4 stars and up', start: 4 }],
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining(['attribute', 'items']),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'attribute',
+        'rating'
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'items', [
+        { label: 'All' },
+        { label: '4 stars and up', start: 4 },
+      ]);
+    });
+
+    it('applies list parameter changes on currentRefinements', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.currentRefinements',
+            parameters: {
+              container: '#current-refinements',
+              includedAttributes: [],
+              excludedAttributes: [],
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            includedAttributes: ['brand'],
+            excludedAttributes: ['query'],
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining([
+          'includedAttributes',
+          'excludedAttributes',
+        ]),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'includedAttributes',
+        ['brand']
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'excludedAttributes',
+        ['query']
+      );
+    });
+
+    it('edits rangeInput number parameters', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.rangeInput',
+            parameters: {
+              container: '#range',
+              attribute: 'price',
+              min: 0,
+              max: 1000,
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        { path: '0', parameters: { min: 10, max: 500, precision: 2 } },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining(['min', 'max', 'precision']),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'min', 10);
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'max', 500);
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'precision',
+        2
+      );
+    });
+
+    it('edits breadcrumb attributes and separator', async () => {
+      const experience: ExperienceApiResponse = {
+        blocks: [
+          {
+            type: 'ais.breadcrumb',
+            parameters: {
+              container: '#breadcrumb',
+              attributes: [
+                'hierarchicalCategories.lvl0',
+                'hierarchicalCategories.lvl1',
+              ],
+              separator: ' > ',
+            },
+          },
+        ],
+        indexName: '',
+      };
+      const callbacks = createCallbacks(experience);
+      const tools = getTools(callbacks);
+
+      const result = await tools.edit_widget.execute!(
+        {
+          path: '0',
+          parameters: {
+            attributes: [
+              'hierarchicalCategories.lvl0',
+              'hierarchicalCategories.lvl1',
+              'hierarchicalCategories.lvl2',
+            ],
+            separator: ' / ',
+          },
+        },
+        { toolCallId: 'tc1', messages: [] }
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        applied: expect.arrayContaining(['attributes', 'separator']),
+      });
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'attributes',
+        [
+          'hierarchicalCategories.lvl0',
+          'hierarchicalCategories.lvl1',
+          'hierarchicalCategories.lvl2',
+        ]
+      );
+      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
+        [0],
+        'separator',
+        ' / '
+      );
     });
 
     it('edits sortBy items parameter', async () => {
@@ -2368,7 +2962,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [
+            children: [
               {
                 type: 'ais.autocomplete',
                 parameters: { container: '#search' },
@@ -2399,7 +2993,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [
+            children: [
               {
                 type: 'ais.autocomplete',
                 parameters: { container: '#search' },
@@ -2477,7 +3071,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [
+            children: [
               {
                 type: 'ais.autocomplete',
                 parameters: { container: '#search' },
@@ -2487,7 +3081,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'articles' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -2534,7 +3128,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [
+            children: [
               {
                 type: 'ais.autocomplete',
                 parameters: { container: '#search' },
@@ -2565,12 +3159,12 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [],
+            children: [],
           },
           {
             type: 'ais.index',
             parameters: { indexName: 'articles' },
-            blocks: [],
+            children: [],
           },
         ],
         indexName: '',
@@ -2596,7 +3190,7 @@ describe('getTools', () => {
           {
             type: 'ais.index',
             parameters: { indexName: 'products' },
-            blocks: [
+            children: [
               {
                 type: 'ais.autocomplete',
                 parameters: { container: '#search' },
