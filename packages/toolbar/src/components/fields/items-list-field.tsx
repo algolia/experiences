@@ -1,5 +1,5 @@
 import { Button } from '../ui/button';
-import { Combobox } from '../ui/combobox';
+import { Combobox, type Suggestion } from '../ui/combobox';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
@@ -14,7 +14,7 @@ type ItemsListFieldProps = {
   }>;
   onItemsChange: (items: Array<Record<string, string>>) => void;
   lockedFirstValue?: string;
-  fieldSuggestLists?: Record<string, string[]>;
+  fieldSuggestLists?: Record<string, Suggestion[]>;
 };
 
 export function ItemsListField({

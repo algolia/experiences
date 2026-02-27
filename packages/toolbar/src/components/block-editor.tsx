@@ -2,6 +2,7 @@ import type { ExperienceApiBlockParameters, Placement } from '../types';
 import type { IndexSuggestKind } from '../widget-types';
 import { WIDGET_TYPES } from '../widget-types';
 import type { SuggestLists } from './panel';
+import type { Suggestion } from './ui/combobox';
 import { AttributeField } from './fields/attribute-field';
 import { CssVariablesEditor } from './fields/css-variables-editor';
 import { FacetValueField } from './fields/facet-value-field';
@@ -32,12 +33,12 @@ type BlockEditorProps = {
 function buildFieldSuggestLists(
   fields: Array<{ key: string; suggest?: IndexSuggestKind }>,
   suggestLists: SuggestLists | undefined
-): Record<string, string[]> | undefined {
+): Record<string, Suggestion[]> | undefined {
   if (!suggestLists) {
     return undefined;
   }
 
-  const lists: Record<string, string[]> = {};
+  const lists: Record<string, Suggestion[]> = {};
   let hasAny = false;
 
   for (const field of fields) {

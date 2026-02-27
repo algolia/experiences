@@ -1,12 +1,17 @@
 import type {
   AddBlockResult,
   BlockPath,
+  Environment,
   ExperienceApiBlock,
   ExperienceApiResponse,
   Placement,
 } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
-import { fetchSuggestions, getSuggestionSourceForParam } from './suggestions';
+import {
+  fetchSuggestions,
+  getSuggestionSourceForParam,
+  suggestionSourceRequiresIndexName,
+} from './suggestions';
 
 export type ToolCallbacks = {
   onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
@@ -16,6 +21,7 @@ export type ToolCallbacks = {
   onMoveBlock: (fromPath: BlockPath, toParentIndex: number) => void;
   getExperience: () => ExperienceApiResponse;
   getCredentials: () => { appId: string; apiKey: string };
+  getEnv: () => Environment;
 };
 
 function getEnabledTypes() {
@@ -448,9 +454,6 @@ async function executeGetSuggestions(
   if (!param) {
     return { success: false, error: 'Missing required parameter: param' };
   }
-  if (!indexName) {
-    return { success: false, error: 'Missing required parameter: indexName' };
-  }
 
   const sourceName = getSuggestionSourceForParam(param);
   if (!sourceName) {
@@ -460,8 +463,18 @@ async function executeGetSuggestions(
     };
   }
 
+  if (suggestionSourceRequiresIndexName(sourceName) && !indexName) {
+    return { success: false, error: 'Missing required parameter: indexName' };
+  }
+
   const credentials = callbacks.getCredentials();
-  const result = await fetchSuggestions(sourceName, credentials, indexName);
+  const env = callbacks.getEnv();
+  const result = await fetchSuggestions(
+    sourceName,
+    credentials,
+    env,
+    indexName
+  );
 
   return result;
 }
@@ -594,21 +607,22 @@ export function buildToolDefinitions(): AgentStudioTool[] {
     get_suggestions: {
       name: 'get_suggestions',
       description:
-        'Get valid values for a widget parameter. Returns a list of values from the Algolia index (e.g., facet attributes for the "attribute" parameter).',
+        'Get valid values for a widget parameter. Returns a list of values (e.g., facet attributes for "attribute", available agents for "agentId").',
       inputSchema: {
         type: 'object',
         properties: {
           param: {
             type: 'string',
             description:
-              'The parameter name to get suggestions for (e.g., "attribute")',
+              'The parameter name to get suggestions for (e.g., "attribute", "agentId")',
           },
           indexName: {
             type: 'string',
-            description: 'The Algolia index name to fetch suggestions from',
+            description:
+              'The Algolia index name to fetch suggestions from (required for index-bound parameters like "attribute")',
           },
         },
-        required: ['param', 'indexName'],
+        required: ['param'],
       },
       type: 'client_side',
     },
@@ -643,7 +657,7 @@ Each widget type has a default placement listed above. When placement is \`body\
 - Before editing or removing, ALWAYS call get_experience first to verify current widget paths and state.
 - Refer to widgets by their path from get_experience results.
 - If the user's request is ambiguous, ask for clarification.
-- When setting a parameter marked [has suggestions], ALWAYS call get_suggestions first with the indexName from the relevant ais.index block to discover valid values.`;
+- When setting a parameter marked [has suggestions], ALWAYS call get_suggestions first to discover valid values. For index-bound parameters (like "attribute"), pass the indexName from the relevant ais.index block. For other parameters (like "agentId"), only the param name is needed.`;
 }
 
 export async function executeToolCall(

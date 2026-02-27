@@ -5,6 +5,7 @@ import { CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
 import { Label } from '../ui/label';
 import { Switch } from '../ui/switch';
 import { TextField } from './text-field';
+import type { Suggestion } from '../ui/combobox';
 
 type ObjectFieldProps = {
   label: string;
@@ -16,7 +17,7 @@ type ObjectFieldProps = {
   fields: Array<{ key: string; label: string }>;
   onToggle: (value: false | undefined | Record<string, unknown>) => void;
   onFieldChange: (key: string, value: string) => void;
-  fieldSuggestLists?: Record<string, string[]>;
+  fieldSuggestLists?: Record<string, Suggestion[]>;
 };
 
 export function ObjectField({

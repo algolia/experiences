@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 
 import {
+  fetchAgentStudioAgents,
   fetchIndices,
   fetchQuerySuggestionConfigs,
   type IndexInfo,
@@ -154,4 +155,56 @@ export function useIndices(options?: UseIndicesOptions): string[] {
   }
 
   return [];
+}
+
+type Agent = {
+  id: string;
+  name: string;
+};
+
+const agentCache = new Map<string, Agent[]>();
+
+export function useAgentStudioAgents(): Agent[] {
+  const { config } = useToolbarContext();
+  const env = config.env ?? 'prod';
+  const cacheKey = `${env}:${config.appId}`;
+  const [agents, setAgents] = useState<Agent[]>(() => {
+    return agentCache.get(cacheKey) ?? [];
+  });
+
+  useEffect(() => {
+    const cached = agentCache.get(cacheKey);
+
+    if (cached) {
+      setAgents(cached);
+
+      return;
+    }
+
+    let cancelled = false;
+
+    fetchAgentStudioAgents({
+      appId: config.appId,
+      apiKey: config.apiKey,
+      env,
+    })
+      .then((result) => {
+        if (cancelled) {
+          return;
+        }
+
+        const mapped = result.map((agent) => {
+          return { id: agent.id, name: agent.name };
+        });
+        agentCache.set(cacheKey, mapped);
+        setAgents(mapped);
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [config.appId, config.apiKey, cacheKey]);
+
+  return agents;
 }

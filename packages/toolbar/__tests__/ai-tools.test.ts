@@ -29,6 +29,9 @@ function createCallbacks(
     getCredentials: vi.fn(() => {
       return { appId: 'APP_ID', apiKey: 'API_KEY' };
     }),
+    getEnv: vi.fn(() => {
+      return 'beta' as const;
+    }),
   };
 }
 
@@ -75,6 +78,7 @@ describe('describeWidgetTypes', () => {
   it('marks params with available suggestions', async () => {
     const result = describeWidgetTypes();
     expect(result).toMatch(/attribute.*\[has suggestions\]/);
+    expect(result).toMatch(/agentId.*\[has suggestions\]/);
   });
 
   it('includes default placement per widget type', async () => {
@@ -3408,7 +3412,7 @@ describe('get_suggestions', () => {
     });
   });
 
-  it('returns error when indexName is missing', async () => {
+  it('returns error when indexName is missing for index-bound param', async () => {
     const callbacks = createCallbacks();
     const result = await executeToolCall(
       'get_suggestions',
@@ -3445,6 +3449,21 @@ describe('get_suggestions', () => {
     expect(result).toEqual({
       error:
         'Failed to fetch suggestions from facetAttributes for index "products"',
+    });
+  });
+
+  it('does not require indexName for agentId param', async () => {
+    const callbacks = createCallbacks();
+    const result = await executeToolCall(
+      'get_suggestions',
+      { param: 'agentId' },
+      callbacks
+    );
+    expect(callbacks.getCredentials).toHaveBeenCalled();
+    expect(callbacks.getEnv).toHaveBeenCalled();
+    // The fetch will fail (no MSW handler), but it should not error on missing indexName
+    expect(result).toEqual({
+      error: 'Failed to fetch suggestions from agentStudioAgents',
     });
   });
 });
