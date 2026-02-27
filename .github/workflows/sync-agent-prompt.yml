@@ -6,6 +6,7 @@ on:
     paths:
       - packages/toolbar/src/widget-types.tsx
       - packages/toolbar/src/ai/tools.ts
+      - packages/toolbar/src/ai/suggestions.ts
       - packages/toolbar/src/ai/agent-studio-config.ts
       - scripts/sync-agent-prompt.ts
   workflow_dispatch:
