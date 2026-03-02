@@ -11,7 +11,6 @@ type TextFieldProps = {
   placeholder?: string;
   onInput: (value: string) => void;
   readOnly?: boolean;
-  list?: string;
 };
 
 export function TextField({
@@ -21,7 +20,6 @@ export function TextField({
   placeholder,
   onInput,
   readOnly,
-  list,
 }: TextFieldProps) {
   const id = useId();
 
@@ -40,7 +38,6 @@ export function TextField({
         }}
         readOnly={readOnly}
         class={readOnly ? 'bg-muted text-muted-foreground' : ''}
-        list={list}
       />
     </div>
   );

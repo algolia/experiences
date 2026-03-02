@@ -3,7 +3,9 @@ import { useId, useState } from 'preact/hooks';
 import { useIndexAttributes } from '../../hooks/use-index-attributes';
 import { InfoTooltip } from './info-tooltip';
 import { CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
-import { TextField } from './text-field';
+import { Combobox } from '../ui/combobox';
+import { Label } from '../ui/label';
+import { Input } from '../ui/input';
 
 type ItemTemplateFieldProps = {
   label: string;
@@ -23,7 +25,6 @@ export function ItemTemplateField({
   indexName,
 }: ItemTemplateFieldProps) {
   const [open, setOpen] = useState(true);
-  const datalistId = useId();
   const attributes = useIndexAttributes(indexName);
 
   const priceField = fields.find((field) => {
@@ -35,8 +36,6 @@ export function ItemTemplateField({
   const regularFields = fields.filter((field) => {
     return field.key !== 'price' && field.key !== 'currency';
   });
-
-  const listId = attributes.length > 0 ? datalistId : undefined;
 
   return (
     <div>
@@ -68,21 +67,21 @@ export function ItemTemplateField({
               const raw = value[field.key];
 
               return (
-                <TextField
+                <SubField
                   key={field.key}
                   label={field.label}
                   value={typeof raw === 'string' ? raw : String(raw ?? '')}
                   onInput={(text) => {
                     return onFieldChange(field.key, text);
                   }}
-                  list={listId}
+                  suggestions={attributes}
                 />
               );
             })}
             {priceField && (
               <div class="flex items-end gap-2">
                 <div class="flex-1">
-                  <TextField
+                  <SubField
                     label={priceField.label}
                     value={
                       typeof value.price === 'string'
@@ -92,12 +91,12 @@ export function ItemTemplateField({
                     onInput={(text) => {
                       return onFieldChange('price', text);
                     }}
-                    list={listId}
+                    suggestions={attributes}
                   />
                 </div>
                 {currencyField && (
                   <div class="w-16 shrink-0">
-                    <TextField
+                    <SubField
                       label={currencyField.label}
                       value={
                         typeof value.currency === 'string'
@@ -107,21 +106,49 @@ export function ItemTemplateField({
                       onInput={(text) => {
                         return onFieldChange('currency', text);
                       }}
+                      suggestions={[]}
                     />
                   </div>
                 )}
               </div>
             )}
           </div>
-          {listId && (
-            <datalist id={listId}>
-              {attributes.map((attr) => {
-                return <option key={attr} value={attr} />;
-              })}
-            </datalist>
-          )}
         </div>
       </CollapsibleContent>
+    </div>
+  );
+}
+
+type SubFieldProps = {
+  label: string;
+  value: string;
+  onInput: (value: string) => void;
+  suggestions: string[];
+};
+
+function SubField({ label, value, onInput, suggestions }: SubFieldProps) {
+  const id = useId();
+
+  return (
+    <div class="group space-y-1">
+      <Label htmlFor={id}>{label}</Label>
+      {suggestions.length > 0 ? (
+        <Combobox
+          id={id}
+          value={value}
+          onInput={onInput}
+          suggestions={suggestions}
+          label={label}
+        />
+      ) : (
+        <Input
+          id={id}
+          value={value}
+          onInput={(event) => {
+            return onInput((event.target as HTMLInputElement).value);
+          }}
+        />
+      )}
     </div>
   );
 }
