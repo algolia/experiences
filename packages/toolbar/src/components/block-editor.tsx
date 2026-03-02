@@ -1,5 +1,7 @@
 import type { ExperienceApiBlockParameters, Placement } from '../types';
+import type { IndexSuggestKind } from '../widget-types';
 import { WIDGET_TYPES } from '../widget-types';
+import type { SuggestLists } from './panel';
 import { CssVariablesEditor } from './fields/css-variables-editor';
 import { FacetValueField } from './fields/facet-value-field';
 import { JsonField } from './fields/json-field';
@@ -23,7 +25,33 @@ type BlockEditorProps = {
   onCssVariableChange: (key: string, value: string) => void;
   onPickElement: (callback: (selector: string) => void) => void;
   parentIndexName?: string;
+  suggestLists?: SuggestLists;
 };
+
+function buildFieldSuggestLists(
+  fields: Array<{ key: string; suggest?: IndexSuggestKind }>,
+  suggestLists: SuggestLists | undefined
+): Record<string, string[]> | undefined {
+  if (!suggestLists) {
+    return undefined;
+  }
+
+  const lists: Record<string, string[]> = {};
+  let hasAny = false;
+
+  for (const field of fields) {
+    if (field.suggest) {
+      const suggestions = suggestLists[field.suggest];
+
+      if (suggestions && suggestions.length > 0) {
+        lists[field.key] = suggestions;
+        hasAny = true;
+      }
+    }
+  }
+
+  return hasAny ? lists : undefined;
+}
 
 export function BlockEditor({
   type,
@@ -32,6 +60,7 @@ export function BlockEditor({
   onCssVariableChange,
   onPickElement,
   parentIndexName,
+  suggestLists,
 }: BlockEditorProps) {
   const widgetType = WIDGET_TYPES[type];
   const overrides = widgetType?.fieldOverrides ?? {};
@@ -210,6 +239,11 @@ export function BlockEditor({
                 value={typeof value === 'string' ? value : ''}
                 placeholder={override.placeholder}
                 onInput={onTextInput}
+                suggestions={
+                  override.suggest
+                    ? suggestLists?.[override.suggest]
+                    : undefined
+                }
               />
             );
           }
@@ -277,6 +311,10 @@ export function BlockEditor({
                 onItemsChange={(newItems) => {
                   return onParameterChange(key, newItems);
                 }}
+                fieldSuggestLists={buildFieldSuggestLists(
+                  override.fields,
+                  suggestLists
+                )}
               />
             );
           }
@@ -374,6 +412,10 @@ export function BlockEditor({
                     [subKey]: subValue,
                   });
                 }}
+                fieldSuggestLists={buildFieldSuggestLists(
+                  override.fields,
+                  suggestLists
+                )}
               />
             );
           }

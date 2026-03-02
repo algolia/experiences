@@ -7,12 +7,16 @@ import type {
   ExperienceApiResponse,
   SaveState,
 } from '../types';
+import { useIndices } from '../hooks/use-indices';
+import type { IndexSuggestKind } from '../widget-types';
 import { AddWidgetPopover } from './add-widget-popover';
 import { AiChat } from './ai-chat';
 import { BlockCard } from './block-card';
 import { IndexBlockGroup } from './index-block-group';
 import { Button } from './ui/button';
 import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
+
+export type SuggestLists = Partial<Record<IndexSuggestKind, string[]>>;
 
 type PanelProps = {
   env: Environment;
@@ -57,6 +61,20 @@ export function Panel({
   const [aiMounted, setAiMounted] = useState(false);
   const [expandedBlock, setExpandedBlock] = useState<string | null>(null);
   const prevBlocksRef = useRef(experience.blocks);
+
+  const allIndexNames = useIndices();
+  const qsIndexNames = useIndices({
+    type: 'querySuggestions',
+    enabled:
+      expandedBlock !== null &&
+      experience.blocks[Number(expandedBlock)]?.type === 'ais.autocomplete',
+  });
+  const suggestLists: SuggestLists = useMemo(() => {
+    return {
+      indices: allIndexNames.length > 0 ? allIndexNames : undefined,
+      'indices:qs': qsIndexNames.length > 0 ? qsIndexNames : undefined,
+    };
+  }, [allIndexNames, qsIndexNames]);
 
   const widgetCount = experience.blocks.reduce((count, block) => {
     return block.type === 'ais.index'
@@ -276,6 +294,7 @@ export function Panel({
                     parentIndex={index}
                     expandedBlock={expandedBlock}
                     indexBlocks={indexBlocks}
+                    suggestLists={suggestLists}
                     onToggleExpand={handleToggleExpand}
                     onParameterChange={onParameterChange}
                     onCssVariableChange={onCssVariableChange}
@@ -312,6 +331,7 @@ export function Panel({
                     return onDeleteBlock([index]);
                   }}
                   onPickElement={onPickElement}
+                  suggestLists={suggestLists}
                 />
               );
             })}

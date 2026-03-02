@@ -1,6 +1,8 @@
 import type { JSX } from 'preact';
 import type { ExperienceApiBlockParameters } from './types';
 
+export type IndexSuggestKind = 'indices' | 'indices:replicas' | 'indices:qs';
+
 type FieldOverrideBase = {
   visibleIf?: { key: string; value: unknown };
 };
@@ -9,7 +11,13 @@ export type FieldOverride = FieldOverrideBase &
   (
     | { type: 'switch'; label: string }
     | { type: 'number'; label: string; placeholder?: string }
-    | { type: 'text'; label: string; placeholder?: string; picker?: boolean }
+    | {
+        type: 'text';
+        label: string;
+        placeholder?: string;
+        picker?: boolean;
+        suggest?: IndexSuggestKind;
+      }
     | { type: 'facet-value'; label: string; placeholder?: string }
     | {
         type: 'toggleable-text';
@@ -28,7 +36,11 @@ export type FieldOverride = FieldOverrideBase &
         label: string;
         defaultValue: Record<string, unknown>;
         disabledValue?: false | undefined;
-        fields: Array<{ key: string; label: string }>;
+        fields: Array<{
+          key: string;
+          label: string;
+          suggest?: IndexSuggestKind;
+        }>;
       }
     | { type: 'json'; label: string; disabledValue?: false | undefined }
     | {
@@ -39,6 +51,7 @@ export type FieldOverride = FieldOverrideBase &
           label: string;
           placeholder?: string;
           inputType?: 'text' | 'number';
+          suggest?: IndexSuggestKind;
         }>;
       }
     | {
@@ -365,6 +378,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'showSuggestions',
     ],
     fieldOverrides: {
+      indexName: { type: 'text', label: 'Index Name', suggest: 'indices' },
       showRecent: { type: 'switch', label: 'Recent Searches' },
       showSuggestions: {
         type: 'object',
@@ -372,7 +386,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         // oxlint-disable-next-line id-length
         defaultValue: { indexName: '', searchPageUrl: '', q: 'q' },
         fields: [
-          { key: 'indexName', label: 'Index Name' },
+          { key: 'indexName', label: 'Index Name', suggest: 'indices:qs' },
           { key: 'searchPageUrl', label: 'Search Page URL' },
           { key: 'q', label: 'Query Parameter' },
         ],
@@ -380,7 +394,6 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     },
     paramLabels: {
       container: 'Container',
-      indexName: 'Index Name',
     },
     paramDescriptions: {
       container:
@@ -461,10 +474,8 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     columns: 2,
     fieldOrder: ['indexName', 'indexId'],
     fieldOverrides: {
+      indexName: { type: 'text', label: 'Index Name', suggest: 'indices' },
       indexId: { type: 'text', label: 'Index ID' },
-    },
-    paramLabels: {
-      indexName: 'Index Name',
     },
     paramDescriptions: {
       indexName: 'The Algolia index or composition ID to search.',
@@ -1125,6 +1136,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
             key: 'value',
             label: 'Index name',
             placeholder: 'e.g. products_price_asc',
+            suggest: 'indices:replicas',
           },
           {
             key: 'label',

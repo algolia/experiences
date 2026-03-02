@@ -1,4 +1,5 @@
 import { Button } from '../ui/button';
+import { Combobox } from '../ui/combobox';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
@@ -13,6 +14,7 @@ type ItemsListFieldProps = {
   }>;
   onItemsChange: (items: Array<Record<string, string>>) => void;
   lockedFirstValue?: string;
+  fieldSuggestLists?: Record<string, string[]>;
 };
 
 export function ItemsListField({
@@ -21,6 +23,7 @@ export function ItemsListField({
   fields,
   onItemsChange,
   lockedFirstValue,
+  fieldSuggestLists,
 }: ItemsListFieldProps) {
   const isFirstLocked = Boolean(lockedFirstValue);
 
@@ -52,31 +55,43 @@ export function ItemsListField({
             <div class="flex min-w-0 flex-1 gap-1.5">
               {fields.map((field) => {
                 const isValueLocked = isLocked && field.key === 'value';
+                const suggestions = fieldSuggestLists?.[field.key];
+                const fieldValue = isValueLocked
+                  ? lockedFirstValue!
+                  : (item[field.key] ?? '');
+
+                function onFieldInput(newValue: string) {
+                  const updated = items.map((existing, idx) => {
+                    return idx === index
+                      ? { ...existing, [field.key]: newValue }
+                      : existing;
+                  });
+                  onItemsChange(updated);
+                }
 
                 return (
                   <div key={field.key} class="min-w-0 flex-1">
-                    <Input
-                      type={field.inputType ?? 'text'}
-                      placeholder={field.placeholder ?? field.label}
-                      value={
-                        isValueLocked
-                          ? lockedFirstValue!
-                          : (item[field.key] ?? '')
-                      }
-                      disabled={isValueLocked}
-                      onInput={(event) => {
-                        const updated = items.map((existing, idx) => {
-                          return idx === index
-                            ? {
-                                ...existing,
-                                [field.key]: (event.target as HTMLInputElement)
-                                  .value,
-                              }
-                            : existing;
-                        });
-                        onItemsChange(updated);
-                      }}
-                    />
+                    {suggestions && !isValueLocked ? (
+                      <Combobox
+                        placeholder={field.placeholder ?? field.label}
+                        value={fieldValue}
+                        suggestions={suggestions}
+                        label={field.label}
+                        onInput={onFieldInput}
+                      />
+                    ) : (
+                      <Input
+                        type={field.inputType ?? 'text'}
+                        placeholder={field.placeholder ?? field.label}
+                        value={fieldValue}
+                        disabled={isValueLocked}
+                        onInput={(event) => {
+                          onFieldInput(
+                            (event.target as HTMLInputElement).value
+                          );
+                        }}
+                      />
+                    )}
                   </div>
                 );
               })}

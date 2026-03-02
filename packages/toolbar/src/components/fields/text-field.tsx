@@ -1,6 +1,7 @@
 import { useId } from 'preact/hooks';
 
 import { InfoTooltip } from './info-tooltip';
+import { Combobox } from '../ui/combobox';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
@@ -11,6 +12,7 @@ type TextFieldProps = {
   placeholder?: string;
   onInput: (value: string) => void;
   readOnly?: boolean;
+  suggestions?: string[];
 };
 
 export function TextField({
@@ -20,6 +22,7 @@ export function TextField({
   placeholder,
   onInput,
   readOnly,
+  suggestions,
 }: TextFieldProps) {
   const id = useId();
 
@@ -29,16 +32,27 @@ export function TextField({
         {label}
         {description && <InfoTooltip content={description} class="mt-0.5" />}
       </Label>
-      <Input
-        id={id}
-        value={value}
-        placeholder={placeholder}
-        onInput={(event) => {
-          return onInput((event.target as HTMLInputElement).value);
-        }}
-        readOnly={readOnly}
-        class={readOnly ? 'bg-muted text-muted-foreground' : ''}
-      />
+      {suggestions ? (
+        <Combobox
+          id={id}
+          value={value}
+          placeholder={placeholder}
+          onInput={onInput}
+          suggestions={suggestions}
+          label={label}
+        />
+      ) : (
+        <Input
+          id={id}
+          value={value}
+          placeholder={placeholder}
+          onInput={(event) => {
+            return onInput((event.target as HTMLInputElement).value);
+          }}
+          readOnly={readOnly}
+          class={readOnly ? 'bg-muted text-muted-foreground' : ''}
+        />
+      )}
     </div>
   );
 }
