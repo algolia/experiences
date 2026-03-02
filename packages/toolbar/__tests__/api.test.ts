@@ -2,7 +2,13 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { fetchExperience, fetchIndexRecords, saveExperience } from '../src/api';
+import {
+  fetchExperience,
+  fetchIndexRecords,
+  fetchIndices,
+  fetchQuerySuggestionConfigs,
+  saveExperience,
+} from '../src/api';
 
 const server = setupServer();
 
@@ -285,5 +291,166 @@ describe('fetchIndexRecords', () => {
     });
 
     expect(result).toEqual([]);
+  });
+});
+
+describe('fetchIndices', () => {
+  it('fetches all indices with pagination', async () => {
+    server.use(
+      http.get('https://APP_ID-dsn.algolia.net/1/indexes', ({ request }) => {
+        const url = new URL(request.url);
+        const page = url.searchParams.get('page');
+
+        if (page === '0') {
+          return HttpResponse.json({
+            items: [{ name: 'products', replicas: ['products_price_asc'] }],
+            nbPages: 2,
+          });
+        }
+
+        return HttpResponse.json({
+          items: [{ name: 'articles' }],
+          nbPages: 2,
+        });
+      })
+    );
+
+    const result = await fetchIndices({ appId: 'APP_ID', apiKey: 'API_KEY' });
+
+    expect(result).toEqual([
+      { name: 'products', replicas: ['products_price_asc'] },
+      { name: 'articles' },
+    ]);
+  });
+
+  it('sends Algolia credentials as headers', async () => {
+    let headers: Headers;
+
+    server.use(
+      http.get('https://APP_ID-dsn.algolia.net/1/indexes', ({ request }) => {
+        headers = request.headers;
+
+        return HttpResponse.json({ items: [], nbPages: 1 });
+      })
+    );
+
+    await fetchIndices({ appId: 'APP_ID', apiKey: 'API_KEY' });
+
+    expect(headers!.get('X-Algolia-Application-ID')).toBe('APP_ID');
+    expect(headers!.get('X-Algolia-API-Key')).toBe('API_KEY');
+  });
+
+  it('returns empty array on HTTP error', async () => {
+    server.use(
+      http.get('https://APP_ID-dsn.algolia.net/1/indexes', () => {
+        return new HttpResponse(null, { status: 403 });
+      })
+    );
+
+    const result = await fetchIndices({ appId: 'APP_ID', apiKey: 'API_KEY' });
+
+    expect(result).toEqual([]);
+  });
+
+  it('returns empty array on network error', async () => {
+    server.use(
+      http.get('https://APP_ID-dsn.algolia.net/1/indexes', () => {
+        return HttpResponse.error();
+      })
+    );
+
+    const result = await fetchIndices({ appId: 'APP_ID', apiKey: 'API_KEY' });
+
+    expect(result).toEqual([]);
+  });
+});
+
+describe('fetchQuerySuggestionConfigs', () => {
+  it('returns configs from the US region', async () => {
+    const mockConfigs = [
+      {
+        indexName: 'products_suggestions',
+        sourceIndices: [{ indexName: 'products' }],
+      },
+    ];
+
+    server.use(
+      http.get('https://query-suggestions.us.algolia.com/1/configs', () => {
+        return HttpResponse.json(mockConfigs);
+      })
+    );
+
+    const result = await fetchQuerySuggestionConfigs({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+    });
+
+    expect(result).toEqual(mockConfigs);
+  });
+
+  it('falls back to EU when US fails', async () => {
+    const mockConfigs = [
+      {
+        indexName: 'products_suggestions',
+        sourceIndices: [{ indexName: 'products' }],
+      },
+    ];
+
+    server.use(
+      http.get('https://query-suggestions.us.algolia.com/1/configs', () => {
+        return new HttpResponse(null, { status: 403 });
+      }),
+      http.get('https://query-suggestions.eu.algolia.com/1/configs', () => {
+        return HttpResponse.json(mockConfigs);
+      })
+    );
+
+    const result = await fetchQuerySuggestionConfigs({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+    });
+
+    expect(result).toEqual(mockConfigs);
+  });
+
+  it('returns empty array when both regions fail', async () => {
+    server.use(
+      http.get('https://query-suggestions.us.algolia.com/1/configs', () => {
+        return new HttpResponse(null, { status: 403 });
+      }),
+      http.get('https://query-suggestions.eu.algolia.com/1/configs', () => {
+        return new HttpResponse(null, { status: 403 });
+      })
+    );
+
+    const result = await fetchQuerySuggestionConfigs({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+    });
+
+    expect(result).toEqual([]);
+  });
+
+  it('sends Algolia credentials as headers', async () => {
+    let headers: Headers;
+
+    server.use(
+      http.get(
+        'https://query-suggestions.us.algolia.com/1/configs',
+        ({ request }) => {
+          headers = request.headers;
+
+          return HttpResponse.json([]);
+        }
+      )
+    );
+
+    await fetchQuerySuggestionConfigs({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+    });
+
+    expect(headers!.get('X-Algolia-Application-ID')).toBe('APP_ID');
+    expect(headers!.get('X-Algolia-API-Key')).toBe('API_KEY');
   });
 });

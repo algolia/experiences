@@ -1,9 +1,12 @@
-import { useState } from 'preact/hooks';
+import { useId, useMemo, useState } from 'preact/hooks';
 
+import { useIndices } from '../hooks/use-indices';
 import type { BlockPath, ExperienceApiBlock } from '../types';
 import { BlockCard } from './block-card';
+import type { SuggestLists } from './panel';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { Combobox } from './ui/combobox';
 import { Input } from './ui/input';
 
 type IndexBlockGroupProps = {
@@ -11,6 +14,7 @@ type IndexBlockGroupProps = {
   parentIndex: number;
   expandedBlock: string | null;
   indexBlocks: Array<{ index: number; block: ExperienceApiBlock }>;
+  suggestLists?: SuggestLists;
   onToggleExpand: (key: string) => void;
   onParameterChange: (path: BlockPath, key: string, value: unknown) => void;
   onCssVariableChange: (path: BlockPath, key: string, value: string) => void;
@@ -25,6 +29,7 @@ export function IndexBlockGroup({
   parentIndex,
   expandedBlock,
   indexBlocks,
+  suggestLists,
   onToggleExpand,
   onParameterChange,
   onCssVariableChange,
@@ -36,6 +41,15 @@ export function IndexBlockGroup({
   const indexName = (block.parameters.indexName as string) || '';
   const indexId = block.parameters.indexId as string | undefined;
   const [showFields, setShowFields] = useState(Boolean(indexId));
+
+  const indexNameInputId = useId();
+  const replicaNames = useIndices({ type: 'replicas', target: indexName });
+  const extendedSuggestLists: SuggestLists = useMemo(() => {
+    return {
+      ...suggestLists,
+      'indices:replicas': replicaNames.length > 0 ? replicaNames : undefined,
+    };
+  }, [suggestLists, replicaNames]);
 
   return (
     <div class="space-y-3">
@@ -117,16 +131,15 @@ export function IndexBlockGroup({
           <div class="mt-3 space-y-2 rounded-lg border px-3 py-2.5">
             <label class="block text-xs font-medium text-foreground">
               Index Name
-              <Input
+              <Combobox
+                id={indexNameInputId}
                 class="mt-1"
                 value={indexName}
                 placeholder="Index name"
-                onInput={(event) => {
-                  onParameterChange(
-                    [parentIndex],
-                    'indexName',
-                    (event.target as HTMLInputElement).value
-                  );
+                suggestions={suggestLists?.indices ?? []}
+                label="Index Name"
+                onInput={(value) => {
+                  onParameterChange([parentIndex], 'indexName', value);
                 }}
               />
             </label>
@@ -189,6 +202,7 @@ export function IndexBlockGroup({
               return onParameterChange([parentIndex], 'indexName', value);
             }}
             siblingCount={block.children?.length ?? 0}
+            suggestLists={extendedSuggestLists}
           />
         );
       })}

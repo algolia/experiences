@@ -98,3 +98,96 @@ export async function fetchIndexRecords({
 
   return data.hits ?? [];
 }
+
+export type IndexInfo = {
+  name: string;
+  replicas?: string[];
+  primary?: string;
+};
+
+type FetchIndicesParams = {
+  appId: string;
+  apiKey: string;
+};
+
+export async function fetchIndices({
+  appId,
+  apiKey,
+}: FetchIndicesParams): Promise<IndexInfo[]> {
+  const items: IndexInfo[] = [];
+  let page = 0;
+
+  try {
+    while (true) {
+      const res = await fetch(
+        `https://${appId}-dsn.algolia.net/1/indexes?page=${page}&hitsPerPage=100`,
+        {
+          method: 'GET',
+          headers: {
+            'X-Algolia-Application-ID': appId,
+            'X-Algolia-API-Key': apiKey,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        return items;
+      }
+
+      const data = (await res.json()) as {
+        items?: IndexInfo[];
+        nbPages?: number;
+      };
+
+      if (data.items) {
+        items.push(...data.items);
+      }
+
+      page++;
+      if (page >= (data.nbPages ?? 1)) {
+        break;
+      }
+    }
+  } catch {
+    // Network error — return what we have
+  }
+
+  return items;
+}
+
+export type QsConfig = {
+  indexName: string;
+  sourceIndices: Array<{ indexName: string }>;
+};
+
+type FetchQsConfigsParams = {
+  appId: string;
+  apiKey: string;
+};
+
+export async function fetchQuerySuggestionConfigs({
+  appId,
+  apiKey,
+}: FetchQsConfigsParams): Promise<QsConfig[]> {
+  const headers = {
+    'X-Algolia-Application-ID': appId,
+    'X-Algolia-API-Key': apiKey,
+  };
+
+  for (const region of ['us', 'eu'] as const) {
+    try {
+      const res = await fetch(
+        `https://query-suggestions.${region}.algolia.com/1/configs`,
+        { method: 'GET', headers }
+      );
+
+      if (res.ok) {
+        return (await res.json()) as QsConfig[];
+      }
+    } catch {
+      // Network error — try next region
+    }
+  }
+
+  return [];
+}

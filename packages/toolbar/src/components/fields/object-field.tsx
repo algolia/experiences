@@ -16,6 +16,7 @@ type ObjectFieldProps = {
   fields: Array<{ key: string; label: string }>;
   onToggle: (value: false | undefined | Record<string, unknown>) => void;
   onFieldChange: (key: string, value: string) => void;
+  fieldSuggestLists?: Record<string, string[]>;
 };
 
 export function ObjectField({
@@ -28,6 +29,7 @@ export function ObjectField({
   fields,
   onToggle,
   onFieldChange,
+  fieldSuggestLists,
 }: ObjectFieldProps) {
   const id = useId();
   const [open, setOpen] = useState(true);
@@ -81,6 +83,7 @@ export function ObjectField({
                   onInput={(text) => {
                     return onFieldChange(field.key, text);
                   }}
+                  suggestions={fieldSuggestLists?.[field.key]}
                 />
               );
             })}

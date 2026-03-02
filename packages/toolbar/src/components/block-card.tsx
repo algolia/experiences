@@ -6,6 +6,7 @@ import type {
 } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
 import { BlockEditor } from './block-editor';
+import type { SuggestLists } from './panel';
 import { InfoTooltip } from './fields/info-tooltip';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -34,6 +35,7 @@ type BlockCardProps = {
   onChangeIndex?: (targetIndexName: string) => void;
   onParentIndexNameChange?: (value: string) => void;
   siblingCount?: number;
+  suggestLists?: SuggestLists;
 };
 
 const PLACEMENT_LABELS: Record<string, string> = {
@@ -81,6 +83,7 @@ export function BlockCard({
   onChangeIndex,
   onParentIndexNameChange,
   siblingCount,
+  suggestLists,
 }: BlockCardProps) {
   const widgetType = WIDGET_TYPES[type];
   const label = widgetType?.label ?? type;
@@ -295,6 +298,7 @@ export function BlockCard({
                 onCssVariableChange={onCssVariableChange}
                 onPickElement={onPickElement}
                 parentIndexName={parentIndexName}
+                suggestLists={suggestLists}
               />
             )}
           </CardContent>
