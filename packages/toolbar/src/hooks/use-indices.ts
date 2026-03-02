@@ -57,7 +57,7 @@ function useAllIndices(): IndexInfo[] {
   return indices;
 }
 
-function useQuerySuggestionConfigs(): QsConfig[] {
+function useQuerySuggestionConfigs(enabled: boolean): QsConfig[] {
   const { config } = useToolbarContext();
   const { appId, apiKey } = config;
   const [configs, setConfigs] = useState<QsConfig[]>(() => {
@@ -65,6 +65,10 @@ function useQuerySuggestionConfigs(): QsConfig[] {
   });
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     const cached = qsCache.get(appId);
 
     if (cached) {
@@ -96,7 +100,7 @@ function useQuerySuggestionConfigs(): QsConfig[] {
     return () => {
       cancelled = true;
     };
-  }, [appId, apiKey]);
+  }, [enabled, appId, apiKey]);
 
   return configs;
 }
@@ -104,11 +108,14 @@ function useQuerySuggestionConfigs(): QsConfig[] {
 type UseIndicesOptions = {
   type?: 'replicas' | 'querySuggestions';
   target?: string;
+  enabled?: boolean;
 };
 
 export function useIndices(options?: UseIndicesOptions): string[] {
   const indices = useAllIndices();
-  const qsConfigs = useQuerySuggestionConfigs();
+  const qsConfigs = useQuerySuggestionConfigs(
+    options?.type === 'querySuggestions' && options.enabled !== false
+  );
 
   if (!options?.type) {
     return indices.map((index) => {

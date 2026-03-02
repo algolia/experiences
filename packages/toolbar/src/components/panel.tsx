@@ -63,7 +63,12 @@ export function Panel({
   const prevBlocksRef = useRef(experience.blocks);
 
   const allIndexNames = useIndices();
-  const qsIndexNames = useIndices({ type: 'querySuggestions' });
+  const qsIndexNames = useIndices({
+    type: 'querySuggestions',
+    enabled:
+      expandedBlock !== null &&
+      experience.blocks[Number(expandedBlock)]?.type === 'ais.autocomplete',
+  });
   const suggestLists: SuggestLists = useMemo(() => {
     return {
       indices: allIndexNames.length > 0 ? allIndexNames : undefined,
