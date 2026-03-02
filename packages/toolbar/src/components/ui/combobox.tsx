@@ -1,5 +1,11 @@
 import type { JSX } from 'preact';
-import { useId, useRef, useState } from 'preact/hooks';
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'preact/hooks';
 
 import { Input } from './input';
 
@@ -23,6 +29,7 @@ export function Combobox({
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listboxRef = useRef<HTMLUListElement>(null);
 
   const text = typeof value === 'string' ? value : '';
   const filtered = suggestions.filter((item) => {
@@ -31,6 +38,47 @@ export function Combobox({
 
   const safeIndex = activeIndex >= filtered.length ? -1 : activeIndex;
   const showDropdown = open && filtered.length > 0;
+
+  useLayoutEffect(() => {
+    if (!showDropdown || !containerRef.current || !listboxRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const ul = listboxRef.current;
+    ul.style.top = `${rect.bottom + 4}px`;
+    ul.style.left = `${rect.left}px`;
+    ul.style.width = `${rect.width}px`;
+  });
+
+  useEffect(() => {
+    if (!showDropdown || !containerRef.current) return;
+
+    let scrollParent: HTMLElement | null = containerRef.current.parentElement;
+    while (scrollParent) {
+      const { overflowY } = getComputedStyle(scrollParent);
+      if (overflowY === 'auto' || overflowY === 'scroll') break;
+      scrollParent = scrollParent.parentElement;
+    }
+
+    if (!scrollParent) return;
+
+    const onScroll = () => {
+      setOpen(false);
+      setActiveIndex(-1);
+    };
+
+    scrollParent.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      scrollParent.removeEventListener('scroll', onScroll);
+    };
+  }, [showDropdown]);
+
+  useEffect(() => {
+    if (safeIndex >= 0 && listboxRef.current) {
+      const option = listboxRef.current.children[safeIndex] as
+        | HTMLElement
+        | undefined;
+      option?.scrollIntoView({ block: 'nearest' });
+    }
+  }, [safeIndex]);
 
   function select(item: string) {
     onInput(item);
@@ -96,6 +144,9 @@ export function Combobox({
           setOpen(true);
           setActiveIndex(-1);
         }}
+        onClick={() => {
+          setOpen(true);
+        }}
         onFocus={() => {
           setOpen(true);
         }}
@@ -112,10 +163,11 @@ export function Combobox({
       />
       {showDropdown && (
         <ul
+          ref={listboxRef}
           id={listboxId}
           role="listbox"
           aria-label={`${label} suggestions`}
-          class="absolute z-50 mt-1 max-h-40 w-full overflow-auto rounded-md border border-border bg-background py-1 shadow-md"
+          class="fixed z-50 max-h-40 overflow-auto rounded-md border border-border bg-background py-1 shadow-md"
         >
           {filtered.map((item, index) => {
             return (
