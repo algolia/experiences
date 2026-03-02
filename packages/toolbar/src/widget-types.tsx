@@ -352,7 +352,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     icon: SEARCH_ICON,
     defaultParameters: {
       container: '',
-      cssVariables: { 'primary-color-rgb': '#003dff' },
+      cssVariables: { 'primary-color-rgb': '0,61,255' },
       showRecent: false,
       showSuggestions: false,
     },
