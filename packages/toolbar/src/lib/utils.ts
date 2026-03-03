@@ -12,21 +12,32 @@ export function sanitizeExperience(experience: ExperienceApiResponse) {
   return {
     ...experience,
     blocks: experience.blocks.map((block) => {
-      const overrides = WIDGET_TYPES[block.type]?.fieldOverrides ?? {};
-      const params = { ...block.parameters };
+      const listParams = (WIDGET_TYPES[block.type]?.params ?? []).filter(
+        (param) => {
+          return (
+            param.field?.type === 'list' || param.field?.type === 'items-list'
+          );
+        }
+      );
+      const blockParams = { ...block.parameters };
 
-      for (const [key, override] of Object.entries(overrides)) {
-        if (override.type === 'list' && Array.isArray(params[key])) {
-          const cleaned = (params[key] as string[])
+      for (const param of listParams) {
+        const key = param.key;
+
+        if (param.field?.type === 'list' && Array.isArray(blockParams[key])) {
+          const cleaned = (blockParams[key] as string[])
             .map((item) => {
               return item.trim();
             })
             .filter(Boolean);
-          params[key] = cleaned.length > 0 ? cleaned : undefined;
+          blockParams[key] = cleaned.length > 0 ? cleaned : undefined;
         }
 
-        if (override.type === 'items-list' && Array.isArray(params[key])) {
-          const cleaned = (params[key] as Array<Record<string, string>>)
+        if (
+          param.field?.type === 'items-list' &&
+          Array.isArray(blockParams[key])
+        ) {
+          const cleaned = (blockParams[key] as Array<Record<string, string>>)
             .map((item) => {
               const trimmed: Record<string, string> = {};
               for (const [field, val] of Object.entries(item)) {
@@ -37,11 +48,11 @@ export function sanitizeExperience(experience: ExperienceApiResponse) {
             .filter((item) => {
               return Object.values(item).some(Boolean);
             });
-          params[key] = cleaned.length > 0 ? cleaned : undefined;
+          blockParams[key] = cleaned.length > 0 ? cleaned : undefined;
         }
       }
 
-      return { ...block, parameters: params };
+      return { ...block, parameters: blockParams };
     }),
   };
 }

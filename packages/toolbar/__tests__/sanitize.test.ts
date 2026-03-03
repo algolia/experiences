@@ -9,17 +9,20 @@ vi.mock('../src/widget-types', () => {
         label: 'Test',
         enabled: true,
         icon: null,
-        defaultParameters: { items: [] },
-        fieldOverrides: {
-          items: {
-            type: 'items-list',
+        params: [
+          {
+            key: 'items',
             label: 'Items',
-            fields: [
-              { key: 'value', label: 'Value' },
-              { key: 'label', label: 'Label' },
-            ],
+            default: [],
+            field: {
+              type: 'items-list',
+              fields: [
+                { key: 'value', label: 'Value' },
+                { key: 'label', label: 'Label' },
+              ],
+            },
           },
-        },
+        ],
       },
     },
   };

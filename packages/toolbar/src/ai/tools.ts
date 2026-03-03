@@ -39,13 +39,18 @@ export function describeWidgetTypes(): string {
 
   return enabled
     .map(([key, config]) => {
-      const paramKeys = Object.keys(config.defaultParameters).filter((k) => {
-        return k !== 'container' && k !== 'placement';
+      const defaultPlacement =
+        config.params.find((param) => {
+          return param.key === 'placement';
+        })?.default ?? 'inside';
+      const visibleParams = config.params.filter((param) => {
+        return (
+          !param.hidden &&
+          param.key !== 'container' &&
+          param.key !== 'placement'
+        );
       });
-      const overrideKeys = Object.keys(config.fieldOverrides ?? {});
-      const allKeys = [...new Set([...paramKeys, ...overrideKeys])];
 
-      const defaultPlacement = config.defaultParameters.placement ?? 'inside';
       let desc = `- ${key} ("${config.label}", default placement: ${defaultPlacement})`;
       if (config.description) {
         desc += `: ${config.description}`;
@@ -54,18 +59,16 @@ export function describeWidgetTypes(): string {
         desc += ' [index-independent]';
       }
 
-      if (allKeys.length > 0) {
-        const paramLines = allKeys.map((k) => {
-          const override = config.fieldOverrides?.[k];
-          const paramDesc = config.paramDescriptions?.[k];
-          let line = `    - ${k}`;
-          if (override) {
-            line += ` (${override.type})`;
+      if (visibleParams.length > 0) {
+        const paramLines = visibleParams.map((param) => {
+          let line = `    - ${param.key}`;
+          if (param.field) {
+            line += ` (${param.field.type})`;
           }
-          if (paramDesc) {
-            line += `: ${paramDesc}`;
+          if (param.description) {
+            line += `: ${param.description}`;
           }
-          if (getSuggestionSourceForParam(k)) {
+          if (getSuggestionSourceForParam(param.key)) {
             line += ' [has suggestions]';
           }
 
@@ -109,7 +112,9 @@ function describeBlock(
 
   const placement: Placement =
     block.parameters.placement ??
-    (config?.defaultParameters.placement as Placement | undefined) ??
+    (config?.params.find((param) => {
+      return param.key === 'placement';
+    })?.default as Placement | undefined) ??
     'inside';
   const container = block.parameters.container as string | undefined;
 
@@ -251,7 +256,9 @@ function executeAddWidget(
     type === 'ais.index'
       ? 'inside'
       : (placement ??
-        (config?.defaultParameters.placement as Placement | undefined) ??
+        (config?.params.find((param) => {
+          return param.key === 'placement';
+        })?.default as Placement | undefined) ??
         'inside');
 
   if (
@@ -291,8 +298,9 @@ function executeAddWidget(
   }
 
   const allowedKeys = new Set([
-    ...Object.keys(config?.defaultParameters ?? {}),
-    ...Object.keys(config?.fieldOverrides ?? {}),
+    ...(config?.params ?? []).map((param) => {
+      return param.key;
+    }),
     'placement',
   ]);
 
@@ -354,8 +362,9 @@ function executeEditWidget(
 
   const config = WIDGET_TYPES[block.type];
   const allowedKeys = new Set([
-    ...Object.keys(config?.defaultParameters ?? {}),
-    ...Object.keys(config?.fieldOverrides ?? {}),
+    ...(config?.params ?? []).map((param) => {
+      return param.key;
+    }),
     'placement',
   ]);
 
