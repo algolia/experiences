@@ -1,5 +1,4 @@
 import type { JSX } from 'preact';
-import type { ExperienceApiBlockParameters } from './types';
 
 export type IndexSuggestKind =
   | 'indices'
@@ -9,77 +8,69 @@ export type IndexSuggestKind =
   | 'facetAttributes'
   | 'indexAttributes';
 
-type FieldOverrideBase = {
-  visibleIf?: { key: string; value: unknown };
-};
+export type FieldConfig =
+  | { type: 'switch' }
+  | { type: 'number'; placeholder?: string }
+  | {
+      type: 'text';
+      placeholder?: string;
+      picker?: boolean;
+      suggest?: IndexSuggestKind;
+    }
+  | { type: 'facet-value'; placeholder?: string }
+  | { type: 'toggleable-text'; placeholder?: string; picker?: boolean }
+  | {
+      type: 'select';
+      options: Array<{ value: string; label: string }>;
+      defaultValue: string;
+    }
+  | {
+      type: 'object';
+      defaultValue: Record<string, unknown>;
+      disabledValue?: false | undefined;
+      fields: Array<{
+        key: string;
+        label: string;
+        suggest?: IndexSuggestKind;
+      }>;
+    }
+  | { type: 'json'; disabledValue?: false | undefined }
+  | {
+      type: 'items-list';
+      fields: Array<{
+        key: string;
+        label: string;
+        placeholder?: string;
+        inputType?: 'text' | 'number';
+        suggest?: IndexSuggestKind;
+      }>;
+    }
+  | {
+      type: 'list';
+      placeholder?: string;
+      excludes?: string;
+      required?: boolean;
+      suggest?: IndexSuggestKind;
+    }
+  | {
+      type: 'select-list';
+      options: Array<{ value: string; label: string }>;
+    }
+  | {
+      type: 'item-template';
+      defaultValue: Record<string, unknown>;
+      fields: Array<{ key: string; label: string }>;
+    };
 
-export type FieldOverride = FieldOverrideBase &
-  (
-    | { type: 'switch'; label: string }
-    | { type: 'number'; label: string; placeholder?: string }
-    | {
-        type: 'text';
-        label: string;
-        placeholder?: string;
-        picker?: boolean;
-        suggest?: IndexSuggestKind;
-      }
-    | { type: 'facet-value'; label: string; placeholder?: string }
-    | {
-        type: 'toggleable-text';
-        label: string;
-        placeholder?: string;
-        picker?: boolean;
-      }
-    | {
-        type: 'select';
-        label: string;
-        options: Array<{ value: string; label: string }>;
-        defaultValue: string;
-      }
-    | {
-        type: 'object';
-        label: string;
-        defaultValue: Record<string, unknown>;
-        disabledValue?: false | undefined;
-        fields: Array<{
-          key: string;
-          label: string;
-          suggest?: IndexSuggestKind;
-        }>;
-      }
-    | { type: 'json'; label: string; disabledValue?: false | undefined }
-    | {
-        type: 'items-list';
-        label: string;
-        fields: Array<{
-          key: string;
-          label: string;
-          placeholder?: string;
-          inputType?: 'text' | 'number';
-          suggest?: IndexSuggestKind;
-        }>;
-      }
-    | {
-        type: 'list';
-        label: string;
-        placeholder?: string;
-        excludes?: string;
-        required?: boolean;
-        suggest?: IndexSuggestKind;
-      }
-    | {
-        type: 'select-list';
-        label: string;
-        options: Array<{ value: string; label: string }>;
-      }
-    | {
-        type: 'item-template';
-        label: string;
-        defaultValue: Record<string, unknown>;
-        fields: Array<{ key: string; label: string }>;
-      }
-  );
+export type ParamConfig = {
+  key: string;
+  label?: string;
+  description?: string;
+  default?: unknown;
+  field?: FieldConfig;
+  visibleIf?: { key: string; value: unknown };
+  hidden?: boolean;
+};
 
 export type WidgetTypeConfig = {
   label: string;
@@ -87,12 +78,8 @@ export type WidgetTypeConfig = {
   icon: JSX.Element;
   enabled: boolean;
   indexIndependent?: boolean;
-  defaultParameters: ExperienceApiBlockParameters;
   columns?: number;
-  fieldOrder?: string[];
-  fieldOverrides?: Record<string, FieldOverride>;
-  paramLabels?: Record<string, string>;
-  paramDescriptions?: Record<string, string>;
+  params: ParamConfig[];
 };
 
 const SEARCH_ICON = (
@@ -362,6 +349,24 @@ const X_ICON = (
   </svg>
 );
 
+const ITEM_TEMPLATE_DEFAULT = {
+  name: '',
+  category: '',
+  description: '',
+  image: '',
+  price: '',
+  currency: '',
+};
+
+const ITEM_TEMPLATE_FIELDS = [
+  { key: 'name', label: 'Name' },
+  { key: 'category', label: 'Category' },
+  { key: 'description', label: 'Description' },
+  { key: 'image', label: 'Image' },
+  { key: 'price', label: 'Price' },
+  { key: 'currency', label: 'Currency' },
+];
+
 export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   'ais.autocomplete': {
     label: 'Autocomplete',
@@ -370,47 +375,50 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     enabled: true,
     indexIndependent: true,
     icon: SEARCH_ICON,
-    defaultParameters: {
-      container: '',
-      cssVariables: { 'primary-color-rgb': '0,61,255' },
-      showRecent: false,
-      showSuggestions: false,
-    },
-    fieldOrder: [
-      'cssVariables',
-      'container',
-      'placement',
-      'indexName',
-      'showRecent',
-      'showSuggestions',
-    ],
-    fieldOverrides: {
-      indexName: { type: 'text', label: 'Index Name', suggest: 'indices' },
-      showRecent: { type: 'switch', label: 'Recent Searches' },
-      showSuggestions: {
-        type: 'object',
-        label: 'Suggestions',
-        // oxlint-disable-next-line id-length
-        defaultValue: { indexName: '', searchPageUrl: '', q: 'q' },
-        fields: [
-          { key: 'indexName', label: 'Index Name', suggest: 'indices:qs' },
-          { key: 'searchPageUrl', label: 'Search Page URL' },
-          { key: 'q', label: 'Query Parameter' },
-        ],
+    params: [
+      {
+        key: 'cssVariables',
+        description: 'CSS variables for theming.',
+        default: { 'primary-color-rgb': '0,61,255' },
       },
-    },
-    paramLabels: {
-      container: 'Container',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#search").',
-      cssVariables: 'CSS variables for theming.',
-      showRecent:
-        "When enabled, shows the user's recent searches below the input.",
-      showSuggestions:
-        'When enabled, shows query suggestions from a dedicated suggestions index. Requires an indexName, a searchPageUrl, and a query parameter name.',
-    },
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#search").',
+        default: '',
+      },
+      {
+        key: 'indexName',
+        label: 'Index Name',
+        field: { type: 'text', suggest: 'indices' },
+      },
+      {
+        key: 'showRecent',
+        label: 'Recent Searches',
+        description:
+          "When enabled, shows the user's recent searches below the input.",
+        default: false,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'showSuggestions',
+        label: 'Suggestions',
+        description:
+          'When enabled, shows query suggestions from a dedicated suggestions index. Requires an indexName, a searchPageUrl, and a query parameter name.',
+        default: false,
+        field: {
+          type: 'object',
+          // oxlint-disable-next-line id-length
+          defaultValue: { indexName: '', searchPageUrl: '', q: 'q' },
+          fields: [
+            { key: 'indexName', label: 'Index Name', suggest: 'indices:qs' },
+            { key: 'searchPageUrl', label: 'Search Page URL' },
+            { key: 'q', label: 'Query Parameter' },
+          ],
+        },
+      },
+    ],
   },
   'ais.chat': {
     label: 'Chat',
@@ -419,58 +427,36 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     enabled: true,
     indexIndependent: true,
     icon: CHAT_ICON,
-    defaultParameters: {
-      container: '',
-      placement: 'body',
-      agentId: '',
-      template: {
-        name: '',
-        category: '',
-        description: '',
-        image: '',
-        price: '',
-        currency: '',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#chat").',
+        default: '',
       },
-    },
-    fieldOrder: ['container', 'placement', 'agentId', 'template'],
-    fieldOverrides: {
-      agentId: {
-        type: 'text',
+      { key: 'placement', default: 'body' },
+      {
+        key: 'agentId',
         label: 'Agent ID',
-        suggest: 'agentStudioAgents',
+        description:
+          'The ID of the Algolia Agent Studio agent to power the chat.',
+        default: '',
+        field: { type: 'text', suggest: 'agentStudioAgents' },
       },
-      template: {
-        type: 'item-template',
+      {
+        key: 'template',
         label: 'Template',
-        defaultValue: {
-          name: '',
-          category: '',
-          description: '',
-          image: '',
-          price: '',
-          currency: '',
+        description:
+          'Maps Algolia record attributes to display roles for rendering items.',
+        default: ITEM_TEMPLATE_DEFAULT,
+        field: {
+          type: 'item-template',
+          defaultValue: ITEM_TEMPLATE_DEFAULT,
+          fields: ITEM_TEMPLATE_FIELDS,
         },
-        fields: [
-          { key: 'name', label: 'Name' },
-          { key: 'category', label: 'Category' },
-          { key: 'description', label: 'Description' },
-          { key: 'image', label: 'Image' },
-          { key: 'price', label: 'Price' },
-          { key: 'currency', label: 'Currency' },
-        ],
       },
-    },
-    paramLabels: {
-      container: 'Container',
-      agentId: 'Agent ID',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#chat").',
-      agentId: 'The ID of the Algolia Agent Studio agent to power the chat.',
-      template:
-        'Maps Algolia record attributes to display roles for rendering items.',
-    },
+    ],
   },
   'ais.index': {
     label: 'Index',
@@ -479,21 +465,24 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     enabled: true,
     indexIndependent: true,
     icon: DATABASE_ICON,
-    defaultParameters: {
-      indexName: '',
-      indexId: undefined,
-    },
     columns: 2,
-    fieldOrder: ['indexName', 'indexId'],
-    fieldOverrides: {
-      indexName: { type: 'text', label: 'Index Name', suggest: 'indices' },
-      indexId: { type: 'text', label: 'Index ID' },
-    },
-    paramDescriptions: {
-      indexName: 'The Algolia index or composition ID to search.',
-      indexId:
-        'Optional identifier when using multiple indices with the same name.',
-    },
+    params: [
+      {
+        key: 'indexName',
+        label: 'Index Name',
+        description: 'The Algolia index or composition ID to search.',
+        default: '',
+        field: { type: 'text', suggest: 'indices' },
+      },
+      {
+        key: 'indexId',
+        label: 'Index ID',
+        description:
+          'Optional identifier when using multiple indices with the same name.',
+        default: undefined,
+        field: { type: 'text' },
+      },
+    ],
   },
   'ais.configure': {
     label: 'Configure',
@@ -501,19 +490,18 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'A headless widget that sets default Algolia search parameters without rendering any UI.',
     enabled: true,
     icon: CONFIGURE_ICON,
-    defaultParameters: {
-      container: '',
-      placement: 'body',
-      searchParameters: {},
-    },
-    fieldOrder: ['searchParameters'],
-    fieldOverrides: {
-      searchParameters: { type: 'json', label: 'Search parameters' },
-    },
-    paramDescriptions: {
-      searchParameters:
-        'Algolia search parameters as JSON (e.g. {"hitsPerPage": 20, "filters": "category:Books"}).',
-    },
+    params: [
+      { key: 'container', default: '', hidden: true },
+      { key: 'placement', default: 'body', hidden: true },
+      {
+        key: 'searchParameters',
+        label: 'Search parameters',
+        description:
+          'Algolia search parameters as JSON (e.g. {"hitsPerPage": 20, "filters": "category:Books"}).',
+        default: {},
+        field: { type: 'json' },
+      },
+    ],
   },
   'ais.hits': {
     label: 'Hits',
@@ -521,171 +509,163 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'Displays the list of search results (hits) matching the current query.',
     enabled: true,
     icon: GRID_ICON,
-    defaultParameters: {
-      container: '',
-      escapeHTML: true,
-      template: {
-        name: '',
-        category: '',
-        description: '',
-        image: '',
-        price: '',
-        currency: '',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#hits").',
+        default: '',
       },
-      cssClasses: undefined,
-    },
-    fieldOrder: [
-      'container',
-      'placement',
-      'escapeHTML',
-      'template',
-      'cssClasses',
-    ],
-    fieldOverrides: {
-      escapeHTML: { type: 'switch', label: 'Escape HTML' },
-      template: {
-        type: 'item-template',
+      {
+        key: 'escapeHTML',
+        label: 'Escape HTML',
+        description:
+          'When enabled, escapes HTML tags in hit string values to prevent XSS.',
+        default: true,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'template',
         label: 'Template',
-        defaultValue: {
-          name: '',
-          category: '',
-          description: '',
-          image: '',
-          price: '',
-          currency: '',
+        description:
+          'Maps Algolia record attributes to display roles for rendering items.',
+        default: ITEM_TEMPLATE_DEFAULT,
+        field: {
+          type: 'item-template',
+          defaultValue: ITEM_TEMPLATE_DEFAULT,
+          fields: ITEM_TEMPLATE_FIELDS,
         },
-        fields: [
-          { key: 'name', label: 'Name' },
-          { key: 'category', label: 'Category' },
-          { key: 'description', label: 'Description' },
-          { key: 'image', label: 'Image' },
-          { key: 'price', label: 'Price' },
-          { key: 'currency', label: 'Currency' },
-        ],
       },
-      cssClasses: {
-        type: 'object',
+      {
+        key: 'cssClasses',
         label: 'CSS classes',
-        disabledValue: undefined,
-        defaultValue: {
-          root: '',
-          emptyRoot: '',
-          list: '',
-          item: '',
-          bannerRoot: '',
-          bannerImage: '',
-          bannerLink: '',
+        description:
+          'Custom CSS classes to apply to specific parts of the widget.',
+        default: undefined,
+        field: {
+          type: 'object',
+          disabledValue: undefined,
+          defaultValue: {
+            root: '',
+            emptyRoot: '',
+            list: '',
+            item: '',
+            bannerRoot: '',
+            bannerImage: '',
+            bannerLink: '',
+          },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'emptyRoot', label: 'Empty root' },
+            { key: 'list', label: 'List' },
+            { key: 'item', label: 'Item' },
+            { key: 'bannerRoot', label: 'Banner root' },
+            { key: 'bannerImage', label: 'Banner image' },
+            { key: 'bannerLink', label: 'Banner link' },
+          ],
         },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'emptyRoot', label: 'Empty root' },
-          { key: 'list', label: 'List' },
-          { key: 'item', label: 'Item' },
-          { key: 'bannerRoot', label: 'Banner root' },
-          { key: 'bannerImage', label: 'Banner image' },
-          { key: 'bannerLink', label: 'Banner link' },
-        ],
       },
-    },
-    paramLabels: {
-      container: 'Container',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#hits").',
-      escapeHTML:
-        'When enabled, escapes HTML tags in hit string values to prevent XSS.',
-      template:
-        'Maps Algolia record attributes to display roles for rendering items.',
-      cssClasses:
-        'Custom CSS classes to apply to specific parts of the widget.',
-    },
+    ],
   },
   'ais.searchBox': {
     label: 'Search Box',
-    enabled: true,
     description: 'A search input with submit, reset, and loading indicators.',
+    enabled: true,
     icon: SEARCH_ICON,
-    defaultParameters: {
-      container: '',
-      placeholder: undefined,
-      autofocus: false,
-      showLoadingIndicator: true,
-      showSubmit: true,
-      showReset: true,
-      searchAsYouType: true,
-      ignoreCompositionEvents: false,
-      cssClasses: undefined,
-    },
-    fieldOrder: [
-      'container',
-      'placement',
-      'placeholder',
-      'autofocus',
-      'searchAsYouType',
-      'ignoreCompositionEvents',
-      'showLoadingIndicator',
-      'showSubmit',
-      'showReset',
-      'cssClasses',
-    ],
-    fieldOverrides: {
-      placeholder: { type: 'text', label: 'Placeholder' },
-      autofocus: { type: 'switch', label: 'Autofocus' },
-      searchAsYouType: { type: 'switch', label: 'Search as you type' },
-      ignoreCompositionEvents: {
-        type: 'switch',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#search-box").',
+        default: '',
+      },
+      {
+        key: 'placeholder',
+        label: 'Placeholder',
+        description: 'Placeholder text shown in the search input.',
+        default: undefined,
+        field: { type: 'text' },
+      },
+      {
+        key: 'autofocus',
+        label: 'Autofocus',
+        description: 'Whether the input should be focused on page load.',
+        default: false,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'searchAsYouType',
+        label: 'Search as you type',
+        description:
+          'When enabled, triggers a search on each keystroke. When disabled, searches only on submit.',
+        default: true,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'ignoreCompositionEvents',
         label: 'Ignore composition events',
+        description:
+          'When enabled, ignores IME composition events for CJK input.',
+        default: false,
+        field: { type: 'switch' },
       },
-      showLoadingIndicator: { type: 'switch', label: 'Show loading indicator' },
-      showSubmit: { type: 'switch', label: 'Show submit button' },
-      showReset: { type: 'switch', label: 'Show reset button' },
-      cssClasses: {
-        type: 'object',
+      {
+        key: 'showLoadingIndicator',
+        label: 'Show loading indicator',
+        description:
+          'Whether to show a loading indicator while results are being fetched.',
+        default: true,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'showSubmit',
+        label: 'Show submit button',
+        description: 'Whether to show the submit button.',
+        default: true,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'showReset',
+        label: 'Show reset button',
+        description: 'Whether to show the reset button.',
+        default: true,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'cssClasses',
         label: 'CSS classes',
-        disabledValue: undefined,
-        defaultValue: {
-          root: '',
-          form: '',
-          input: '',
-          submit: '',
-          submitIcon: '',
-          reset: '',
-          resetIcon: '',
-          loadingIndicator: '',
-          loadingIcon: '',
+        description: 'CSS classes to apply to the widget DOM elements.',
+        default: undefined,
+        field: {
+          type: 'object',
+          disabledValue: undefined,
+          defaultValue: {
+            root: '',
+            form: '',
+            input: '',
+            submit: '',
+            submitIcon: '',
+            reset: '',
+            resetIcon: '',
+            loadingIndicator: '',
+            loadingIcon: '',
+          },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'form', label: 'Form' },
+            { key: 'input', label: 'Input' },
+            { key: 'submit', label: 'Submit' },
+            { key: 'submitIcon', label: 'Submit icon' },
+            { key: 'reset', label: 'Reset' },
+            { key: 'resetIcon', label: 'Reset icon' },
+            { key: 'loadingIndicator', label: 'Loading indicator' },
+            { key: 'loadingIcon', label: 'Loading icon' },
+          ],
         },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'form', label: 'Form' },
-          { key: 'input', label: 'Input' },
-          { key: 'submit', label: 'Submit' },
-          { key: 'submitIcon', label: 'Submit icon' },
-          { key: 'reset', label: 'Reset' },
-          { key: 'resetIcon', label: 'Reset icon' },
-          { key: 'loadingIndicator', label: 'Loading indicator' },
-          { key: 'loadingIcon', label: 'Loading icon' },
-        ],
       },
-    },
-    paramLabels: {
-      container: 'Container',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#search-box").',
-      placeholder: 'Placeholder text shown in the search input.',
-      autofocus: 'Whether the input should be focused on page load.',
-      searchAsYouType:
-        'When enabled, triggers a search on each keystroke. When disabled, searches only on submit.',
-      ignoreCompositionEvents:
-        'When enabled, ignores IME composition events for CJK input.',
-      showLoadingIndicator:
-        'Whether to show a loading indicator while results are being fetched.',
-      showSubmit: 'Whether to show the submit button.',
-      showReset: 'Whether to show the reset button.',
-      cssClasses: 'CSS classes to apply to the widget DOM elements.',
-    },
+    ],
   },
   'ais.refinementList': {
     label: 'Refinement List',
@@ -693,153 +673,162 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'A filterable list of facet values that lets users refine search results by selecting one or more attributes.',
     enabled: true,
     icon: LIST_ICON,
-    defaultParameters: {
-      container: '',
-      attribute: '',
-      operator: undefined,
-      sortBy: undefined,
-      limit: undefined,
-      showMore: false,
-      showMoreLimit: undefined,
-      searchable: false,
-      searchablePlaceholder: undefined,
-      searchableIsAlwaysActive: true,
-      searchableEscapeFacetValues: true,
-      searchableSelectOnSubmit: undefined,
-      cssClasses: undefined,
-    },
-    fieldOrder: [
-      'container',
-      'placement',
-      'attribute',
-      'operator',
-      'sortBy',
-      'limit',
-      'showMore',
-      'showMoreLimit',
-      'searchable',
-      'searchablePlaceholder',
-      'searchableIsAlwaysActive',
-      'searchableEscapeFacetValues',
-      'searchableSelectOnSubmit',
-      'cssClasses',
-    ],
-    fieldOverrides: {
-      operator: {
-        type: 'select',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#refinement-list").',
+        default: '',
+      },
+      {
+        key: 'attribute',
+        label: 'Attribute',
+        description: 'The facet attribute to display (e.g. "brand").',
+        default: '',
+      },
+      {
+        key: 'operator',
         label: 'Operator',
-        options: [
-          { value: 'or', label: 'or' },
-          { value: 'and', label: 'and' },
-        ],
-        defaultValue: 'or',
+        description:
+          'How multiple selections combine: "and" requires all, "or" requires any. Defaults to "or".',
+        default: undefined,
+        field: {
+          type: 'select',
+          options: [
+            { value: 'or', label: 'or' },
+            { value: 'and', label: 'and' },
+          ],
+          defaultValue: 'or',
+        },
       },
-      sortBy: {
-        type: 'select-list',
+      {
+        key: 'sortBy',
         label: 'Sort by',
-        options: [
-          { value: 'count:asc', label: 'Count (asc)' },
-          { value: 'count:desc', label: 'Count (desc)' },
-          { value: 'name:asc', label: 'Name (asc)' },
-          { value: 'name:desc', label: 'Name (desc)' },
-          { value: 'isRefined:asc', label: 'Is refined (asc)' },
-          { value: 'isRefined:desc', label: 'Is refined (desc)' },
-        ],
+        description:
+          'Ordered list of sort criteria. Available values: "count:asc", "count:desc", "name:asc", "name:desc", "isRefined:asc", "isRefined:desc".',
+        default: undefined,
+        field: {
+          type: 'select-list',
+          options: [
+            { value: 'count:asc', label: 'Count (asc)' },
+            { value: 'count:desc', label: 'Count (desc)' },
+            { value: 'name:asc', label: 'Name (asc)' },
+            { value: 'name:desc', label: 'Name (desc)' },
+            { value: 'isRefined:asc', label: 'Is refined (asc)' },
+            { value: 'isRefined:desc', label: 'Is refined (desc)' },
+          ],
+        },
       },
-      limit: { type: 'number', label: 'Limit', placeholder: '10' },
-      showMore: { type: 'switch', label: 'Show more' },
-      showMoreLimit: {
-        type: 'number',
+      {
+        key: 'limit',
+        label: 'Limit',
+        description:
+          'Maximum number of facet values to display. Defaults to 10.',
+        default: undefined,
+        field: { type: 'number', placeholder: '10' },
+      },
+      {
+        key: 'showMore',
+        label: 'Show more',
+        description:
+          'When enabled, shows a "Show more" button to reveal additional facet values.',
+        default: false,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'showMoreLimit',
         label: 'Show more limit',
-        placeholder: '20',
+        description:
+          'Maximum number of facet values when "Show more" is expanded. Defaults to 20.',
+        default: undefined,
+        field: { type: 'number', placeholder: '20' },
         visibleIf: { key: 'showMore', value: true },
       },
-      searchable: { type: 'switch', label: 'Searchable' },
-      searchablePlaceholder: {
-        type: 'text',
+      {
+        key: 'searchable',
+        label: 'Searchable',
+        description:
+          'When enabled, adds a search field to filter within the facet values.',
+        default: false,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'searchablePlaceholder',
         label: 'Search placeholder',
-        placeholder: 'Search...',
+        description:
+          'Placeholder text for the search field. Defaults to "Search...".',
+        default: undefined,
+        field: { type: 'text', placeholder: 'Search...' },
         visibleIf: { key: 'searchable', value: true },
       },
-      searchableIsAlwaysActive: {
-        type: 'switch',
+      {
+        key: 'searchableIsAlwaysActive',
         label: 'Search always active',
+        description:
+          'When disabled, the search field becomes inactive if fewer items are shown than the limit.',
+        default: true,
+        field: { type: 'switch' },
         visibleIf: { key: 'searchable', value: true },
       },
-      searchableEscapeFacetValues: {
-        type: 'switch',
+      {
+        key: 'searchableEscapeFacetValues',
         label: 'Escape search facet values',
+        description:
+          'When enabled, escapes the facet values returned from Algolia during search.',
+        default: true,
+        field: { type: 'switch' },
         visibleIf: { key: 'searchable', value: true },
       },
-      searchableSelectOnSubmit: {
-        type: 'switch',
+      {
+        key: 'searchableSelectOnSubmit',
         label: 'Select on submit',
+        description:
+          'When enabled, submitting the search selects the first item in the list.',
+        default: undefined,
+        field: { type: 'switch' },
         visibleIf: { key: 'searchable', value: true },
       },
-      cssClasses: {
-        type: 'object',
+      {
+        key: 'cssClasses',
         label: 'CSS classes',
-        defaultValue: {
-          root: '',
-          noRefinementRoot: '',
-          list: '',
-          item: '',
-          selectedItem: '',
-          label: '',
-          checkbox: '',
-          labelText: '',
-          showMore: '',
-          disabledShowMore: '',
-          count: '',
-          searchBox: '',
+        description:
+          'Custom CSS classes to apply to the widget elements for styling.',
+        default: undefined,
+        field: {
+          type: 'object',
+          defaultValue: {
+            root: '',
+            noRefinementRoot: '',
+            list: '',
+            item: '',
+            selectedItem: '',
+            label: '',
+            checkbox: '',
+            labelText: '',
+            showMore: '',
+            disabledShowMore: '',
+            count: '',
+            searchBox: '',
+          },
+          disabledValue: undefined,
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'noRefinementRoot', label: 'No refinement root' },
+            { key: 'list', label: 'List' },
+            { key: 'item', label: 'Item' },
+            { key: 'selectedItem', label: 'Selected item' },
+            { key: 'label', label: 'Label' },
+            { key: 'checkbox', label: 'Checkbox' },
+            { key: 'labelText', label: 'Label text' },
+            { key: 'showMore', label: 'Show more' },
+            { key: 'disabledShowMore', label: 'Disabled show more' },
+            { key: 'count', label: 'Count' },
+            { key: 'searchBox', label: 'Search box' },
+          ],
         },
-        disabledValue: undefined,
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'noRefinementRoot', label: 'No refinement root' },
-          { key: 'list', label: 'List' },
-          { key: 'item', label: 'Item' },
-          { key: 'selectedItem', label: 'Selected item' },
-          { key: 'label', label: 'Label' },
-          { key: 'checkbox', label: 'Checkbox' },
-          { key: 'labelText', label: 'Label text' },
-          { key: 'showMore', label: 'Show more' },
-          { key: 'disabledShowMore', label: 'Disabled show more' },
-          { key: 'count', label: 'Count' },
-          { key: 'searchBox', label: 'Search box' },
-        ],
       },
-    },
-    paramLabels: {
-      container: 'Container',
-      attribute: 'Attribute',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#refinement-list").',
-      attribute: 'The facet attribute to display (e.g. "brand").',
-      operator:
-        'How multiple selections combine: "and" requires all, "or" requires any. Defaults to "or".',
-      sortBy:
-        'Ordered list of sort criteria. Available values: "count:asc", "count:desc", "name:asc", "name:desc", "isRefined:asc", "isRefined:desc".',
-      limit: 'Maximum number of facet values to display. Defaults to 10.',
-      showMore:
-        'When enabled, shows a "Show more" button to reveal additional facet values.',
-      showMoreLimit:
-        'Maximum number of facet values when "Show more" is expanded. Defaults to 20.',
-      searchable:
-        'When enabled, adds a search field to filter within the facet values.',
-      searchablePlaceholder:
-        'Placeholder text for the search field. Defaults to "Search...".',
-      searchableIsAlwaysActive:
-        'When disabled, the search field becomes inactive if fewer items are shown than the limit.',
-      searchableEscapeFacetValues:
-        'When enabled, escapes the facet values returned from Algolia during search.',
-      searchableSelectOnSubmit:
-        'When enabled, submitting the search selects the first item in the list.',
-      cssClasses:
-        'Custom CSS classes to apply to the widget elements for styling.',
-    },
+    ],
   },
   'ais.menu': {
     label: 'Menu',
@@ -847,94 +836,99 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'A single-select facet list that lets users filter results by choosing one value from a given attribute.',
     enabled: true,
     icon: LIST_ICON,
-    defaultParameters: {
-      container: '',
-      attribute: '',
-      limit: undefined,
-      showMore: false,
-      showMoreLimit: undefined,
-      sortBy: undefined,
-      cssClasses: undefined,
-    },
-    fieldOrder: [
-      'container',
-      'placement',
-      'attribute',
-      'limit',
-      'showMore',
-      'showMoreLimit',
-      'sortBy',
-      'cssClasses',
-    ],
-    fieldOverrides: {
-      limit: { type: 'number', label: 'Limit', placeholder: '10' },
-      showMore: { type: 'switch', label: 'Show more' },
-      showMoreLimit: {
-        type: 'number',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#menu").',
+        default: '',
+      },
+      {
+        key: 'attribute',
+        label: 'Attribute',
+        description: 'The facet attribute to display (e.g. "category").',
+        default: '',
+      },
+      {
+        key: 'limit',
+        label: 'Limit',
+        description:
+          'Maximum number of facet values to display. Defaults to 10.',
+        default: undefined,
+        field: { type: 'number', placeholder: '10' },
+      },
+      {
+        key: 'showMore',
+        label: 'Show more',
+        description:
+          'When enabled, shows a "Show more" button to reveal additional facet values.',
+        default: false,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'showMoreLimit',
         label: 'Show more limit',
-        placeholder: '20',
+        description:
+          'Maximum number of facet values when "Show more" is expanded. Defaults to 20.',
+        default: undefined,
+        field: { type: 'number', placeholder: '20' },
         visibleIf: { key: 'showMore', value: true },
       },
-      sortBy: {
-        type: 'select-list',
+      {
+        key: 'sortBy',
         label: 'Sort by',
-        options: [
-          { value: 'count:asc', label: 'Count (asc)' },
-          { value: 'count:desc', label: 'Count (desc)' },
-          { value: 'name:asc', label: 'Name (asc)' },
-          { value: 'name:desc', label: 'Name (desc)' },
-          { value: 'isRefined:asc', label: 'Is refined (asc)' },
-          { value: 'isRefined:desc', label: 'Is refined (desc)' },
-        ],
-      },
-      cssClasses: {
-        type: 'object',
-        label: 'CSS classes',
-        defaultValue: {
-          root: '',
-          noRefinementRoot: '',
-          list: '',
-          item: '',
-          selectedItem: '',
-          link: '',
-          label: '',
-          count: '',
-          showMore: '',
-          disabledShowMore: '',
+        description:
+          'Ordered list of sort criteria. Available values: "count:asc", "count:desc", "name:asc", "name:desc", "isRefined:asc", "isRefined:desc".',
+        default: undefined,
+        field: {
+          type: 'select-list',
+          options: [
+            { value: 'count:asc', label: 'Count (asc)' },
+            { value: 'count:desc', label: 'Count (desc)' },
+            { value: 'name:asc', label: 'Name (asc)' },
+            { value: 'name:desc', label: 'Name (desc)' },
+            { value: 'isRefined:asc', label: 'Is refined (asc)' },
+            { value: 'isRefined:desc', label: 'Is refined (desc)' },
+          ],
         },
-        disabledValue: undefined,
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'noRefinementRoot', label: 'No refinement root' },
-          { key: 'list', label: 'List' },
-          { key: 'item', label: 'Item' },
-          { key: 'selectedItem', label: 'Selected item' },
-          { key: 'link', label: 'Link' },
-          { key: 'label', label: 'Label' },
-          { key: 'count', label: 'Count' },
-          { key: 'showMore', label: 'Show more' },
-          { key: 'disabledShowMore', label: 'Disabled show more' },
-        ],
       },
-    },
-    paramLabels: {
-      container: 'Container',
-      attribute: 'Attribute',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#menu").',
-      attribute: 'The facet attribute to display (e.g. "category").',
-      limit: 'Maximum number of facet values to display. Defaults to 10.',
-      showMore:
-        'When enabled, shows a "Show more" button to reveal additional facet values.',
-      showMoreLimit:
-        'Maximum number of facet values when "Show more" is expanded. Defaults to 20.',
-      sortBy:
-        'Ordered list of sort criteria. Available values: "count:asc", "count:desc", "name:asc", "name:desc", "isRefined:asc", "isRefined:desc".',
-      cssClasses:
-        'Custom CSS classes to apply to the widget elements for styling.',
-    },
+      {
+        key: 'cssClasses',
+        label: 'CSS classes',
+        description:
+          'Custom CSS classes to apply to the widget elements for styling.',
+        default: undefined,
+        field: {
+          type: 'object',
+          defaultValue: {
+            root: '',
+            noRefinementRoot: '',
+            list: '',
+            item: '',
+            selectedItem: '',
+            link: '',
+            label: '',
+            count: '',
+            showMore: '',
+            disabledShowMore: '',
+          },
+          disabledValue: undefined,
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'noRefinementRoot', label: 'No refinement root' },
+            { key: 'list', label: 'List' },
+            { key: 'item', label: 'Item' },
+            { key: 'selectedItem', label: 'Selected item' },
+            { key: 'link', label: 'Link' },
+            { key: 'label', label: 'Label' },
+            { key: 'count', label: 'Count' },
+            { key: 'showMore', label: 'Show more' },
+            { key: 'disabledShowMore', label: 'Disabled show more' },
+          ],
+        },
+      },
+    ],
   },
   'ais.pagination': {
     label: 'Pagination',
@@ -942,92 +936,108 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'A page navigation widget that lets users browse through paginated search results.',
     enabled: true,
     icon: CHEVRON_LEFT_ICON,
-    defaultParameters: {
-      container: '',
-      totalPages: undefined,
-      padding: undefined,
-      scrollTo: undefined,
-      showFirst: true,
-      showLast: true,
-      showNext: true,
-      showPrevious: true,
-      cssClasses: undefined,
-    },
-    fieldOrder: [
-      'container',
-      'placement',
-      'totalPages',
-      'padding',
-      'scrollTo',
-      'showFirst',
-      'showLast',
-      'showPrevious',
-      'showNext',
-      'cssClasses',
-    ],
-    fieldOverrides: {
-      totalPages: { type: 'number', label: 'Total Pages' },
-      padding: { type: 'number', label: 'Padding', placeholder: '3' },
-      scrollTo: {
-        type: 'toggleable-text',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#pagination").',
+        default: '',
+      },
+      {
+        key: 'totalPages',
+        label: 'Total Pages',
+        description: 'Maximum number of pages to browse.',
+        default: undefined,
+        field: { type: 'number' },
+      },
+      {
+        key: 'padding',
+        label: 'Padding',
+        description:
+          'Number of pages to display on each side of the current page.',
+        default: undefined,
+        field: { type: 'number', placeholder: '3' },
+      },
+      {
+        key: 'scrollTo',
         label: 'Scroll to',
-        placeholder: 'body',
-        picker: true,
-      },
-      showFirst: { type: 'switch', label: 'Show first page' },
-      showLast: { type: 'switch', label: 'Show last page' },
-      showNext: { type: 'switch', label: 'Show next page' },
-      showPrevious: { type: 'switch', label: 'Show previous page' },
-      cssClasses: {
-        type: 'object',
-        label: 'CSS classes',
-        disabledValue: undefined,
-        defaultValue: {
-          root: '',
-          noRefinementRoot: '',
-          list: '',
-          item: '',
-          firstPageItem: '',
-          lastPageItem: '',
-          previousPageItem: '',
-          nextPageItem: '',
-          pageItem: '',
-          selectedItem: '',
-          disabledItem: '',
-          link: '',
+        description:
+          'CSS selector to scroll to after a page click. When enabled without a value, scrolls to body. Disable to prevent scrolling.',
+        default: undefined,
+        field: {
+          type: 'toggleable-text',
+          placeholder: 'body',
+          picker: true,
         },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'noRefinementRoot', label: 'No refinement root' },
-          { key: 'list', label: 'List' },
-          { key: 'item', label: 'Item' },
-          { key: 'firstPageItem', label: 'First page item' },
-          { key: 'lastPageItem', label: 'Last page item' },
-          { key: 'previousPageItem', label: 'Previous page item' },
-          { key: 'nextPageItem', label: 'Next page item' },
-          { key: 'pageItem', label: 'Page item' },
-          { key: 'selectedItem', label: 'Selected item' },
-          { key: 'disabledItem', label: 'Disabled item' },
-          { key: 'link', label: 'Link' },
-        ],
       },
-    },
-    paramLabels: {
-      container: 'Container',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#pagination").',
-      totalPages: 'Maximum number of pages to browse.',
-      padding: 'Number of pages to display on each side of the current page.',
-      scrollTo:
-        'CSS selector to scroll to after a page click. When enabled without a value, scrolls to body. Disable to prevent scrolling.',
-      showFirst: 'When enabled, shows a link to the first page.',
-      showLast: 'When enabled, shows a link to the last page.',
-      showNext: 'When enabled, shows a link to the next page.',
-      showPrevious: 'When enabled, shows a link to the previous page.',
-      cssClasses: 'Custom CSS classes for pagination elements.',
-    },
+      {
+        key: 'showFirst',
+        label: 'Show first page',
+        description: 'When enabled, shows a link to the first page.',
+        default: true,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'showLast',
+        label: 'Show last page',
+        description: 'When enabled, shows a link to the last page.',
+        default: true,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'showPrevious',
+        label: 'Show previous page',
+        description: 'When enabled, shows a link to the previous page.',
+        default: true,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'showNext',
+        label: 'Show next page',
+        description: 'When enabled, shows a link to the next page.',
+        default: true,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'cssClasses',
+        label: 'CSS classes',
+        description: 'Custom CSS classes for pagination elements.',
+        default: undefined,
+        field: {
+          type: 'object',
+          disabledValue: undefined,
+          defaultValue: {
+            root: '',
+            noRefinementRoot: '',
+            list: '',
+            item: '',
+            firstPageItem: '',
+            lastPageItem: '',
+            previousPageItem: '',
+            nextPageItem: '',
+            pageItem: '',
+            selectedItem: '',
+            disabledItem: '',
+            link: '',
+          },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'noRefinementRoot', label: 'No refinement root' },
+            { key: 'list', label: 'List' },
+            { key: 'item', label: 'Item' },
+            { key: 'firstPageItem', label: 'First page item' },
+            { key: 'lastPageItem', label: 'Last page item' },
+            { key: 'previousPageItem', label: 'Previous page item' },
+            { key: 'nextPageItem', label: 'Next page item' },
+            { key: 'pageItem', label: 'Page item' },
+            { key: 'selectedItem', label: 'Selected item' },
+            { key: 'disabledItem', label: 'Disabled item' },
+            { key: 'link', label: 'Link' },
+          ],
+        },
+      },
+    ],
   },
   'ais.infiniteHits': {
     label: 'Infinite Hits',
@@ -1035,97 +1045,79 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'Displays search results with a "Show more" button to load additional pages incrementally.',
     enabled: true,
     icon: ARROW_DOWN_ICON,
-    defaultParameters: {
-      container: '',
-      escapeHTML: true,
-      showPrevious: false,
-      template: {
-        name: '',
-        category: '',
-        description: '',
-        image: '',
-        price: '',
-        currency: '',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#infinite-hits").',
+        default: '',
       },
-      cssClasses: undefined,
-    },
-    fieldOrder: [
-      'container',
-      'placement',
-      'escapeHTML',
-      'showPrevious',
-      'template',
-      'cssClasses',
-    ],
-    fieldOverrides: {
-      escapeHTML: { type: 'switch', label: 'Escape HTML' },
-      showPrevious: { type: 'switch', label: 'Show previous' },
-      template: {
-        type: 'item-template',
+      {
+        key: 'escapeHTML',
+        label: 'Escape HTML',
+        description:
+          'When enabled, escapes HTML entities in hit string values for safety.',
+        default: true,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'showPrevious',
+        label: 'Show previous',
+        description:
+          'When enabled, shows a button to load previous results above the list.',
+        default: false,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'template',
         label: 'Template',
-        defaultValue: {
-          name: '',
-          category: '',
-          description: '',
-          image: '',
-          price: '',
-          currency: '',
+        description:
+          'Maps Algolia record attributes to display roles for rendering items.',
+        default: ITEM_TEMPLATE_DEFAULT,
+        field: {
+          type: 'item-template',
+          defaultValue: ITEM_TEMPLATE_DEFAULT,
+          fields: ITEM_TEMPLATE_FIELDS,
         },
-        fields: [
-          { key: 'name', label: 'Name' },
-          { key: 'category', label: 'Category' },
-          { key: 'description', label: 'Description' },
-          { key: 'image', label: 'Image' },
-          { key: 'price', label: 'Price' },
-          { key: 'currency', label: 'Currency' },
-        ],
       },
-      cssClasses: {
-        type: 'object',
+      {
+        key: 'cssClasses',
         label: 'CSS classes',
-        disabledValue: undefined,
-        defaultValue: {
-          root: '',
-          emptyRoot: '',
-          list: '',
-          item: '',
-          loadPrevious: '',
-          disabledLoadPrevious: '',
-          loadMore: '',
-          disabledLoadMore: '',
-          bannerRoot: '',
-          bannerImage: '',
-          bannerLink: '',
+        description: 'Custom CSS classes to apply to the widget elements.',
+        default: undefined,
+        field: {
+          type: 'object',
+          disabledValue: undefined,
+          defaultValue: {
+            root: '',
+            emptyRoot: '',
+            list: '',
+            item: '',
+            loadPrevious: '',
+            disabledLoadPrevious: '',
+            loadMore: '',
+            disabledLoadMore: '',
+            bannerRoot: '',
+            bannerImage: '',
+            bannerLink: '',
+          },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'emptyRoot', label: 'Empty root' },
+            { key: 'list', label: 'List' },
+            { key: 'item', label: 'Item' },
+            { key: 'loadPrevious', label: 'Load previous' },
+            { key: 'disabledLoadPrevious', label: 'Disabled load previous' },
+            { key: 'loadMore', label: 'Load more' },
+            { key: 'disabledLoadMore', label: 'Disabled load more' },
+            { key: 'bannerRoot', label: 'Banner root' },
+            { key: 'bannerImage', label: 'Banner image' },
+            { key: 'bannerLink', label: 'Banner link' },
+          ],
         },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'emptyRoot', label: 'Empty root' },
-          { key: 'list', label: 'List' },
-          { key: 'item', label: 'Item' },
-          { key: 'loadPrevious', label: 'Load previous' },
-          { key: 'disabledLoadPrevious', label: 'Disabled load previous' },
-          { key: 'loadMore', label: 'Load more' },
-          { key: 'disabledLoadMore', label: 'Disabled load more' },
-          { key: 'bannerRoot', label: 'Banner root' },
-          { key: 'bannerImage', label: 'Banner image' },
-          { key: 'bannerLink', label: 'Banner link' },
-        ],
       },
-    },
-    paramLabels: {
-      container: 'Container',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#infinite-hits").',
-      escapeHTML:
-        'When enabled, escapes HTML entities in hit string values for safety.',
-      showPrevious:
-        'When enabled, shows a button to load previous results above the list.',
-      template:
-        'Maps Algolia record attributes to display roles for rendering items.',
-      cssClasses: 'Custom CSS classes to apply to the widget elements.',
-    },
+    ],
   },
   'ais.sortBy': {
     label: 'Sort By',
@@ -1133,51 +1125,53 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'A dropdown selector that lets the user switch between different sort orders (replica indices or sorting strategies).',
     enabled: true,
     icon: SORT_ICON,
-    defaultParameters: {
-      container: '',
-      items: [{ value: '', label: 'Default' }],
-      cssClasses: false,
-    },
-    fieldOrder: ['container', 'placement', 'items', 'cssClasses'],
-    fieldOverrides: {
-      items: {
-        type: 'items-list',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#sort").',
+        default: '',
+      },
+      {
+        key: 'items',
         label: 'Sort options',
-        fields: [
-          {
-            key: 'value',
-            label: 'Index name',
-            placeholder: 'e.g. products_price_asc',
-            suggest: 'indices:replicas',
-          },
-          {
-            key: 'label',
-            label: 'Label',
-            placeholder: 'e.g. Price (ascending)',
-          },
-        ],
+        description:
+          'List of sort options, each mapping a replica index name to a display label. The first item always targets the parent index (default sort) and its value is auto-synced.',
+        default: [{ value: '', label: 'Default' }],
+        field: {
+          type: 'items-list',
+          fields: [
+            {
+              key: 'value',
+              label: 'Index name',
+              placeholder: 'e.g. products_price_asc',
+              suggest: 'indices:replicas',
+            },
+            {
+              key: 'label',
+              label: 'Label',
+              placeholder: 'e.g. Price (ascending)',
+            },
+          ],
+        },
       },
-      cssClasses: {
-        type: 'object',
+      {
+        key: 'cssClasses',
         label: 'CSS classes',
-        defaultValue: { root: '', select: '', option: '' },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'select', label: 'Select' },
-          { key: 'option', label: 'Option' },
-        ],
+        description: 'Custom CSS classes for the widget markup.',
+        default: false,
+        field: {
+          type: 'object',
+          defaultValue: { root: '', select: '', option: '' },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'select', label: 'Select' },
+            { key: 'option', label: 'Option' },
+          ],
+        },
       },
-    },
-    paramLabels: {
-      container: 'Container',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#sort").',
-      items:
-        'List of sort options, each mapping a replica index name to a display label. The first item always targets the parent index (default sort) and its value is auto-synced.',
-      cssClasses: 'Custom CSS classes for the widget markup.',
-    },
+    ],
   },
   'ais.hitsPerPage': {
     label: 'Hits Per Page',
@@ -1185,51 +1179,53 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'A dropdown selector that lets the user choose how many results to display per page.',
     enabled: true,
     icon: HASH_ICON,
-    defaultParameters: {
-      container: '',
-      items: [],
-      cssClasses: false,
-    },
-    fieldOrder: ['container', 'placement', 'items', 'cssClasses'],
-    fieldOverrides: {
-      items: {
-        type: 'items-list',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#hits-per-page").',
+        default: '',
+      },
+      {
+        key: 'items',
         label: 'Page sizes',
-        fields: [
-          {
-            key: 'value',
-            label: 'Hits per page',
-            placeholder: 'e.g. 20',
-            inputType: 'number',
-          },
-          {
-            key: 'label',
-            label: 'Label',
-            placeholder: 'e.g. 20 per page',
-          },
-        ],
+        description:
+          'List of page size options, each mapping a number of hits to a display label. The first item is automatically marked as the default.',
+        default: [],
+        field: {
+          type: 'items-list',
+          fields: [
+            {
+              key: 'value',
+              label: 'Hits per page',
+              placeholder: 'e.g. 20',
+              inputType: 'number',
+            },
+            {
+              key: 'label',
+              label: 'Label',
+              placeholder: 'e.g. 20 per page',
+            },
+          ],
+        },
       },
-      cssClasses: {
-        type: 'object',
+      {
+        key: 'cssClasses',
         label: 'CSS classes',
-        defaultValue: { root: '', select: '', option: '' },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'select', label: 'Select' },
-          { key: 'option', label: 'Option' },
-        ],
+        description: 'Custom CSS classes for the widget markup.',
+        default: false,
+        field: {
+          type: 'object',
+          defaultValue: { root: '', select: '', option: '' },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'select', label: 'Select' },
+            { key: 'option', label: 'Option' },
+          ],
+        },
       },
-    },
-    paramLabels: {
-      container: 'Container',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#hits-per-page").',
-      items:
-        'List of page size options, each mapping a number of hits to a display label. The first item is automatically marked as the default.',
-      cssClasses: 'Custom CSS classes for the widget markup.',
-    },
+    ],
   },
   'ais.ratingMenu': {
     label: 'Rating Menu',
@@ -1237,62 +1233,68 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'A star-based rating filter that lets users refine results by minimum rating value.',
     enabled: true,
     icon: STAR_ICON,
-    defaultParameters: {
-      container: '',
-      attribute: '',
-      max: undefined,
-      cssClasses: undefined,
-    },
-    fieldOrder: ['container', 'placement', 'attribute', 'max', 'cssClasses'],
-    fieldOverrides: {
-      max: { type: 'number', label: 'Max rating', placeholder: '5' },
-      cssClasses: {
-        type: 'object',
-        label: 'CSS classes',
-        disabledValue: undefined,
-        defaultValue: {
-          root: '',
-          noRefinementRoot: '',
-          list: '',
-          item: '',
-          selectedItem: '',
-          disabledItem: '',
-          link: '',
-          starIcon: '',
-          fullStarIcon: '',
-          emptyStarIcon: '',
-          label: '',
-          count: '',
-        },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'noRefinementRoot', label: 'No refinement root' },
-          { key: 'list', label: 'List' },
-          { key: 'item', label: 'Item' },
-          { key: 'selectedItem', label: 'Selected item' },
-          { key: 'disabledItem', label: 'Disabled item' },
-          { key: 'link', label: 'Link' },
-          { key: 'starIcon', label: 'Star icon' },
-          { key: 'fullStarIcon', label: 'Full star icon' },
-          { key: 'emptyStarIcon', label: 'Empty star icon' },
-          { key: 'label', label: 'Label' },
-          { key: 'count', label: 'Count' },
-        ],
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#rating").',
+        default: '',
       },
-    },
-    paramLabels: {
-      container: 'Container',
-      attribute: 'Attribute',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#rating").',
-      attribute:
-        'The name of the numeric attribute that contains ratings (e.g. "rating").',
-      max: 'The maximum rating value. Defaults to 5.',
-      cssClasses:
-        'Custom CSS classes to apply to the widget elements for styling.',
-    },
+      {
+        key: 'attribute',
+        label: 'Attribute',
+        description:
+          'The name of the numeric attribute that contains ratings (e.g. "rating").',
+        default: '',
+      },
+      {
+        key: 'max',
+        label: 'Max rating',
+        description: 'The maximum rating value. Defaults to 5.',
+        default: undefined,
+        field: { type: 'number', placeholder: '5' },
+      },
+      {
+        key: 'cssClasses',
+        label: 'CSS classes',
+        description:
+          'Custom CSS classes to apply to the widget elements for styling.',
+        default: undefined,
+        field: {
+          type: 'object',
+          disabledValue: undefined,
+          defaultValue: {
+            root: '',
+            noRefinementRoot: '',
+            list: '',
+            item: '',
+            selectedItem: '',
+            disabledItem: '',
+            link: '',
+            starIcon: '',
+            fullStarIcon: '',
+            emptyStarIcon: '',
+            label: '',
+            count: '',
+          },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'noRefinementRoot', label: 'No refinement root' },
+            { key: 'list', label: 'List' },
+            { key: 'item', label: 'Item' },
+            { key: 'selectedItem', label: 'Selected item' },
+            { key: 'disabledItem', label: 'Disabled item' },
+            { key: 'link', label: 'Link' },
+            { key: 'starIcon', label: 'Star icon' },
+            { key: 'fullStarIcon', label: 'Full star icon' },
+            { key: 'emptyStarIcon', label: 'Empty star icon' },
+            { key: 'label', label: 'Label' },
+            { key: 'count', label: 'Count' },
+          ],
+        },
+      },
+    ],
   },
   'ais.numericMenu': {
     label: 'Numeric Menu',
@@ -1300,76 +1302,81 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'A list of numeric ranges that lets users filter results by selecting a price range, rating, or other numeric attribute.',
     enabled: true,
     icon: HASH_ICON,
-    defaultParameters: {
-      container: '',
-      attribute: '',
-      items: [],
-      cssClasses: undefined,
-    },
-    fieldOrder: ['container', 'placement', 'attribute', 'items', 'cssClasses'],
-    fieldOverrides: {
-      items: {
-        type: 'items-list',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#numeric-menu").',
+        default: '',
+      },
+      {
+        key: 'attribute',
+        label: 'Attribute',
+        description: 'The numeric attribute to filter on (e.g. "price").',
+        default: '',
+      },
+      {
+        key: 'items',
         label: 'Ranges',
-        fields: [
-          {
-            key: 'label',
-            label: 'Label',
-            placeholder: 'e.g. All',
-          },
-          {
-            key: 'start',
-            label: 'Min (>=)',
-            placeholder: 'No min',
-            inputType: 'number',
-          },
-          {
-            key: 'end',
-            label: 'Max (<=)',
-            placeholder: 'No max',
-            inputType: 'number',
-          },
-        ],
-      },
-      cssClasses: {
-        type: 'object',
-        label: 'CSS classes',
-        disabledValue: undefined,
-        defaultValue: {
-          root: '',
-          noRefinementRoot: '',
-          list: '',
-          item: '',
-          selectedItem: '',
-          label: '',
-          labelText: '',
-          radio: '',
+        description:
+          'List of numeric ranges, each with a label and optional min/max bounds. Omit min for "up to X", omit max for "X and above", omit both for "All".',
+        default: [],
+        field: {
+          type: 'items-list',
+          fields: [
+            {
+              key: 'label',
+              label: 'Label',
+              placeholder: 'e.g. All',
+            },
+            {
+              key: 'start',
+              label: 'Min (>=)',
+              placeholder: 'No min',
+              inputType: 'number',
+            },
+            {
+              key: 'end',
+              label: 'Max (<=)',
+              placeholder: 'No max',
+              inputType: 'number',
+            },
+          ],
         },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'noRefinementRoot', label: 'No refinement root' },
-          { key: 'list', label: 'List' },
-          { key: 'item', label: 'Item' },
-          { key: 'selectedItem', label: 'Selected item' },
-          { key: 'label', label: 'Label' },
-          { key: 'labelText', label: 'Label text' },
-          { key: 'radio', label: 'Radio' },
-        ],
       },
-    },
-    paramLabels: {
-      container: 'Container',
-      attribute: 'Attribute',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#numeric-menu").',
-      attribute: 'The numeric attribute to filter on (e.g. "price").',
-      items:
-        'List of numeric ranges, each with a label and optional min/max bounds. Omit min for "up to X", omit max for "X and above", omit both for "All".',
-      cssClasses:
-        'Custom CSS classes to apply to the widget elements for styling.',
-    },
+      {
+        key: 'cssClasses',
+        label: 'CSS classes',
+        description:
+          'Custom CSS classes to apply to the widget elements for styling.',
+        default: undefined,
+        field: {
+          type: 'object',
+          disabledValue: undefined,
+          defaultValue: {
+            root: '',
+            noRefinementRoot: '',
+            list: '',
+            item: '',
+            selectedItem: '',
+            label: '',
+            labelText: '',
+            radio: '',
+          },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'noRefinementRoot', label: 'No refinement root' },
+            { key: 'list', label: 'List' },
+            { key: 'item', label: 'Item' },
+            { key: 'selectedItem', label: 'Selected item' },
+            { key: 'label', label: 'Label' },
+            { key: 'labelText', label: 'Label text' },
+            { key: 'radio', label: 'Radio' },
+          ],
+        },
+      },
+    ],
   },
   'ais.currentRefinements': {
     label: 'Current Refinements',
@@ -1377,75 +1384,72 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'Displays the list of currently active filters and refinements with the ability to remove them individually.',
     enabled: true,
     icon: LIST_ICON,
-    defaultParameters: {
-      container: '',
-      includedAttributes: undefined,
-      excludedAttributes: undefined,
-      cssClasses: undefined,
-    },
-    fieldOrder: [
-      'container',
-      'placement',
-      'includedAttributes',
-      'excludedAttributes',
-      'cssClasses',
-    ],
-    fieldOverrides: {
-      includedAttributes: {
-        type: 'list',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#current-refinements").',
+        default: '',
+      },
+      {
+        key: 'includedAttributes',
         label: 'Included attributes',
-        placeholder: 'e.g. brand',
-        excludes: 'excludedAttributes',
-        suggest: 'facetAttributes',
-      },
-      excludedAttributes: {
-        type: 'list',
-        label: 'Excluded attributes',
-        placeholder: 'e.g. query',
-        excludes: 'includedAttributes',
-        suggest: 'facetAttributes',
-      },
-      cssClasses: {
-        type: 'object',
-        label: 'CSS classes',
-        disabledValue: undefined,
-        defaultValue: {
-          root: '',
-          noRefinementRoot: '',
-          list: '',
-          item: '',
-          label: '',
-          category: '',
-          categoryLabel: '',
-          delete: '',
+        description:
+          'Only show refinements from these attributes. When empty, all refinements are shown.',
+        default: undefined,
+        field: {
+          type: 'list',
+          placeholder: 'e.g. brand',
+          excludes: 'excludedAttributes',
+          suggest: 'facetAttributes',
         },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'noRefinementRoot', label: 'No refinement root' },
-          { key: 'list', label: 'List' },
-          { key: 'item', label: 'Item' },
-          { key: 'label', label: 'Label' },
-          { key: 'category', label: 'Category' },
-          { key: 'categoryLabel', label: 'Category label' },
-          { key: 'delete', label: 'Delete' },
-        ],
       },
-    },
-    paramLabels: {
-      container: 'Container',
-      includedAttributes: 'Included attributes',
-      excludedAttributes: 'Excluded attributes',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#current-refinements").',
-      includedAttributes:
-        'Only show refinements from these attributes. When empty, all refinements are shown.',
-      excludedAttributes:
-        'Hide refinements from these attributes. Defaults to hiding the query.',
-      cssClasses:
-        'Custom CSS classes to apply to the widget elements for styling.',
-    },
+      {
+        key: 'excludedAttributes',
+        label: 'Excluded attributes',
+        description:
+          'Hide refinements from these attributes. Defaults to hiding the query.',
+        default: undefined,
+        field: {
+          type: 'list',
+          placeholder: 'e.g. query',
+          excludes: 'includedAttributes',
+          suggest: 'facetAttributes',
+        },
+      },
+      {
+        key: 'cssClasses',
+        label: 'CSS classes',
+        description:
+          'Custom CSS classes to apply to the widget elements for styling.',
+        default: undefined,
+        field: {
+          type: 'object',
+          disabledValue: undefined,
+          defaultValue: {
+            root: '',
+            noRefinementRoot: '',
+            list: '',
+            item: '',
+            label: '',
+            category: '',
+            categoryLabel: '',
+            delete: '',
+          },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'noRefinementRoot', label: 'No refinement root' },
+            { key: 'list', label: 'List' },
+            { key: 'item', label: 'Item' },
+            { key: 'label', label: 'Label' },
+            { key: 'category', label: 'Category' },
+            { key: 'categoryLabel', label: 'Category label' },
+            { key: 'delete', label: 'Delete' },
+          ],
+        },
+      },
+    ],
   },
   'ais.breadcrumb': {
     label: 'Breadcrumb',
@@ -1453,70 +1457,65 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'A navigation trail showing the hierarchy of the current refinement, letting users navigate back to parent levels.',
     enabled: true,
     icon: CHEVRON_RIGHT_ICON,
-    defaultParameters: {
-      container: '',
-      attributes: [],
-      separator: undefined,
-      cssClasses: undefined,
-    },
-    fieldOrder: [
-      'container',
-      'placement',
-      'attributes',
-      'separator',
-      'cssClasses',
-    ],
-    fieldOverrides: {
-      attributes: {
-        type: 'list',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#breadcrumb").',
+        default: '',
+      },
+      {
+        key: 'attributes',
         label: 'Attributes',
-        placeholder: 'e.g. hierarchicalCategories.lvl0',
-        required: true,
-        suggest: 'indexAttributes',
-      },
-      separator: {
-        type: 'text',
-        label: 'Separator',
-        placeholder: ' > ',
-      },
-      cssClasses: {
-        type: 'object',
-        label: 'CSS classes',
-        disabledValue: undefined,
-        defaultValue: {
-          root: '',
-          noRefinementRoot: '',
-          list: '',
-          item: '',
-          selectedItem: '',
-          separator: '',
-          link: '',
+        description:
+          'Array of attributes to use to generate the hierarchy, one per level (e.g. "hierarchicalCategories.lvl0", "hierarchicalCategories.lvl1").',
+        default: [],
+        field: {
+          type: 'list',
+          placeholder: 'e.g. hierarchicalCategories.lvl0',
+          required: true,
+          suggest: 'indexAttributes',
         },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'noRefinementRoot', label: 'No refinement root' },
-          { key: 'list', label: 'List' },
-          { key: 'item', label: 'Item' },
-          { key: 'selectedItem', label: 'Selected item' },
-          { key: 'separator', label: 'Separator' },
-          { key: 'link', label: 'Link' },
-        ],
       },
-    },
-    paramLabels: {
-      container: 'Container',
-      attributes: 'Attributes',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#breadcrumb").',
-      attributes:
-        'Array of attributes to use to generate the hierarchy, one per level (e.g. "hierarchicalCategories.lvl0", "hierarchicalCategories.lvl1").',
-      separator:
-        'The character used to separate hierarchy levels in the records. Defaults to " > ".',
-      cssClasses:
-        'Custom CSS classes to apply to the widget elements for styling.',
-    },
+      {
+        key: 'separator',
+        label: 'Separator',
+        description:
+          'The character used to separate hierarchy levels in the records. Defaults to " > ".',
+        default: undefined,
+        field: { type: 'text', placeholder: ' > ' },
+      },
+      {
+        key: 'cssClasses',
+        label: 'CSS classes',
+        description:
+          'Custom CSS classes to apply to the widget elements for styling.',
+        default: undefined,
+        field: {
+          type: 'object',
+          disabledValue: undefined,
+          defaultValue: {
+            root: '',
+            noRefinementRoot: '',
+            list: '',
+            item: '',
+            selectedItem: '',
+            separator: '',
+            link: '',
+          },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'noRefinementRoot', label: 'No refinement root' },
+            { key: 'list', label: 'List' },
+            { key: 'item', label: 'Item' },
+            { key: 'selectedItem', label: 'Selected item' },
+            { key: 'separator', label: 'Separator' },
+            { key: 'link', label: 'Link' },
+          ],
+        },
+      },
+    ],
   },
   'ais.hierarchicalMenu': {
     label: 'Hierarchical Menu',
@@ -1524,122 +1523,128 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'A hierarchical facet navigation that lets users drill down through nested category levels.',
     enabled: true,
     icon: CHEVRON_RIGHT_ICON,
-    defaultParameters: {
-      container: '',
-      attributes: [],
-      separator: undefined,
-      showParentLevel: true,
-      limit: undefined,
-      showMore: false,
-      showMoreLimit: undefined,
-      sortBy: undefined,
-      cssClasses: undefined,
-    },
-    fieldOrder: [
-      'container',
-      'placement',
-      'attributes',
-      'separator',
-      'showParentLevel',
-      'limit',
-      'showMore',
-      'showMoreLimit',
-      'sortBy',
-      'cssClasses',
-    ],
-    fieldOverrides: {
-      attributes: {
-        type: 'list',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#hierarchical-menu").',
+        default: '',
+      },
+      {
+        key: 'attributes',
         label: 'Attributes',
-        placeholder: 'e.g. categories.lvl0',
-        required: true,
-        suggest: 'indexAttributes',
+        description:
+          'Ordered list of attribute names for each hierarchy level (e.g. "categories.lvl0", "categories.lvl1").',
+        default: [],
+        field: {
+          type: 'list',
+          placeholder: 'e.g. categories.lvl0',
+          required: true,
+          suggest: 'indexAttributes',
+        },
       },
-      separator: {
-        type: 'text',
+      {
+        key: 'separator',
         label: 'Separator',
-        placeholder: ' > ',
+        description:
+          'Character used to split hierarchy values in each attribute. Defaults to " > ".',
+        default: undefined,
+        field: { type: 'text', placeholder: ' > ' },
       },
-      showParentLevel: { type: 'switch', label: 'Show parent level' },
-      limit: { type: 'number', label: 'Limit', placeholder: '10' },
-      showMore: { type: 'switch', label: 'Show more' },
-      showMoreLimit: {
-        type: 'number',
+      {
+        key: 'showParentLevel',
+        label: 'Show parent level',
+        description:
+          'When enabled, shows the parent level alongside the current refinement.',
+        default: true,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'limit',
+        label: 'Limit',
+        description:
+          'Maximum number of facet values to display. Defaults to 10.',
+        default: undefined,
+        field: { type: 'number', placeholder: '10' },
+      },
+      {
+        key: 'showMore',
+        label: 'Show more',
+        description:
+          'When enabled, shows a "Show more" button to reveal additional facet values.',
+        default: false,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'showMoreLimit',
         label: 'Show more limit',
-        placeholder: '20',
+        description:
+          'Maximum number of facet values when "Show more" is expanded. Defaults to 20.',
+        default: undefined,
+        field: { type: 'number', placeholder: '20' },
         visibleIf: { key: 'showMore', value: true },
       },
-      sortBy: {
-        type: 'select-list',
+      {
+        key: 'sortBy',
         label: 'Sort by',
-        options: [
-          { value: 'count:asc', label: 'Count (asc)' },
-          { value: 'count:desc', label: 'Count (desc)' },
-          { value: 'name:asc', label: 'Name (asc)' },
-          { value: 'name:desc', label: 'Name (desc)' },
-          { value: 'isRefined:asc', label: 'Is refined (asc)' },
-          { value: 'isRefined:desc', label: 'Is refined (desc)' },
-        ],
-      },
-      cssClasses: {
-        type: 'object',
-        label: 'CSS classes',
-        defaultValue: {
-          root: '',
-          noRefinementRoot: '',
-          list: '',
-          childList: '',
-          item: '',
-          selectedItem: '',
-          parentItem: '',
-          link: '',
-          selectedItemLink: '',
-          label: '',
-          count: '',
-          showMore: '',
-          disabledShowMore: '',
+        description:
+          'Ordered list of sort criteria. Available values: "count:asc", "count:desc", "name:asc", "name:desc", "isRefined:asc", "isRefined:desc".',
+        default: undefined,
+        field: {
+          type: 'select-list',
+          options: [
+            { value: 'count:asc', label: 'Count (asc)' },
+            { value: 'count:desc', label: 'Count (desc)' },
+            { value: 'name:asc', label: 'Name (asc)' },
+            { value: 'name:desc', label: 'Name (desc)' },
+            { value: 'isRefined:asc', label: 'Is refined (asc)' },
+            { value: 'isRefined:desc', label: 'Is refined (desc)' },
+          ],
         },
-        disabledValue: undefined,
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'noRefinementRoot', label: 'No refinement root' },
-          { key: 'list', label: 'List' },
-          { key: 'childList', label: 'Child list' },
-          { key: 'item', label: 'Item' },
-          { key: 'selectedItem', label: 'Selected item' },
-          { key: 'parentItem', label: 'Parent item' },
-          { key: 'link', label: 'Link' },
-          { key: 'selectedItemLink', label: 'Selected item link' },
-          { key: 'label', label: 'Label' },
-          { key: 'count', label: 'Count' },
-          { key: 'showMore', label: 'Show more' },
-          { key: 'disabledShowMore', label: 'Disabled show more' },
-        ],
       },
-    },
-    paramLabels: {
-      container: 'Container',
-      attributes: 'Attributes',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#hierarchical-menu").',
-      attributes:
-        'Ordered list of attribute names for each hierarchy level (e.g. "categories.lvl0", "categories.lvl1").',
-      separator:
-        'Character used to split hierarchy values in each attribute. Defaults to " > ".',
-      showParentLevel:
-        'When enabled, shows the parent level alongside the current refinement.',
-      limit: 'Maximum number of facet values to display. Defaults to 10.',
-      showMore:
-        'When enabled, shows a "Show more" button to reveal additional facet values.',
-      showMoreLimit:
-        'Maximum number of facet values when "Show more" is expanded. Defaults to 20.',
-      sortBy:
-        'Ordered list of sort criteria. Available values: "count:asc", "count:desc", "name:asc", "name:desc", "isRefined:asc", "isRefined:desc".',
-      cssClasses:
-        'Custom CSS classes to apply to the widget elements for styling.',
-    },
+      {
+        key: 'cssClasses',
+        label: 'CSS classes',
+        description:
+          'Custom CSS classes to apply to the widget elements for styling.',
+        default: undefined,
+        field: {
+          type: 'object',
+          defaultValue: {
+            root: '',
+            noRefinementRoot: '',
+            list: '',
+            childList: '',
+            item: '',
+            selectedItem: '',
+            parentItem: '',
+            link: '',
+            selectedItemLink: '',
+            label: '',
+            count: '',
+            showMore: '',
+            disabledShowMore: '',
+          },
+          disabledValue: undefined,
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'noRefinementRoot', label: 'No refinement root' },
+            { key: 'list', label: 'List' },
+            { key: 'childList', label: 'Child list' },
+            { key: 'item', label: 'Item' },
+            { key: 'selectedItem', label: 'Selected item' },
+            { key: 'parentItem', label: 'Parent item' },
+            { key: 'link', label: 'Link' },
+            { key: 'selectedItemLink', label: 'Selected item link' },
+            { key: 'label', label: 'Label' },
+            { key: 'count', label: 'Count' },
+            { key: 'showMore', label: 'Show more' },
+            { key: 'disabledShowMore', label: 'Disabled show more' },
+          ],
+        },
+      },
+    ],
   },
   'ais.rangeSlider': {
     label: 'Range Slider',
@@ -1647,69 +1652,82 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'A draggable slider that lets users filter results by a numeric range (e.g., price).',
     enabled: true,
     icon: SLIDER_ICON,
-    defaultParameters: {
-      container: '',
-      attribute: '',
-      min: undefined,
-      max: undefined,
-      step: undefined,
-      precision: undefined,
-      pips: true,
-      tooltips: true,
-      cssClasses: undefined,
-    },
-    fieldOrder: [
-      'container',
-      'placement',
-      'attribute',
-      'min',
-      'max',
-      'step',
-      'precision',
-      'pips',
-      'tooltips',
-      'cssClasses',
-    ],
-    fieldOverrides: {
-      min: { type: 'number', label: 'Min', placeholder: 'Auto' },
-      max: { type: 'number', label: 'Max', placeholder: 'Auto' },
-      step: { type: 'number', label: 'Step', placeholder: '1' },
-      precision: {
-        type: 'number',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#price-range").',
+        default: '',
+      },
+      {
+        key: 'attribute',
+        label: 'Attribute',
+        description:
+          'The name of the numeric attribute to filter on (e.g. "price").',
+        default: '',
+      },
+      {
+        key: 'min',
+        label: 'Min',
+        description:
+          'Minimum slider value. Defaults to the lowest value in the result set.',
+        default: undefined,
+        field: { type: 'number', placeholder: 'Auto' },
+      },
+      {
+        key: 'max',
+        label: 'Max',
+        description:
+          'Maximum slider value. Defaults to the highest value in the result set.',
+        default: undefined,
+        field: { type: 'number', placeholder: 'Auto' },
+      },
+      {
+        key: 'step',
+        label: 'Step',
+        description: 'The number of steps between each slider handle movement.',
+        default: undefined,
+        field: { type: 'number', placeholder: '1' },
+      },
+      {
+        key: 'precision',
         label: 'Precision',
-        placeholder: '0',
+        description: 'Number of digits after the decimal point. Defaults to 0.',
+        default: undefined,
+        field: { type: 'number', placeholder: '0' },
       },
-      pips: { type: 'switch', label: 'Show pips' },
-      tooltips: { type: 'switch', label: 'Show tooltips' },
-      cssClasses: {
-        type: 'object',
+      {
+        key: 'pips',
+        label: 'Show pips',
+        description: 'Whether to show reference marks along the slider track.',
+        default: true,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'tooltips',
+        label: 'Show tooltips',
+        description: 'Whether to show value tooltips above the slider handles.',
+        default: true,
+        field: { type: 'switch' },
+      },
+      {
+        key: 'cssClasses',
         label: 'CSS classes',
-        disabledValue: undefined,
-        defaultValue: { root: '', disabledRoot: '' },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'disabledRoot', label: 'Disabled root' },
-        ],
+        description:
+          'Custom CSS classes to apply to the widget elements for styling.',
+        default: undefined,
+        field: {
+          type: 'object',
+          disabledValue: undefined,
+          defaultValue: { root: '', disabledRoot: '' },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'disabledRoot', label: 'Disabled root' },
+          ],
+        },
       },
-    },
-    paramLabels: {
-      container: 'Container',
-      attribute: 'Attribute',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#price-range").',
-      attribute:
-        'The name of the numeric attribute to filter on (e.g. "price").',
-      min: 'Minimum slider value. Defaults to the lowest value in the result set.',
-      max: 'Maximum slider value. Defaults to the highest value in the result set.',
-      step: 'The number of steps between each slider handle movement.',
-      precision: 'Number of digits after the decimal point. Defaults to 0.',
-      pips: 'Whether to show reference marks along the slider track.',
-      tooltips: 'Whether to show value tooltips above the slider handles.',
-      cssClasses:
-        'Custom CSS classes to apply to the widget elements for styling.',
-    },
+    ],
   },
   'ais.rangeInput': {
     label: 'Range Input',
@@ -1717,71 +1735,79 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'A numeric range filter with min and max text inputs that lets users refine results within a value range.',
     enabled: true,
     icon: SLIDER_ICON,
-    defaultParameters: {
-      container: '',
-      attribute: '',
-      min: undefined,
-      max: undefined,
-      precision: undefined,
-      cssClasses: undefined,
-    },
-    fieldOrder: [
-      'container',
-      'placement',
-      'attribute',
-      'min',
-      'max',
-      'precision',
-      'cssClasses',
-    ],
-    fieldOverrides: {
-      min: { type: 'number', label: 'Min', placeholder: 'Auto' },
-      max: { type: 'number', label: 'Max', placeholder: 'Auto' },
-      precision: { type: 'number', label: 'Precision', placeholder: '0' },
-      cssClasses: {
-        type: 'object',
-        label: 'CSS classes',
-        disabledValue: undefined,
-        defaultValue: {
-          root: '',
-          noRefinement: '',
-          form: '',
-          label: '',
-          input: '',
-          inputMin: '',
-          separator: '',
-          inputMax: '',
-          submit: '',
-        },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'noRefinement', label: 'No refinement' },
-          { key: 'form', label: 'Form' },
-          { key: 'label', label: 'Label' },
-          { key: 'input', label: 'Input' },
-          { key: 'inputMin', label: 'Input min' },
-          { key: 'separator', label: 'Separator' },
-          { key: 'inputMax', label: 'Input max' },
-          { key: 'submit', label: 'Submit' },
-        ],
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#range").',
+        default: '',
       },
-    },
-    paramLabels: {
-      container: 'Container',
-      attribute: 'Attribute',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#range").',
-      attribute:
-        'The name of the numeric attribute to filter on (e.g. "price").',
-      min: 'Minimum value for the range. When empty, computed automatically from the result set.',
-      max: 'Maximum value for the range. When empty, computed automatically from the result set.',
-      precision:
-        'Number of digits after the decimal point. Defaults to 0 (integers only).',
-      cssClasses:
-        'Custom CSS classes to apply to the widget elements for styling.',
-    },
+      {
+        key: 'attribute',
+        label: 'Attribute',
+        description:
+          'The name of the numeric attribute to filter on (e.g. "price").',
+        default: '',
+      },
+      {
+        key: 'min',
+        label: 'Min',
+        description:
+          'Minimum value for the range. When empty, computed automatically from the result set.',
+        default: undefined,
+        field: { type: 'number', placeholder: 'Auto' },
+      },
+      {
+        key: 'max',
+        label: 'Max',
+        description:
+          'Maximum value for the range. When empty, computed automatically from the result set.',
+        default: undefined,
+        field: { type: 'number', placeholder: 'Auto' },
+      },
+      {
+        key: 'precision',
+        label: 'Precision',
+        description:
+          'Number of digits after the decimal point. Defaults to 0 (integers only).',
+        default: undefined,
+        field: { type: 'number', placeholder: '0' },
+      },
+      {
+        key: 'cssClasses',
+        label: 'CSS classes',
+        description:
+          'Custom CSS classes to apply to the widget elements for styling.',
+        default: undefined,
+        field: {
+          type: 'object',
+          disabledValue: undefined,
+          defaultValue: {
+            root: '',
+            noRefinement: '',
+            form: '',
+            label: '',
+            input: '',
+            inputMin: '',
+            separator: '',
+            inputMax: '',
+            submit: '',
+          },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'noRefinement', label: 'No refinement' },
+            { key: 'form', label: 'Form' },
+            { key: 'label', label: 'Label' },
+            { key: 'input', label: 'Input' },
+            { key: 'inputMin', label: 'Input min' },
+            { key: 'separator', label: 'Separator' },
+            { key: 'inputMax', label: 'Input max' },
+            { key: 'submit', label: 'Submit' },
+          ],
+        },
+      },
+    ],
   },
   'ais.toggleRefinement': {
     label: 'Toggle Refinement',
@@ -1789,55 +1815,55 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'A checkbox toggle that filters results by a single faceted boolean attribute (e.g., free shipping).',
     enabled: true,
     icon: TOGGLE_ICON,
-    defaultParameters: {
-      container: '',
-      attribute: '',
-      // oxlint-disable-next-line id-length
-      on: undefined,
-      off: undefined,
-      cssClasses: false,
-    },
-    fieldOrder: [
-      'container',
-      'placement',
-      'attribute',
-      'on',
-      'off',
-      'cssClasses',
-    ],
-    fieldOverrides: {
-      // oxlint-disable-next-line id-length
-      on: { type: 'facet-value', label: 'On Value', placeholder: 'true' },
-      off: { type: 'facet-value', label: 'Off Value' },
-      cssClasses: {
-        type: 'object',
-        label: 'CSS classes',
-        defaultValue: { root: '', label: '', checkbox: '', labelText: '' },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'label', label: 'Label' },
-          { key: 'checkbox', label: 'Checkbox' },
-          { key: 'labelText', label: 'Label Text' },
-        ],
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#toggle").',
+        default: '',
       },
-    },
-    paramLabels: {
-      container: 'Container',
-      attribute: 'Attribute',
-      // oxlint-disable-next-line id-length
-      on: 'On Value',
-      off: 'Off Value',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#toggle").',
-      attribute:
-        'The name of the faceted boolean attribute to toggle (e.g. "free_shipping").',
-      // oxlint-disable-next-line id-length
-      on: 'Value to filter on when the toggle is checked (defaults to "true").',
-      off: 'Value to filter on when the toggle is unchecked (defaults to no refinement).',
-      cssClasses: 'Custom CSS classes for the widget markup.',
-    },
+      {
+        key: 'attribute',
+        label: 'Attribute',
+        description:
+          'The name of the faceted boolean attribute to toggle (e.g. "free_shipping").',
+        default: '',
+      },
+      {
+        // oxlint-disable-next-line id-length
+        key: 'on',
+        label: 'On Value',
+        description:
+          'Value to filter on when the toggle is checked (defaults to "true").',
+        default: undefined,
+        field: { type: 'facet-value', placeholder: 'true' },
+      },
+      {
+        key: 'off',
+        label: 'Off Value',
+        description:
+          'Value to filter on when the toggle is unchecked (defaults to no refinement).',
+        default: undefined,
+        field: { type: 'facet-value' },
+      },
+      {
+        key: 'cssClasses',
+        label: 'CSS classes',
+        description: 'Custom CSS classes for the widget markup.',
+        default: false,
+        field: {
+          type: 'object',
+          defaultValue: { root: '', label: '', checkbox: '', labelText: '' },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'label', label: 'Label' },
+            { key: 'checkbox', label: 'Checkbox' },
+            { key: 'labelText', label: 'Label Text' },
+          ],
+        },
+      },
+    ],
   },
   'ais.trendingItems': {
     label: 'Trending Items',
@@ -1845,146 +1871,114 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'Displays trending items from the Algolia Recommend API based on popularity.',
     enabled: true,
     icon: TRENDING_ICON,
-    defaultParameters: {
-      container: '',
-      limit: undefined,
-      threshold: undefined,
-      facetName: undefined,
-      facetValue: undefined,
-      escapeHTML: true,
-      template: {
-        name: '',
-        category: '',
-        description: '',
-        image: '',
-        price: '',
-        currency: '',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#trending").',
+        default: '',
       },
-      carouselLayout: true,
-      queryParameters: undefined,
-      fallbackParameters: undefined,
-      cssClasses: undefined,
-    },
-    fieldOrder: [
-      'container',
-      'placement',
-      'limit',
-      'threshold',
-      'facetName',
-      'facetValue',
-      'escapeHTML',
-      'template',
-      'carouselLayout',
-      'queryParameters',
-      'fallbackParameters',
-      'cssClasses',
-    ],
-    fieldOverrides: {
-      limit: {
-        type: 'number',
+      {
+        key: 'limit',
         label: 'Limit',
-        placeholder: 'Auto',
+        description: 'Maximum number of trending items to display.',
+        default: undefined,
+        field: { type: 'number', placeholder: 'Auto' },
       },
-      threshold: {
-        type: 'number',
+      {
+        key: 'threshold',
         label: 'Threshold',
-        placeholder: '0',
+        description:
+          'Confidence score threshold between 0 and 100 for filtering recommendations.',
+        default: undefined,
+        field: { type: 'number', placeholder: '0' },
       },
-      facetName: {
-        type: 'text',
+      {
+        key: 'facetName',
         label: 'Facet name',
-        placeholder: 'e.g. category',
+        description:
+          'Facet attribute to scope trending items to (e.g. "category").',
+        default: undefined,
+        field: { type: 'text', placeholder: 'e.g. category' },
       },
-      facetValue: {
-        type: 'text',
+      {
+        key: 'facetValue',
         label: 'Facet value',
-        placeholder: 'e.g. Shoes',
+        description:
+          'Specific facet value to scope trending items to (e.g. "Shoes").',
+        default: undefined,
+        field: { type: 'text', placeholder: 'e.g. Shoes' },
       },
-      escapeHTML: {
-        type: 'switch',
+      {
+        key: 'escapeHTML',
         label: 'Escape HTML',
+        description:
+          'Whether to escape HTML entities in item values for security.',
+        default: true,
+        field: { type: 'switch' },
       },
-      template: {
-        type: 'item-template',
+      {
+        key: 'template',
         label: 'Template',
-        defaultValue: {
-          name: '',
-          category: '',
-          description: '',
-          image: '',
-          price: '',
-          currency: '',
+        description:
+          'Maps Algolia record attributes to display roles for rendering items.',
+        default: ITEM_TEMPLATE_DEFAULT,
+        field: {
+          type: 'item-template',
+          defaultValue: ITEM_TEMPLATE_DEFAULT,
+          fields: ITEM_TEMPLATE_FIELDS,
         },
-        fields: [
-          { key: 'name', label: 'Name' },
-          { key: 'category', label: 'Category' },
-          { key: 'description', label: 'Description' },
-          { key: 'image', label: 'Image' },
-          { key: 'price', label: 'Price' },
-          { key: 'currency', label: 'Currency' },
-        ],
       },
-      carouselLayout: {
-        type: 'switch',
+      {
+        key: 'carouselLayout',
         label: 'Carousel layout',
+        default: true,
+        field: { type: 'switch' },
       },
-      queryParameters: {
-        type: 'json',
+      {
+        key: 'queryParameters',
         label: 'Query parameters',
-        disabledValue: undefined,
+        description:
+          'Additional Algolia search parameters as JSON (e.g. {"filters": "category:Books"}).',
+        default: undefined,
+        field: { type: 'json', disabledValue: undefined },
       },
-      fallbackParameters: {
-        type: 'json',
+      {
+        key: 'fallbackParameters',
         label: 'Fallback parameters',
-        disabledValue: undefined,
+        description:
+          'Fallback Algolia search parameters used when there are no recommendations.',
+        default: undefined,
+        field: { type: 'json', disabledValue: undefined },
       },
-      cssClasses: {
-        type: 'object',
+      {
+        key: 'cssClasses',
         label: 'CSS classes',
-        disabledValue: undefined,
-        defaultValue: {
-          root: '',
-          emptyRoot: '',
-          title: '',
-          container: '',
-          list: '',
-          item: '',
+        description: 'Custom CSS classes for the widget markup.',
+        default: undefined,
+        field: {
+          type: 'object',
+          disabledValue: undefined,
+          defaultValue: {
+            root: '',
+            emptyRoot: '',
+            title: '',
+            container: '',
+            list: '',
+            item: '',
+          },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'emptyRoot', label: 'Empty root' },
+            { key: 'title', label: 'Title' },
+            { key: 'container', label: 'Container' },
+            { key: 'list', label: 'List' },
+            { key: 'item', label: 'Item' },
+          ],
         },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'emptyRoot', label: 'Empty root' },
-          { key: 'title', label: 'Title' },
-          { key: 'container', label: 'Container' },
-          { key: 'list', label: 'List' },
-          { key: 'item', label: 'Item' },
-        ],
       },
-    },
-    paramLabels: {
-      container: 'Container',
-      facetName: 'Facet name',
-      facetValue: 'Facet value',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#trending").',
-      limit: 'Maximum number of trending items to display.',
-      threshold:
-        'Confidence score threshold between 0 and 100 for filtering recommendations.',
-      facetName:
-        'Facet attribute to scope trending items to (e.g. "category").',
-      facetValue:
-        'Specific facet value to scope trending items to (e.g. "Shoes").',
-      escapeHTML:
-        'Whether to escape HTML entities in item values for security.',
-      template:
-        'Maps Algolia record attributes to display roles for rendering items.',
-      queryParameters:
-        'Additional Algolia search parameters as JSON (e.g. {"filters": "category:Books"}).',
-      fallbackParameters:
-        'Fallback Algolia search parameters used when there are no recommendations.',
-      cssClasses: 'Custom CSS classes for the widget markup.',
-    },
+    ],
   },
   'ais.clearRefinements': {
     label: 'Clear Refinements',
@@ -1992,64 +1986,61 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'A button that lets users remove all active filters and refinements at once.',
     enabled: true,
     icon: X_ICON,
-    defaultParameters: {
-      container: '',
-      includedAttributes: undefined,
-      excludedAttributes: undefined,
-      cssClasses: undefined,
-    },
-    fieldOrder: [
-      'container',
-      'placement',
-      'includedAttributes',
-      'excludedAttributes',
-      'cssClasses',
-    ],
-    fieldOverrides: {
-      includedAttributes: {
-        type: 'list',
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#clear-refinements").',
+        default: '',
+      },
+      {
+        key: 'includedAttributes',
         label: 'Included attributes',
-        placeholder: 'e.g. brand',
-        excludes: 'excludedAttributes',
-        suggest: 'facetAttributes',
-      },
-      excludedAttributes: {
-        type: 'list',
-        label: 'Excluded attributes',
-        placeholder: 'e.g. query',
-        excludes: 'includedAttributes',
-        suggest: 'facetAttributes',
-      },
-      cssClasses: {
-        type: 'object',
-        label: 'CSS classes',
-        defaultValue: {
-          root: '',
-          button: '',
-          disabledButton: '',
+        description:
+          'Only clear refinements from these attributes. When empty, all refinements are clearable.',
+        default: undefined,
+        field: {
+          type: 'list',
+          placeholder: 'e.g. brand',
+          excludes: 'excludedAttributes',
+          suggest: 'facetAttributes',
         },
-        disabledValue: undefined,
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'button', label: 'Button' },
-          { key: 'disabledButton', label: 'Disabled button' },
-        ],
       },
-    },
-    paramLabels: {
-      container: 'Container',
-      includedAttributes: 'Included attributes',
-      excludedAttributes: 'Excluded attributes',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#clear-refinements").',
-      includedAttributes:
-        'Only clear refinements from these attributes. When empty, all refinements are clearable.',
-      excludedAttributes: 'Never clear refinements from these attributes.',
-      cssClasses:
-        'Custom CSS classes to apply to the widget elements for styling.',
-    },
+      {
+        key: 'excludedAttributes',
+        label: 'Excluded attributes',
+        description: 'Never clear refinements from these attributes.',
+        default: undefined,
+        field: {
+          type: 'list',
+          placeholder: 'e.g. query',
+          excludes: 'includedAttributes',
+          suggest: 'facetAttributes',
+        },
+      },
+      {
+        key: 'cssClasses',
+        label: 'CSS classes',
+        description:
+          'Custom CSS classes to apply to the widget elements for styling.',
+        default: undefined,
+        field: {
+          type: 'object',
+          defaultValue: {
+            root: '',
+            button: '',
+            disabledButton: '',
+          },
+          disabledValue: undefined,
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'button', label: 'Button' },
+            { key: 'disabledButton', label: 'Disabled button' },
+          ],
+        },
+      },
+    ],
   },
   'ais.stats': {
     label: 'Stats',
@@ -2057,41 +2048,38 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
       'Displays search result statistics such as the number of hits and processing time.',
     enabled: true,
     icon: TRENDING_ICON,
-    defaultParameters: {
-      container: '',
-      cssClasses: undefined,
-    },
-    fieldOrder: ['container', 'placement', 'cssClasses'],
-    fieldOverrides: {
-      cssClasses: {
-        type: 'object',
-        label: 'CSS classes',
-        disabledValue: undefined,
-        defaultValue: {
-          root: '',
-          text: '',
-        },
-        fields: [
-          { key: 'root', label: 'Root' },
-          { key: 'text', label: 'Text' },
-        ],
+    params: [
+      {
+        key: 'container',
+        label: 'Container',
+        description:
+          'CSS selector for the DOM element to render into (e.g. "#stats").',
+        default: '',
       },
-    },
-    paramLabels: {
-      container: 'Container',
-    },
-    paramDescriptions: {
-      container:
-        'CSS selector for the DOM element to render into (e.g. "#stats").',
-      cssClasses: 'Custom CSS classes to apply to the widget elements.',
-    },
+      {
+        key: 'cssClasses',
+        label: 'CSS classes',
+        description: 'Custom CSS classes to apply to the widget elements.',
+        default: undefined,
+        field: {
+          type: 'object',
+          disabledValue: undefined,
+          defaultValue: {
+            root: '',
+            text: '',
+          },
+          fields: [
+            { key: 'root', label: 'Root' },
+            { key: 'text', label: 'Text' },
+          ],
+        },
+      },
+    ],
   },
   'ais.frequentlyBoughtTogether': {
     label: 'Frequently Bought Together',
     enabled: false,
     icon: CART_ICON,
-    defaultParameters: {
-      container: '',
-    },
+    params: [{ key: 'container', default: '' }],
   },
 };

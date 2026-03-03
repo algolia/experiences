@@ -64,17 +64,12 @@ export function BlockEditor({
   suggestLists,
 }: BlockEditorProps) {
   const widgetType = WIDGET_TYPES[type];
-  const overrides = widgetType?.fieldOverrides ?? {};
-  const paramLabels = widgetType?.paramLabels ?? {};
-  const paramDescriptions = widgetType?.paramDescriptions ?? {};
+  const params = widgetType?.params ?? [];
+  const visibleParams = params.filter((param) => {
+    return !param.hidden && (param.key in parameters || param.field);
+  });
 
   const columns = widgetType?.columns;
-
-  const paramKeys = widgetType?.fieldOrder
-    ? widgetType.fieldOrder.filter((key) => {
-        return key in parameters || key in overrides;
-      })
-    : Object.keys(parameters);
 
   return (
     <div
@@ -83,7 +78,12 @@ export function BlockEditor({
         columns ? { gridTemplateColumns: `repeat(${columns}, 1fr)` } : undefined
       }
     >
-      {paramKeys.map((key) => {
+      {visibleParams.map((param) => {
+        const key = param.key;
+        const field = param.field;
+        const label = param.label ?? param.key;
+        const description = param.description;
+
         if (key === 'placement') {
           return null;
         }
@@ -124,21 +124,20 @@ export function BlockEditor({
         }
 
         const value = parameters[key];
-        const override = overrides[key];
 
-        if (override?.visibleIf) {
-          const { key: depKey, value: depValue } = override.visibleIf;
+        if (param.visibleIf) {
+          const { key: depKey, value: depValue } = param.visibleIf;
           if (parameters[depKey] !== depValue) {
             return null;
           }
         }
 
-        if (!override) {
+        if (!field) {
           return (
             <TextField
               key={key}
-              label={paramLabels[key] ?? key}
-              description={paramDescriptions[key]}
+              label={label}
+              description={description}
               value={typeof value === 'string' ? value : JSON.stringify(value)}
               onInput={(text) => {
                 return onParameterChange(key, text);
@@ -147,22 +146,20 @@ export function BlockEditor({
           );
         }
 
-        switch (override.type) {
+        switch (field.type) {
           case 'switch':
             return (
               <SwitchField
                 key={key}
-                label={override.label}
-                description={paramDescriptions[key]}
+                label={label}
+                description={description}
                 checked={Boolean(value)}
                 onToggle={(checked) => {
                   onParameterChange(key, checked);
                   if (!checked) {
-                    for (const [depKey, depOverride] of Object.entries(
-                      overrides
-                    )) {
-                      if (depOverride.visibleIf?.key === key) {
-                        onParameterChange(depKey, undefined);
+                    for (const dep of params) {
+                      if (dep.visibleIf?.key === key) {
+                        onParameterChange(dep.key, undefined);
                       }
                     }
                   }
@@ -173,10 +170,10 @@ export function BlockEditor({
             return (
               <SelectField
                 key={key}
-                label={override.label}
+                label={label}
                 value={typeof value === 'string' ? value : undefined}
-                options={override.options}
-                defaultValue={override.defaultValue}
+                options={field.options}
+                defaultValue={field.defaultValue}
                 onChange={(selected) => {
                   return onParameterChange(key, selected);
                 }}
@@ -186,8 +183,8 @@ export function BlockEditor({
             return (
               <FacetValueField
                 key={key}
-                label={override.label}
-                placeholder={override.placeholder}
+                label={label}
+                placeholder={field.placeholder}
                 value={
                   typeof value === 'string' ||
                   typeof value === 'number' ||
@@ -204,9 +201,9 @@ export function BlockEditor({
             return (
               <NumberField
                 key={key}
-                label={override.label}
-                description={paramDescriptions[key]}
-                placeholder={override.placeholder}
+                label={label}
+                description={description}
+                placeholder={field.placeholder}
                 value={typeof value === 'number' ? String(value) : ''}
                 onInput={(text) => {
                   return onParameterChange(
@@ -220,13 +217,13 @@ export function BlockEditor({
             const onTextInput = (text: string) => {
               return onParameterChange(key, text === '' ? undefined : text);
             };
-            if (override.picker) {
+            if (field.picker) {
               return (
                 <TextPickerField
                   key={key}
-                  label={override.label}
+                  label={label}
                   value={typeof value === 'string' ? value : ''}
-                  placeholder={override.placeholder}
+                  placeholder={field.placeholder}
                   onInput={onTextInput}
                   onPickElement={onPickElement}
                 />
@@ -235,15 +232,13 @@ export function BlockEditor({
             return (
               <TextField
                 key={key}
-                label={override.label}
-                description={paramDescriptions[key]}
+                label={label}
+                description={description}
                 value={typeof value === 'string' ? value : ''}
-                placeholder={override.placeholder}
+                placeholder={field.placeholder}
                 onInput={onTextInput}
                 suggestions={
-                  override.suggest
-                    ? suggestLists?.[override.suggest]
-                    : undefined
+                  field.suggest ? suggestLists?.[field.suggest] : undefined
                 }
               />
             );
@@ -252,11 +247,11 @@ export function BlockEditor({
             return (
               <ToggleableTextField
                 key={key}
-                label={override.label}
+                label={label}
                 enabled={value !== false}
                 value={typeof value === 'string' ? value : ''}
-                placeholder={override.placeholder}
-                picker={override.picker}
+                placeholder={field.placeholder}
+                picker={field.picker}
                 onToggle={(toggled) => {
                   return onParameterChange(key, toggled);
                 }}
@@ -271,13 +266,13 @@ export function BlockEditor({
             const jsonValue = jsonEnabled
               ? (value as Record<string, unknown>)
               : {};
-            const jsonToggleable = 'disabledValue' in override;
+            const jsonToggleable = 'disabledValue' in field;
 
             return (
               <JsonField
                 key={key}
-                label={override.label}
-                description={paramDescriptions[key]}
+                label={label}
+                description={description}
                 enabled={jsonToggleable ? jsonEnabled : undefined}
                 value={jsonValue}
                 onChange={(newValue) => {
@@ -288,7 +283,7 @@ export function BlockEditor({
                     ? (toggled) => {
                         return onParameterChange(
                           key,
-                          toggled ? {} : override.disabledValue
+                          toggled ? {} : field.disabledValue
                         );
                       }
                     : undefined
@@ -303,9 +298,9 @@ export function BlockEditor({
             return (
               <ItemsListField
                 key={key}
-                label={override.label}
+                label={label}
                 items={items}
-                fields={override.fields}
+                fields={field.fields}
                 lockedFirstValue={
                   type === 'ais.sortBy' ? parentIndexName : undefined
                 }
@@ -313,7 +308,7 @@ export function BlockEditor({
                   return onParameterChange(key, newItems);
                 }}
                 fieldSuggestLists={buildFieldSuggestLists(
-                  override.fields,
+                  field.fields,
                   suggestLists
                 )}
               />
@@ -325,21 +320,19 @@ export function BlockEditor({
             return (
               <ListField
                 key={key}
-                label={override.label}
-                description={paramDescriptions[key]}
+                label={label}
+                description={description}
                 enabled={enabled}
                 items={items}
-                placeholder={override.placeholder}
-                required={override.required}
+                placeholder={field.placeholder}
+                required={field.required}
                 suggestions={
-                  override.suggest
-                    ? suggestLists?.[override.suggest]
-                    : undefined
+                  field.suggest ? suggestLists?.[field.suggest] : undefined
                 }
                 onToggle={(toggled) => {
                   onParameterChange(key, toggled);
-                  if (toggled && override.excludes) {
-                    onParameterChange(override.excludes, undefined);
+                  if (toggled && field.excludes) {
+                    onParameterChange(field.excludes, undefined);
                   }
                 }}
                 onItemsChange={(newItems) => {
@@ -356,11 +349,11 @@ export function BlockEditor({
             return (
               <SelectListField
                 key={key}
-                label={override.label}
-                description={paramDescriptions[key]}
+                label={label}
+                description={description}
                 enabled={selectListEnabled}
                 items={selectListItems}
-                options={override.options}
+                options={field.options}
                 onToggle={(toggled) => {
                   return onParameterChange(key, toggled);
                 }}
@@ -378,10 +371,10 @@ export function BlockEditor({
             return (
               <ItemTemplateField
                 key={key}
-                label={override.label}
-                description={paramDescriptions[key]}
+                label={label}
+                description={description}
                 value={templateValue}
-                fields={override.fields}
+                fields={field.fields}
                 onFieldChange={(subKey, subValue) => {
                   return onParameterChange(key, {
                     ...templateValue,
@@ -400,15 +393,15 @@ export function BlockEditor({
             return (
               <ObjectField
                 key={key}
-                label={override.label}
-                description={paramDescriptions[key]}
+                label={label}
+                description={description}
                 enabled={enabled}
                 value={objectValue}
-                defaultValue={override.defaultValue}
+                defaultValue={field.defaultValue}
                 disabledValue={
-                  'disabledValue' in override ? override.disabledValue : false
+                  'disabledValue' in field ? field.disabledValue : false
                 }
-                fields={override.fields}
+                fields={field.fields}
                 onToggle={(toggled) => {
                   return onParameterChange(key, toggled);
                 }}
@@ -419,7 +412,7 @@ export function BlockEditor({
                   });
                 }}
                 fieldSuggestLists={buildFieldSuggestLists(
-                  override.fields,
+                  field.fields,
                   suggestLists
                 )}
               />

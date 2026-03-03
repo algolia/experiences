@@ -448,10 +448,21 @@ export function App({ config, initialExperience }: AppProps) {
       let result: AddBlockResult;
 
       setExperience((prev) => {
+        const defaultParameters = Object.fromEntries(
+          (config?.params ?? [])
+            .filter((param) => {
+              return 'default' in param;
+            })
+            .map((param) => {
+              return [param.key, param.default];
+            })
+        );
         const newBlock: ExperienceApiBlock = {
           type,
           parameters: {
-            ...(config?.defaultParameters ?? { container: '' }),
+            ...(Object.keys(defaultParameters).length > 0
+              ? defaultParameters
+              : { container: '' }),
           },
         };
 
