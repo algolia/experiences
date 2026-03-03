@@ -307,7 +307,7 @@ export function Panel({
         class="flex flex-1 flex-col overflow-hidden"
       >
         {/* Block list */}
-        <div class="flex-1 overflow-y-auto p-4">
+        <div class="flex-1 overflow-y-auto p-4 pb-40">
           <div class="space-y-3">
             {experience.blocks.map((block, index) => {
               if (block.type === 'ais.index') {
