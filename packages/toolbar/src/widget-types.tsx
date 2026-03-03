@@ -389,11 +389,6 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         default: '',
       },
       {
-        key: 'indexName',
-        label: 'Index Name',
-        field: { type: 'text', suggest: 'indices' },
-      },
-      {
         key: 'showRecent',
         label: 'Recent Searches',
         description:
@@ -686,6 +681,11 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         label: 'Attribute',
         description: 'The facet attribute to display (e.g. "brand").',
         default: '',
+        field: {
+          type: 'text',
+          placeholder: 'e.g. brand',
+          suggest: 'facetAttributes',
+        },
       },
       {
         key: 'operator',
@@ -849,6 +849,11 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         label: 'Attribute',
         description: 'The facet attribute to display (e.g. "category").',
         default: '',
+        field: {
+          type: 'text',
+          placeholder: 'e.g. categories',
+          suggest: 'facetAttributes',
+        },
       },
       {
         key: 'limit',
@@ -1247,6 +1252,11 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         description:
           'The name of the numeric attribute that contains ratings (e.g. "rating").',
         default: '',
+        field: {
+          type: 'text',
+          placeholder: 'e.g. rating',
+          suggest: 'facetAttributes',
+        },
       },
       {
         key: 'max',
@@ -1315,6 +1325,11 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         label: 'Attribute',
         description: 'The numeric attribute to filter on (e.g. "price").',
         default: '',
+        field: {
+          type: 'text',
+          placeholder: 'e.g. price',
+          suggest: 'facetAttributes',
+        },
       },
       {
         key: 'items',
@@ -1666,6 +1681,11 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         description:
           'The name of the numeric attribute to filter on (e.g. "price").',
         default: '',
+        field: {
+          type: 'text',
+          placeholder: 'e.g. price',
+          suggest: 'facetAttributes',
+        },
       },
       {
         key: 'min',
@@ -1749,6 +1769,11 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         description:
           'The name of the numeric attribute to filter on (e.g. "price").',
         default: '',
+        field: {
+          type: 'text',
+          placeholder: 'e.g. price',
+          suggest: 'facetAttributes',
+        },
       },
       {
         key: 'min',
@@ -1829,6 +1854,11 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         description:
           'The name of the faceted boolean attribute to toggle (e.g. "free_shipping").',
         default: '',
+        field: {
+          type: 'text',
+          placeholder: 'e.g. free_shipping',
+          suggest: 'facetAttributes',
+        },
       },
       {
         // oxlint-disable-next-line id-length

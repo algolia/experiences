@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 
 import type {
   ExperienceApiBlock,
@@ -16,7 +16,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from './ui/collapsible';
-import { Input } from './ui/input';
+import { Combobox } from './ui/combobox';
 import { Label } from './ui/label';
 
 type BlockCardProps = {
@@ -89,20 +89,21 @@ export function BlockCard({
   const label = widgetType?.label ?? type;
   const icon = widgetType?.icon;
   const badge = getBadgeInfo(parameters);
-  const [indexInputValue, setIndexInputValue] = useState('');
-  const [isEditingIndex, setIsEditingIndex] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [indexInputValue, setIndexInputValue] = useState(parentIndexName || '');
+  const [indexCommitted, setIndexCommitted] = useState(false);
 
-  const indexSuggestions = (indexBlocks ?? []).filter(
-    ({ block: indexBlock, index }) => {
-      const name = (indexBlock.parameters.indexName as string) || '';
-      return (
-        index !== parentIndex &&
-        name &&
-        name.toLowerCase().includes(indexInputValue.toLowerCase())
-      );
+  useEffect(() => {
+    setIndexInputValue(parentIndexName || '');
+    setIndexCommitted(false);
+  }, [parentIndexName]);
+
+  function commitIndex(value: string) {
+    const trimmed = value.trim();
+    if (trimmed && trimmed !== parentIndexName && !indexCommitted) {
+      setIndexCommitted(true);
+      onChangeIndex?.(trimmed);
     }
-  );
+  }
 
   return (
     <Card>
@@ -219,75 +220,29 @@ export function BlockCard({
                     class="mt-0.5"
                   />
                 </Label>
-                <div class="relative">
-                  <Input
-                    value={
-                      isEditingIndex ? indexInputValue : parentIndexName || ''
+                <Combobox
+                  value={indexInputValue}
+                  placeholder="Index name"
+                  suggestions={suggestLists?.indices ?? []}
+                  label="Index"
+                  onInput={(value) => {
+                    setIndexInputValue(value);
+                    setIndexCommitted(false);
+                    if (siblingCount === 1) {
+                      onParentIndexNameChange?.(value);
                     }
-                    placeholder="Index name"
-                    onFocus={() => {
-                      setIndexInputValue(parentIndexName || '');
-                      setIsEditingIndex(true);
-                      setShowSuggestions(true);
-                    }}
-                    onInput={(event) => {
-                      const value = (event.target as HTMLInputElement).value;
-                      setIndexInputValue(value);
-                      setShowSuggestions(true);
-                      // Live-rename when this is the only widget in the index
-                      if (siblingCount === 1) {
-                        onParentIndexNameChange?.(value);
-                      }
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') {
-                        (event.target as HTMLInputElement).blur();
-                      } else if (event.key === 'Escape') {
-                        setIsEditingIndex(false);
-                        setShowSuggestions(false);
-                        setIndexInputValue('');
-                      }
-                    }}
-                    onBlur={() => {
-                      const value = indexInputValue.trim();
-                      if (
-                        value &&
-                        value !== parentIndexName &&
-                        siblingCount !== 1
-                      ) {
-                        onChangeIndex(value);
-                      }
-                      setIsEditingIndex(false);
-                      setShowSuggestions(false);
-                      setIndexInputValue('');
-                    }}
-                  />
-                  {showSuggestions && indexSuggestions.length > 0 && (
-                    <div class="absolute z-10 mt-1 w-full rounded-md border bg-background shadow-lg">
-                      {indexSuggestions.map(({ block: suggBlock, index }) => {
-                        const name =
-                          (suggBlock.parameters.indexName as string) ||
-                          `Index ${index}`;
-                        return (
-                          <button
-                            key={index}
-                            type="button"
-                            class="block w-full px-3 py-1.5 text-left text-sm hover:bg-accent"
-                            onMouseDown={(event) => {
-                              event.preventDefault();
-                              onChangeIndex(name);
-                              setIsEditingIndex(false);
-                              setShowSuggestions(false);
-                              setIndexInputValue('');
-                            }}
-                          >
-                            {name}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                  }}
+                  onSelect={(value) => {
+                    if (siblingCount !== 1) {
+                      commitIndex(value);
+                    }
+                  }}
+                  onBlur={() => {
+                    if (siblingCount !== 1) {
+                      commitIndex(indexInputValue);
+                    }
+                  }}
+                />
               </div>
             )}
             {(parentIndex === undefined || parentIndexName) && (
