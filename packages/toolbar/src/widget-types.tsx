@@ -5,7 +5,9 @@ export type IndexSuggestKind =
   | 'indices'
   | 'indices:replicas'
   | 'indices:qs'
-  | 'agentStudioAgents';
+  | 'agentStudioAgents'
+  | 'facetAttributes'
+  | 'indexAttributes';
 
 type FieldOverrideBase = {
   visibleIf?: { key: string; value: unknown };
@@ -64,6 +66,7 @@ export type FieldOverride = FieldOverrideBase &
         placeholder?: string;
         excludes?: string;
         required?: boolean;
+        suggest?: IndexSuggestKind;
       }
     | {
         type: 'select-list';
@@ -1393,12 +1396,14 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         label: 'Included attributes',
         placeholder: 'e.g. brand',
         excludes: 'excludedAttributes',
+        suggest: 'facetAttributes',
       },
       excludedAttributes: {
         type: 'list',
         label: 'Excluded attributes',
         placeholder: 'e.g. query',
         excludes: 'includedAttributes',
+        suggest: 'facetAttributes',
       },
       cssClasses: {
         type: 'object',
@@ -1467,6 +1472,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         label: 'Attributes',
         placeholder: 'e.g. hierarchicalCategories.lvl0',
         required: true,
+        suggest: 'indexAttributes',
       },
       separator: {
         type: 'text',
@@ -1547,6 +1553,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         label: 'Attributes',
         placeholder: 'e.g. categories.lvl0',
         required: true,
+        suggest: 'indexAttributes',
       },
       separator: {
         type: 'text',
@@ -2004,12 +2011,14 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         label: 'Included attributes',
         placeholder: 'e.g. brand',
         excludes: 'excludedAttributes',
+        suggest: 'facetAttributes',
       },
       excludedAttributes: {
         type: 'list',
         label: 'Excluded attributes',
         placeholder: 'e.g. query',
         excludes: 'includedAttributes',
+        suggest: 'facetAttributes',
       },
       cssClasses: {
         type: 'object',

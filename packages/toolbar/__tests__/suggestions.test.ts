@@ -23,6 +23,13 @@ afterAll(() => {
 describe('getSuggestionSourceForParam', () => {
   it('returns source name for attribute param', () => {
     expect(getSuggestionSourceForParam('attribute')).toBe('facetAttributes');
+    expect(getSuggestionSourceForParam('attributes')).toBe('facetAttributes');
+    expect(getSuggestionSourceForParam('includedAttributes')).toBe(
+      'facetAttributes'
+    );
+    expect(getSuggestionSourceForParam('excludedAttributes')).toBe(
+      'facetAttributes'
+    );
   });
 
   it('returns source name for agentId param', () => {

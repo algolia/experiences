@@ -79,6 +79,9 @@ describe('describeWidgetTypes', () => {
     const result = describeWidgetTypes();
     expect(result).toMatch(/attribute.*\[has suggestions\]/);
     expect(result).toMatch(/agentId.*\[has suggestions\]/);
+    expect(result).toMatch(/attributes.*\[has suggestions\]/);
+    expect(result).toMatch(/includedAttributes.*\[has suggestions\]/);
+    expect(result).toMatch(/excludedAttributes.*\[has suggestions\]/);
   });
 
   it('includes default placement per widget type', async () => {
