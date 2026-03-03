@@ -27,12 +27,16 @@ type ComboboxProps = Omit<
 > & {
   suggestions: Suggestion[];
   onInput: (value: string) => void;
+  onSelect?: (value: string) => void;
+  onBlur?: () => void;
   label: string;
 };
 
 export function Combobox({
   suggestions,
   onInput,
+  onSelect,
+  onBlur: onBlurProp,
   label,
   value,
   ...inputProps
@@ -103,6 +107,7 @@ export function Combobox({
 
   function select(item: NormalizedSuggestion) {
     onInput(item.value);
+    onSelect?.(item.value);
     setOpen(false);
     setActiveIndex(-1);
   }
@@ -113,6 +118,8 @@ export function Combobox({
         setOpen(true);
         setActiveIndex(0);
         event.preventDefault();
+      } else if (event.key === 'Enter') {
+        (event.target as HTMLInputElement).blur();
       }
 
       return;
@@ -136,6 +143,8 @@ export function Combobox({
         if (safeIndex >= 0) {
           const item = filtered[safeIndex];
           if (item) select(item);
+        } else {
+          (event.target as HTMLInputElement).blur();
         }
         break;
       case 'Escape':
@@ -179,6 +188,7 @@ export function Combobox({
           }
           setOpen(false);
           setActiveIndex(-1);
+          onBlurProp?.();
         }}
         onKeyDown={onKeyDown}
       />
