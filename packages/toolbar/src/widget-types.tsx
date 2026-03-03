@@ -1,7 +1,11 @@
 import type { JSX } from 'preact';
 import type { ExperienceApiBlockParameters } from './types';
 
-export type IndexSuggestKind = 'indices' | 'indices:replicas' | 'indices:qs';
+export type IndexSuggestKind =
+  | 'indices'
+  | 'indices:replicas'
+  | 'indices:qs'
+  | 'agentStudioAgents';
 
 type FieldOverrideBase = {
   visibleIf?: { key: string; value: unknown };
@@ -427,6 +431,11 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
     },
     fieldOrder: ['container', 'placement', 'agentId', 'template'],
     fieldOverrides: {
+      agentId: {
+        type: 'text',
+        label: 'Agent ID',
+        suggest: 'agentStudioAgents',
+      },
       template: {
         type: 'item-template',
         label: 'Template',

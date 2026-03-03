@@ -192,6 +192,82 @@ export async function fetchQuerySuggestionConfigs({
   return [];
 }
 
+type FetchAgentStudioAgentsParams = {
+  appId: string;
+  apiKey: string;
+  env: Environment;
+};
+
+export type AgentStudioAgent = {
+  id: string;
+  name: string;
+  status: string;
+};
+
+type AgentStudioResponse = {
+  data?: AgentStudioAgent[];
+  pagination?: {
+    page: number;
+    limit: number;
+    totalCount: number;
+    totalPages: number;
+  };
+};
+
+const MAX_AGENT_PAGES = 50;
+
+export async function fetchAgentStudioAgents({
+  appId,
+  apiKey,
+  env,
+}: FetchAgentStudioAgentsParams): Promise<AgentStudioAgent[]> {
+  const baseUrl =
+    env === 'beta'
+      ? 'https://agent-studio-staging.eu.algolia.com/1/agents'
+      : `https://${appId}.algolia.net/agent-studio/1/agents`;
+
+  const agents: AgentStudioAgent[] = [];
+  let page = 1;
+
+  while (page <= MAX_AGENT_PAGES) {
+    const url = new URL(baseUrl);
+    url.searchParams.set('limit', '100');
+    url.searchParams.set('page', String(page));
+
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'X-Algolia-Application-ID': appId,
+        'X-Algolia-API-Key': apiKey,
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(
+        `[@algolia/experiences-toolbar] Failed to fetch agents: ${res.status} ${res.statusText}`
+      );
+    }
+
+    const data = (await res.json()) as AgentStudioResponse;
+
+    agents.push(...(data.data ?? []));
+
+    if (!data.pagination || page >= data.pagination.totalPages) {
+      break;
+    }
+
+    page++;
+  }
+
+  return agents
+    .filter((agent) => {
+      return agent.status !== 'draft';
+    })
+    .sort((left, right) => {
+      return left.name.localeCompare(right.name);
+    });
+}
+
 type FetchIndexSettingsParams = {
   appId: string;
   apiKey: string;

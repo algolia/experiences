@@ -136,8 +136,11 @@ export function AiChat({
           apiKey: configRef.current.apiKey,
         };
       },
+      getEnv: () => {
+        return env;
+      },
     };
-  }, []);
+  }, [env]);
 
   const transport = useMemo(() => {
     const config = AGENT_STUDIO[env];

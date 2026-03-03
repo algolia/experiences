@@ -1,23 +1,34 @@
-import { fetchIndexSettings } from '../api';
+import { fetchAgentStudioAgents, fetchIndexSettings } from '../api';
+import type { Environment } from '../types';
 
 type Credentials = {
   appId: string;
   apiKey: string;
 };
 
+type SuggestionFetchContext = {
+  credentials: Credentials;
+  env: Environment;
+  indexName?: string;
+};
+
+type SuggestionValue = string | { value: string; label: string };
+
 type SuggestionSource = {
-  fetcher: (credentials: Credentials, indexName: string) => Promise<string[]>;
+  fetcher: (context: SuggestionFetchContext) => Promise<SuggestionValue[]>;
   description: string;
+  requiresIndexName?: boolean;
 };
 
 const SUGGESTION_SOURCES: Record<string, SuggestionSource> = {
   facetAttributes: {
     description: 'Facet attributes configured in the Algolia index settings',
-    fetcher: async (credentials, indexName) => {
+    requiresIndexName: true,
+    fetcher: async (context) => {
       const settings = await fetchIndexSettings({
-        appId: credentials.appId,
-        apiKey: credentials.apiKey,
-        indexName,
+        appId: context.credentials.appId,
+        apiKey: context.credentials.apiKey,
+        indexName: context.indexName!,
       });
 
       const raw = settings.attributesForFaceting ?? [];
@@ -29,21 +40,44 @@ const SUGGESTION_SOURCES: Record<string, SuggestionSource> = {
         .sort();
     },
   },
+  agentStudioAgents: {
+    description: 'Available Agent Studio agents',
+    fetcher: async (context) => {
+      const agents = await fetchAgentStudioAgents({
+        appId: context.credentials.appId,
+        apiKey: context.credentials.apiKey,
+        env: context.env,
+      });
+
+      return agents.map((agent) => {
+        return { value: agent.id, label: agent.name };
+      });
+    },
+  },
 };
 
 const PARAM_SUGGESTIONS: Record<string, string> = {
   attribute: 'facetAttributes',
+  agentId: 'agentStudioAgents',
 };
 
 export function getSuggestionSourceForParam(param: string): string | undefined {
   return PARAM_SUGGESTIONS[param];
 }
 
+export function suggestionSourceRequiresIndexName(sourceName: string): boolean {
+  return SUGGESTION_SOURCES[sourceName]?.requiresIndexName === true;
+}
+
 export async function fetchSuggestions(
   sourceName: string,
   credentials: Credentials,
-  indexName: string
-): Promise<{ values: string[]; description: string } | { error: string }> {
+  env: Environment,
+  indexName?: string
+): Promise<
+  | { values: string[]; description: string; labels?: Record<string, string> }
+  | { error: string }
+> {
   const source = SUGGESTION_SOURCES[sourceName];
 
   if (!source) {
@@ -51,12 +85,30 @@ export async function fetchSuggestions(
   }
 
   try {
-    const values = await source.fetcher(credentials, indexName);
+    const raw = await source.fetcher({ credentials, env, indexName });
 
-    return { values, description: source.description };
-  } catch {
+    const values: string[] = [];
+    const labels: Record<string, string> = {};
+
+    for (const item of raw) {
+      if (typeof item === 'string') {
+        values.push(item);
+      } else {
+        values.push(item.value);
+        labels[item.value] = item.label;
+      }
+    }
+
     return {
-      error: `Failed to fetch suggestions from ${sourceName} for index "${indexName}"`,
+      values,
+      description: source.description,
+      ...(Object.keys(labels).length > 0 && { labels }),
+    };
+  } catch {
+    const suffix = indexName ? ` for index "${indexName}"` : '';
+
+    return {
+      error: `Failed to fetch suggestions from ${sourceName}${suffix}`,
     };
   }
 }

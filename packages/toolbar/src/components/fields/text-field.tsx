@@ -1,7 +1,7 @@
 import { useId } from 'preact/hooks';
 
 import { InfoTooltip } from './info-tooltip';
-import { Combobox } from '../ui/combobox';
+import { Combobox, type Suggestion } from '../ui/combobox';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
@@ -12,7 +12,7 @@ type TextFieldProps = {
   placeholder?: string;
   onInput: (value: string) => void;
   readOnly?: boolean;
-  suggestions?: string[];
+  suggestions?: Suggestion[];
 };
 
 export function TextField({
