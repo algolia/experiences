@@ -6,6 +6,7 @@ import type {
   Placement,
 } from '../types';
 import { WIDGET_TYPES } from '../widget-types';
+import { fetchSuggestions, getSuggestionSourceForParam } from './suggestions';
 
 export type ToolCallbacks = {
   onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
@@ -14,6 +15,7 @@ export type ToolCallbacks = {
   onDeleteBlock: (path: BlockPath) => void;
   onMoveBlock: (fromPath: BlockPath, toParentIndex: number) => void;
   getExperience: () => ExperienceApiResponse;
+  getCredentials: () => { appId: string; apiKey: string };
 };
 
 function getEnabledTypes() {
@@ -56,6 +58,9 @@ export function describeWidgetTypes(): string {
           }
           if (paramDesc) {
             line += `: ${paramDesc}`;
+          }
+          if (getSuggestionSourceForParam(k)) {
+            line += ' [has suggestions]';
           }
 
           return line;
@@ -195,6 +200,8 @@ export function describeToolAction(
       return `Removed widget ${input?.path ?? ''}`;
     case 'move_widget':
       return `Moved widget ${input?.path ?? ''} to index ${input?.to_index ?? ''}`;
+    case 'get_suggestions':
+      return `Fetched suggestions for ${input?.param ?? 'parameter'}`;
     default:
       return 'Action completed';
   }
@@ -429,7 +436,35 @@ function executeMoveWidget(
 type ToolExecutor = (
   args: Record<string, unknown>,
   callbacks: ToolCallbacks
-) => Record<string, unknown>;
+) => Record<string, unknown> | Promise<Record<string, unknown>>;
+
+async function executeGetSuggestions(
+  args: Record<string, unknown>,
+  callbacks: ToolCallbacks
+): Promise<Record<string, unknown>> {
+  const param = args.param as string | undefined;
+  const indexName = args.indexName as string | undefined;
+
+  if (!param) {
+    return { success: false, error: 'Missing required parameter: param' };
+  }
+  if (!indexName) {
+    return { success: false, error: 'Missing required parameter: indexName' };
+  }
+
+  const sourceName = getSuggestionSourceForParam(param);
+  if (!sourceName) {
+    return {
+      success: false,
+      error: `No suggestions available for parameter "${param}"`,
+    };
+  }
+
+  const credentials = callbacks.getCredentials();
+  const result = await fetchSuggestions(sourceName, credentials, indexName);
+
+  return result;
+}
 
 const TOOL_EXECUTORS = {
   get_experience: executeGetExperience,
@@ -437,11 +472,12 @@ const TOOL_EXECUTORS = {
   edit_widget: executeEditWidget,
   remove_widget: executeRemoveWidget,
   move_widget: executeMoveWidget,
+  get_suggestions: executeGetSuggestions,
 } satisfies Record<string, ToolExecutor>;
 
-type ExecutorToolName = keyof typeof TOOL_EXECUTORS;
+type ToolName = keyof typeof TOOL_EXECUTORS;
 
-type AgentStudioTool<Name extends ExecutorToolName = ExecutorToolName> = {
+type AgentStudioTool<Name extends ToolName = ToolName> = {
   name: Name;
   description: string;
   inputSchema: Record<string, unknown>;
@@ -449,7 +485,7 @@ type AgentStudioTool<Name extends ExecutorToolName = ExecutorToolName> = {
 };
 
 export function buildToolDefinitions(): AgentStudioTool[] {
-  const tools: { [Key in ExecutorToolName]: AgentStudioTool<Key> } = {
+  const tools: { [Key in ToolName]: AgentStudioTool<Key> } = {
     get_experience: {
       name: 'get_experience',
       description:
@@ -555,6 +591,27 @@ export function buildToolDefinitions(): AgentStudioTool[] {
       },
       type: 'client_side',
     },
+    get_suggestions: {
+      name: 'get_suggestions',
+      description:
+        'Get valid values for a widget parameter. Returns a list of values from the Algolia index (e.g., facet attributes for the "attribute" parameter).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          param: {
+            type: 'string',
+            description:
+              'The parameter name to get suggestions for (e.g., "attribute")',
+          },
+          indexName: {
+            type: 'string',
+            description: 'The Algolia index name to fetch suggestions from',
+          },
+        },
+        required: ['param', 'indexName'],
+      },
+      type: 'client_side',
+    },
   };
 
   return Object.values(tools);
@@ -585,14 +642,15 @@ Each widget type has a default placement listed above. When placement is \`body\
 - Keep responses concise and confirm what you did after each action. Do not explain internal mechanics (index blocks, placements, paths) unless the user asks. Just ask for what you need in plain language (e.g., "Where should I place it? (CSS selector)" instead of explaining the placement system).
 - Before editing or removing, ALWAYS call get_experience first to verify current widget paths and state.
 - Refer to widgets by their path from get_experience results.
-- If the user's request is ambiguous, ask for clarification.`;
+- If the user's request is ambiguous, ask for clarification.
+- When setting a parameter marked [has suggestions], ALWAYS call get_suggestions first with the indexName from the relevant ais.index block to discover valid values.`;
 }
 
-export function executeToolCall(
+export async function executeToolCall(
   toolName: string,
   args: Record<string, unknown>,
   callbacks: ToolCallbacks
-): Record<string, unknown> {
+): Promise<Record<string, unknown>> {
   const executor = TOOL_EXECUTORS[toolName as keyof typeof TOOL_EXECUTORS] as
     | ToolExecutor
     | undefined;

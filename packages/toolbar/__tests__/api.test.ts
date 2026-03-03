@@ -6,6 +6,7 @@ import {
   fetchExperience,
   fetchIndexRecords,
   fetchIndices,
+  fetchIndexSettings,
   fetchQuerySuggestionConfigs,
   saveExperience,
 } from '../src/api';
@@ -452,5 +453,73 @@ describe('fetchQuerySuggestionConfigs', () => {
 
     expect(headers!.get('X-Algolia-Application-ID')).toBe('APP_ID');
     expect(headers!.get('X-Algolia-API-Key')).toBe('API_KEY');
+  });
+});
+
+describe('fetchIndexSettings', () => {
+  it('fetches settings from the Algolia API', async () => {
+    server.use(
+      http.get(
+        'https://APP_ID-dsn.algolia.net/1/indexes/my_index/settings',
+        () => {
+          return HttpResponse.json({
+            attributesForFaceting: ['brand', 'searchable(color)'],
+          });
+        }
+      )
+    );
+
+    const result = await fetchIndexSettings({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      indexName: 'my_index',
+    });
+
+    expect(result).toEqual({
+      attributesForFaceting: ['brand', 'searchable(color)'],
+    });
+  });
+
+  it('sends correct headers', async () => {
+    let headers: Headers;
+
+    server.use(
+      http.get(
+        'https://APP_ID-dsn.algolia.net/1/indexes/my_index/settings',
+        ({ request }) => {
+          headers = request.headers;
+
+          return HttpResponse.json({});
+        }
+      )
+    );
+
+    await fetchIndexSettings({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      indexName: 'my_index',
+    });
+
+    expect(headers!.get('X-Algolia-Application-ID')).toBe('APP_ID');
+    expect(headers!.get('X-Algolia-API-Key')).toBe('API_KEY');
+  });
+
+  it('returns empty object on error', async () => {
+    server.use(
+      http.get(
+        'https://APP_ID-dsn.algolia.net/1/indexes/my_index/settings',
+        () => {
+          return new HttpResponse(null, { status: 403 });
+        }
+      )
+    );
+
+    const result = await fetchIndexSettings({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      indexName: 'my_index',
+    });
+
+    expect(result).toEqual({});
   });
 });
