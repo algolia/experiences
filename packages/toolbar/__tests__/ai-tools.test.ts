@@ -26,11 +26,17 @@ function createCallbacks(
     getExperience: vi.fn(() => {
       return experience;
     }),
+    getCredentials: vi.fn(() => {
+      return { appId: 'APP_ID', apiKey: 'API_KEY' };
+    }),
+    getEnv: vi.fn(() => {
+      return 'beta' as const;
+    }),
   };
 }
 
 describe('describeWidgetTypes', () => {
-  it('includes enabled widget types', () => {
+  it('includes enabled widget types', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.autocomplete');
     expect(result).toContain('Autocomplete');
@@ -56,7 +62,7 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('Numeric Menu');
   });
 
-  it('includes widget descriptions and parameter descriptions', () => {
+  it('includes widget descriptions and parameter descriptions', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('search-as-you-type');
     expect(result).toContain('Parameters:');
@@ -69,7 +75,13 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('attribute');
   });
 
-  it('includes default placement per widget type', () => {
+  it('marks params with available suggestions', async () => {
+    const result = describeWidgetTypes();
+    expect(result).toMatch(/attribute.*\[has suggestions\]/);
+    expect(result).toMatch(/agentId.*\[has suggestions\]/);
+  });
+
+  it('includes default placement per widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain(
       'ais.autocomplete ("Autocomplete", default placement: inside)'
@@ -78,24 +90,24 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('ais.hits ("Hits", default placement: inside)');
   });
 
-  it('marks index-independent widgets', () => {
+  it('marks index-independent widgets', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('[index-independent]');
   });
 
-  it('includes toggleRefinement widget type', () => {
+  it('includes toggleRefinement widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.toggleRefinement');
     expect(result).toContain('Toggle Refinement');
   });
 
-  it('includes hitsPerPage widget type', () => {
+  it('includes hitsPerPage widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.hitsPerPage');
     expect(result).toContain('Hits Per Page');
   });
 
-  it('includes pagination widget type', () => {
+  it('includes pagination widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.pagination');
     expect(result).toContain('Pagination');
@@ -103,7 +115,7 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('showFirst');
   });
 
-  it('includes numericMenu widget type', () => {
+  it('includes numericMenu widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.numericMenu');
     expect(result).toContain('Numeric Menu');
@@ -111,7 +123,7 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('items');
   });
 
-  it('includes clearRefinements widget type', () => {
+  it('includes clearRefinements widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.clearRefinements');
     expect(result).toContain('Clear Refinements');
@@ -119,7 +131,7 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('excludedAttributes');
   });
 
-  it('includes refinementList widget type', () => {
+  it('includes refinementList widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.refinementList');
     expect(result).toContain('Refinement List');
@@ -127,7 +139,7 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('searchable');
   });
 
-  it('includes menu widget type', () => {
+  it('includes menu widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.menu');
     expect(result).toContain('Menu');
@@ -135,7 +147,7 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('attribute');
   });
 
-  it('includes ratingMenu widget type', () => {
+  it('includes ratingMenu widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.ratingMenu');
     expect(result).toContain('Rating Menu');
@@ -143,7 +155,7 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('attribute');
   });
 
-  it('includes rangeSlider widget type', () => {
+  it('includes rangeSlider widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.rangeSlider');
     expect(result).toContain('Range Slider');
@@ -151,7 +163,7 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('attribute');
   });
 
-  it('includes trendingItems widget type', () => {
+  it('includes trendingItems widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.trendingItems');
     expect(result).toContain('Trending Items');
@@ -160,7 +172,7 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('template');
   });
 
-  it('includes currentRefinements widget type', () => {
+  it('includes currentRefinements widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.currentRefinements');
     expect(result).toContain('Current Refinements');
@@ -169,7 +181,7 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('excludedAttributes');
   });
 
-  it('includes rangeInput widget type', () => {
+  it('includes rangeInput widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.rangeInput');
     expect(result).toContain('Range Input');
@@ -177,7 +189,7 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('attribute');
   });
 
-  it('includes trendingItems widget type', () => {
+  it('includes trendingItems widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.trendingItems');
     expect(result).toContain('Trending Items');
@@ -185,7 +197,7 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('limit');
   });
 
-  it('includes hierarchicalMenu widget type', () => {
+  it('includes hierarchicalMenu widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.hierarchicalMenu');
     expect(result).toContain('Hierarchical Menu');
@@ -193,7 +205,7 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('attributes');
   });
 
-  it('includes breadcrumb widget type', () => {
+  it('includes breadcrumb widget type', async () => {
     const result = describeWidgetTypes();
     expect(result).toContain('ais.breadcrumb');
     expect(result).toContain('Breadcrumb');
@@ -203,12 +215,12 @@ describe('describeWidgetTypes', () => {
 });
 
 describe('describeExperience', () => {
-  it('returns a message for empty experiences', () => {
+  it('returns a message for empty experiences', async () => {
     const result = describeExperience({ blocks: [], indexName: '' });
     expect(result).toBe('The experience has no widgets yet.');
   });
 
-  it('formats blocks with paths and placement', () => {
+  it('formats blocks with paths and placement', async () => {
     const experience: ExperienceApiResponse = {
       blocks: [
         {
@@ -237,7 +249,7 @@ describe('describeExperience', () => {
     expect(result).toContain('agentId="agent-1"');
   });
 
-  it('falls back to type string for unknown widget types', () => {
+  it('falls back to type string for unknown widget types', async () => {
     const experience: ExperienceApiResponse = {
       blocks: [
         {
@@ -251,7 +263,7 @@ describe('describeExperience', () => {
     expect(result).toContain('[0] ais.unknown (ais.unknown)');
   });
 
-  it('shows placement without container when container is empty', () => {
+  it('shows placement without container when container is empty', async () => {
     const experience: ExperienceApiResponse = {
       blocks: [
         {
@@ -266,7 +278,7 @@ describe('describeExperience', () => {
     expect(result).not.toContain('[before ]');
   });
 
-  it('formats nested index blocks with child paths', () => {
+  it('formats nested index blocks with child paths', async () => {
     const experience: ExperienceApiResponse = {
       blocks: [
         {
@@ -289,7 +301,7 @@ describe('describeExperience', () => {
     expect(result).toContain('[0.0] Autocomplete (ais.autocomplete)');
   });
 
-  it('includes indexId when present on index blocks', () => {
+  it('includes indexId when present on index blocks', async () => {
     const experience: ExperienceApiResponse = {
       blocks: [
         {
@@ -306,7 +318,7 @@ describe('describeExperience', () => {
     expect(result).toContain('indexId: main');
   });
 
-  it('omits indexId when not set on index blocks', () => {
+  it('omits indexId when not set on index blocks', async () => {
     const experience: ExperienceApiResponse = {
       blocks: [
         {
@@ -323,7 +335,7 @@ describe('describeExperience', () => {
     expect(result).not.toContain('indexId');
   });
 
-  it('uses default placement from widget config when not in parameters', () => {
+  it('uses default placement from widget config when not in parameters', async () => {
     const experience: ExperienceApiResponse = {
       blocks: [
         {
@@ -338,7 +350,7 @@ describe('describeExperience', () => {
     expect(result).toContain('[0] Chat (ais.chat) [body]');
   });
 
-  it('shows empty index block with "(empty)" marker', () => {
+  it('shows empty index block with "(empty)" marker', async () => {
     const experience: ExperienceApiResponse = {
       blocks: [
         {
@@ -354,7 +366,7 @@ describe('describeExperience', () => {
     expect(result).toContain('(empty)');
   });
 
-  it('shows "(unnamed)" when index block has no indexName', () => {
+  it('shows "(unnamed)" when index block has no indexName', async () => {
     const experience: ExperienceApiResponse = {
       blocks: [
         {
@@ -372,7 +384,7 @@ describe('describeExperience', () => {
 });
 
 describe('executeToolCall', () => {
-  it('dispatches to all five tools', () => {
+  it('dispatches to all five tools', async () => {
     const callbacks = createCallbacks();
     const names = [
       'get_experience',
@@ -382,13 +394,13 @@ describe('executeToolCall', () => {
       'move_widget',
     ];
     for (const name of names) {
-      const result = executeToolCall(name, {}, callbacks);
+      const result = await executeToolCall(name, {}, callbacks);
       expect(result).toBeDefined();
     }
   });
 
-  it('returns error for unknown tool', () => {
-    const result = executeToolCall('unknown_tool', {}, createCallbacks());
+  it('returns error for unknown tool', async () => {
+    const result = await executeToolCall('unknown_tool', {}, createCallbacks());
     expect(result).toEqual({
       success: false,
       error: 'Unknown tool: unknown_tool',
@@ -396,7 +408,7 @@ describe('executeToolCall', () => {
   });
 
   describe('get_experience', () => {
-    it('returns the current experience state', () => {
+    it('returns the current experience state', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -408,7 +420,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall('get_experience', {}, callbacks);
+      const result = await executeToolCall('get_experience', {}, callbacks);
 
       expect(result.state).toContain('Autocomplete');
       expect(result.state).toContain('#search');
@@ -416,7 +428,7 @@ describe('executeToolCall', () => {
   });
 
   describe('add_widget', () => {
-    it('calls onAddBlock and onParameterChange for index-independent widgets', () => {
+    it('calls onAddBlock and onParameterChange for index-independent widgets', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -428,7 +440,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.autocomplete', container: '#search' },
         callbacks
@@ -448,7 +460,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('applies additional parameters', () => {
+    it('applies additional parameters', async () => {
       // After onAddBlock is called, getExperience returns the updated state
       const afterAdd: ExperienceApiResponse = {
         blocks: [
@@ -461,7 +473,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(afterAdd);
 
-      executeToolCall(
+      await executeToolCall(
         'add_widget',
         {
           type: 'ais.autocomplete',
@@ -478,7 +490,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('rejects disallowed parameters', () => {
+    it('rejects disallowed parameters', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -490,7 +502,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.autocomplete',
@@ -511,7 +523,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('adds widget with body placement and no container', () => {
+    it('adds widget with body placement and no container', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -523,7 +535,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.chat', placement: 'body' },
         callbacks
@@ -536,7 +548,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('adds a toggleRefinement widget with attribute and on parameters', () => {
+    it('adds a toggleRefinement widget with attribute and on parameters', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -549,7 +561,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience, [0, 0]);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.toggleRefinement',
@@ -572,7 +584,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('uses default placement from widget config when not specified', () => {
+    it('uses default placement from widget config when not specified', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -584,7 +596,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.chat' },
         callbacks
@@ -596,7 +608,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('adds widget with explicit before placement', () => {
+    it('adds widget with explicit before placement', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -608,7 +620,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.autocomplete',
@@ -626,7 +638,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('returns error when non-body placement has no container', () => {
+    it('returns error when non-body placement has no container', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -638,7 +650,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.autocomplete', placement: 'before' },
         callbacks
@@ -650,7 +662,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('returns error when default inside placement has no container', () => {
+    it('returns error when default inside placement has no container', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -662,7 +674,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.autocomplete' },
         callbacks
@@ -674,14 +686,14 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('accepts container inside parameters instead of top-level', () => {
+    it('accepts container inside parameters instead of top-level', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
         indexName: '',
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.autocomplete',
@@ -693,11 +705,11 @@ describe('executeToolCall', () => {
       expect(result).toMatchObject({ success: true });
     });
 
-    it('skips container and placement inside parameters to avoid duplication', () => {
+    it('skips container and placement inside parameters to avoid duplication', async () => {
       const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
       const callbacks = createCallbacks(experience);
 
-      executeToolCall(
+      await executeToolCall(
         'add_widget',
         {
           type: 'ais.autocomplete',
@@ -742,11 +754,11 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('returns error when container is missing for non-body placement', () => {
+    it('returns error when container is missing for non-body placement', async () => {
       const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.autocomplete' },
         callbacks
@@ -759,11 +771,11 @@ describe('executeToolCall', () => {
       expect(callbacks.onAddBlock).not.toHaveBeenCalled();
     });
 
-    it('adds hits with default inside placement and container', () => {
+    it('adds hits with default inside placement and container', async () => {
       const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.hits', container: '#hits' },
         callbacks
@@ -791,11 +803,11 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('adds searchBox with default inside placement and container', () => {
+    it('adds searchBox with default inside placement and container', async () => {
       const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.searchBox', container: '#search-box' },
         callbacks
@@ -826,11 +838,11 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('adds clearRefinements widget with list parameters', () => {
+    it('adds clearRefinements widget with list parameters', async () => {
       const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.clearRefinements',
@@ -857,14 +869,14 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('adds ais.index widget at top level', () => {
+    it('adds ais.index widget at top level', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
         indexName: '',
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.index', parameters: { indexName: 'products' } },
         callbacks
@@ -877,14 +889,14 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('adds an infinite hits widget with default parameters', () => {
+    it('adds an infinite hits widget with default parameters', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
         indexName: '',
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.infiniteHits', container: '#hits' },
         callbacks
@@ -905,14 +917,14 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('adds an infinite hits widget with showPrevious enabled', () => {
+    it('adds an infinite hits widget with showPrevious enabled', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
         indexName: '',
       };
       const callbacks = createCallbacks(experience);
 
-      executeToolCall(
+      await executeToolCall(
         'add_widget',
         {
           type: 'ais.infiniteHits',
@@ -929,14 +941,14 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('adds a pagination widget with boolean parameters', () => {
+    it('adds a pagination widget with boolean parameters', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
         indexName: '',
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.pagination',
@@ -973,14 +985,14 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('adds ais.stats widget', () => {
+    it('adds ais.stats widget', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
         indexName: '',
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.stats', container: '#stats' },
         callbacks
@@ -994,14 +1006,14 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('adds refinementList widget with parameters', () => {
+    it('adds refinementList widget with parameters', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
         indexName: '',
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.refinementList',
@@ -1032,7 +1044,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('adds a hitsPerPage widget with items parameter', () => {
+    it('adds a hitsPerPage widget with items parameter', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1045,7 +1057,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience, [0, 0]);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.hitsPerPage',
@@ -1074,7 +1086,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('adds a ratingMenu widget with attribute and max parameters', () => {
+    it('adds a ratingMenu widget with attribute and max parameters', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1087,7 +1099,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience, [0, 0]);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.ratingMenu',
@@ -1131,7 +1143,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience, [0, 0]);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.rangeSlider',
@@ -1187,7 +1199,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience, [0, 0]);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.trendingItems',
@@ -1218,7 +1230,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('adds a hierarchicalMenu widget with attributes and separator', () => {
+    it('adds a hierarchicalMenu widget with attributes and separator', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1231,7 +1243,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience, [0, 0]);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.hierarchicalMenu',
@@ -1269,7 +1281,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('adds a breadcrumb widget with attributes and separator', () => {
+    it('adds a breadcrumb widget with attributes and separator', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1282,7 +1294,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience, [0, 0]);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.breadcrumb',
@@ -1324,14 +1336,14 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('adds a numericMenu widget with attribute and items', () => {
+    it('adds a numericMenu widget with attribute and items', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
         indexName: '',
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.numericMenu',
@@ -1369,11 +1381,11 @@ describe('executeToolCall', () => {
       ]);
     });
 
-    it('adds a currentRefinements widget with list parameters', () => {
+    it('adds a currentRefinements widget with list parameters', async () => {
       const experience: ExperienceApiResponse = { blocks: [], indexName: '' };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.currentRefinements',
@@ -1400,7 +1412,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('adds a rangeInput widget with attribute and number parameters', () => {
+    it('adds a rangeInput widget with attribute and number parameters', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1413,7 +1425,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience, [0, 0]);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.rangeInput',
@@ -1456,14 +1468,14 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('adds a sortBy widget with items parameter', () => {
+    it('adds a sortBy widget with items parameter', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
         indexName: '',
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.sortBy',
@@ -1488,7 +1500,7 @@ describe('executeToolCall', () => {
       ]);
     });
 
-    it('computes the correct index for non-empty experiences', () => {
+    it('computes the correct index for non-empty experiences', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1501,7 +1513,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.index', parameters: { indexName: 'products' } },
         callbacks
@@ -1514,14 +1526,14 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('adds ais.index widget without parameters', () => {
+    it('adds ais.index widget without parameters', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
         indexName: '',
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.index' },
         callbacks
@@ -1534,14 +1546,14 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('does not require container for ais.index widgets', () => {
+    it('does not require container for ais.index widgets', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
         indexName: '',
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.index' },
         callbacks
@@ -1550,7 +1562,7 @@ describe('executeToolCall', () => {
       expect(result).toMatchObject({ success: true });
     });
 
-    it('adds index-dependent widget and passes target_index', () => {
+    it('adds index-dependent widget and passes target_index', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1563,7 +1575,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience, [0, 0]);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.autocomplete',
@@ -1581,7 +1593,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('returns error when target_index is not an ais.index block', () => {
+    it('returns error when target_index is not an ais.index block', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1593,7 +1605,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.autocomplete',
@@ -1610,14 +1622,14 @@ describe('executeToolCall', () => {
       expect(callbacks.onAddBlock).not.toHaveBeenCalled();
     });
 
-    it('returns error when target_index is out of bounds', () => {
+    it('returns error when target_index is out of bounds', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
         indexName: '',
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.autocomplete',
@@ -1634,14 +1646,14 @@ describe('executeToolCall', () => {
       expect(callbacks.onAddBlock).not.toHaveBeenCalled();
     });
 
-    it('includes note when index block was auto-created', () => {
+    it('includes note when index block was auto-created', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [],
         indexName: '',
       };
       const callbacks = createCallbacks(experience, [0, 0], true);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.autocomplete', container: '#search' },
         callbacks
@@ -1653,7 +1665,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('does not include note when added to existing index', () => {
+    it('does not include note when added to existing index', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1666,7 +1678,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience, [0, 0], false);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         { type: 'ais.autocomplete', container: '#search' },
         callbacks
@@ -1676,11 +1688,11 @@ describe('executeToolCall', () => {
       expect(result).not.toHaveProperty('note');
     });
 
-    it('adds configure widget with body placement and no container', () => {
+    it('adds configure widget with body placement and no container', async () => {
       const experience: ExperienceApiResponse = { blocks: [] };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'add_widget',
         {
           type: 'ais.configure',
@@ -1720,7 +1732,7 @@ describe('executeToolCall', () => {
   });
 
   describe('edit_widget', () => {
-    it('validates path bounds', () => {
+    it('validates path bounds', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1732,7 +1744,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '5', parameters: { container: '#new' } },
         callbacks
@@ -1742,7 +1754,7 @@ describe('executeToolCall', () => {
       expect(callbacks.onParameterChange).not.toHaveBeenCalled();
     });
 
-    it('applies allowed parameter changes', () => {
+    it('applies allowed parameter changes', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1754,7 +1766,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0', parameters: { container: '#new', showRecent: true } },
         callbacks
@@ -1776,7 +1788,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('edits nested widgets by path', () => {
+    it('edits nested widgets by path', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1794,7 +1806,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0.0', parameters: { container: '#new' } },
         callbacks
@@ -1811,7 +1823,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('reports rejected keys for disallowed parameters', () => {
+    it('reports rejected keys for disallowed parameters', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1823,7 +1835,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0', parameters: { container: '#new', unknownParam: 42 } },
         callbacks
@@ -1836,10 +1848,10 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('returns a clear error for empty experience', () => {
+    it('returns a clear error for empty experience', async () => {
       const callbacks = createCallbacks({ blocks: [], indexName: '' });
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0', parameters: { container: '#new' } },
         callbacks
@@ -1851,7 +1863,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('rejects malformed paths', () => {
+    it('rejects malformed paths', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1866,7 +1878,7 @@ describe('executeToolCall', () => {
       const malformedPaths = ['', '.', 'a.b', '0.0.0', '-1'];
 
       for (const path of malformedPaths) {
-        const result = executeToolCall(
+        const result = await executeToolCall(
           'edit_widget',
           { path, parameters: { container: '#new' } },
           callbacks
@@ -1877,7 +1889,7 @@ describe('executeToolCall', () => {
       expect(callbacks.onParameterChange).not.toHaveBeenCalled();
     });
 
-    it('allows editing placement', () => {
+    it('allows editing placement', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1889,7 +1901,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0', parameters: { placement: 'after' } },
         callbacks
@@ -1906,7 +1918,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('handles cssVariables changes', () => {
+    it('handles cssVariables changes', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1921,7 +1933,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -1940,7 +1952,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('handles multiple cssVariables in one call', () => {
+    it('handles multiple cssVariables in one call', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1955,7 +1967,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -1979,7 +1991,7 @@ describe('executeToolCall', () => {
       expect(callbacks.onCssVariableChange).toHaveBeenCalledTimes(2);
     });
 
-    it('applies cssVariables and regular params in one call', () => {
+    it('applies cssVariables and regular params in one call', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -1994,7 +2006,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2025,7 +2037,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('edits infinite hits escapeHTML parameter', () => {
+    it('edits infinite hits escapeHTML parameter', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2037,7 +2049,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0', parameters: { escapeHTML: false } },
         callbacks
@@ -2054,7 +2066,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('edits infinite hits cssClasses parameter', () => {
+    it('edits infinite hits cssClasses parameter', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2066,7 +2078,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2086,7 +2098,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('applies boolean and cssClasses changes on a pagination widget', () => {
+    it('applies boolean and cssClasses changes on a pagination widget', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2102,7 +2114,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2130,7 +2142,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('applies list parameter changes on clearRefinements', () => {
+    it('applies list parameter changes on clearRefinements', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2146,7 +2158,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2177,7 +2189,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('applies parameter changes on refinementList', () => {
+    it('applies parameter changes on refinementList', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2193,7 +2205,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2219,7 +2231,7 @@ describe('executeToolCall', () => {
       expect(callbacks.onParameterChange).toHaveBeenCalledWith([0], 'limit', 5);
     });
 
-    it('edits toggleRefinement attribute parameter', () => {
+    it('edits toggleRefinement attribute parameter', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2231,7 +2243,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0', parameters: { attribute: 'on_sale' } },
         callbacks
@@ -2248,7 +2260,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('returns empty applied when all parameters are rejected', () => {
+    it('returns empty applied when all parameters are rejected', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2260,7 +2272,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0', parameters: { unknownA: 1, unknownB: 2 } },
         callbacks
@@ -2274,7 +2286,7 @@ describe('executeToolCall', () => {
       expect(callbacks.onParameterChange).not.toHaveBeenCalled();
     });
 
-    it('applies a boolean parameter with switch override on hits', () => {
+    it('applies a boolean parameter with switch override on hits', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2286,7 +2298,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0', parameters: { escapeHTML: false } },
         callbacks
@@ -2304,7 +2316,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('applies an object parameter (cssClasses) on hits', () => {
+    it('applies an object parameter (cssClasses) on hits', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2316,7 +2328,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2339,7 +2351,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('includes invalid path in bounds error message', () => {
+    it('includes invalid path in bounds error message', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2355,7 +2367,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '5', parameters: { container: '#new' } },
         callbacks
@@ -2367,7 +2379,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('applies a boolean parameter with switch override on searchBox', () => {
+    it('applies a boolean parameter with switch override on searchBox', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2379,7 +2391,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0', parameters: { searchAsYouType: false } },
         callbacks
@@ -2397,7 +2409,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('applies an object parameter (cssClasses) on searchBox', () => {
+    it('applies an object parameter (cssClasses) on searchBox', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2409,7 +2421,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2432,7 +2444,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('applies a json parameter (searchParameters) on configure', () => {
+    it('applies a json parameter (searchParameters) on configure', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2444,7 +2456,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2467,7 +2479,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('edits ais.stats cssClasses', () => {
+    it('edits ais.stats cssClasses', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2479,7 +2491,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2499,7 +2511,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('edits hitsPerPage items parameter', () => {
+    it('edits hitsPerPage items parameter', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2514,7 +2526,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2538,7 +2550,7 @@ describe('executeToolCall', () => {
       ]);
     });
 
-    it('edits menu attribute parameter', () => {
+    it('edits menu attribute parameter', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2550,7 +2562,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0', parameters: { attribute: 'brand' } },
         callbacks
@@ -2567,7 +2579,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('edits ratingMenu attribute parameter', () => {
+    it('edits ratingMenu attribute parameter', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2579,7 +2591,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0', parameters: { attribute: 'score' } },
         callbacks
@@ -2613,7 +2625,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0', parameters: { min: 10, max: 500 } },
         callbacks
@@ -2639,7 +2651,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0', parameters: { limit: 20, threshold: 80 } },
         callbacks
@@ -2661,7 +2673,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('edits hierarchicalMenu attributes and separator', () => {
+    it('edits hierarchicalMenu attributes and separator', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2677,7 +2689,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2705,7 +2717,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('edits numericMenu attribute and items', () => {
+    it('edits numericMenu attribute and items', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2721,7 +2733,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2748,7 +2760,7 @@ describe('executeToolCall', () => {
       ]);
     });
 
-    it('applies list parameter changes on currentRefinements', () => {
+    it('applies list parameter changes on currentRefinements', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2764,7 +2776,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2795,7 +2807,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('edits rangeInput number parameters', () => {
+    it('edits rangeInput number parameters', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2812,7 +2824,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         { path: '0', parameters: { min: 10, max: 500, precision: 2 } },
         callbacks
@@ -2831,7 +2843,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('edits breadcrumb attributes and separator', () => {
+    it('edits breadcrumb attributes and separator', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2850,7 +2862,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2886,7 +2898,7 @@ describe('executeToolCall', () => {
       );
     });
 
-    it('edits sortBy items parameter', () => {
+    it('edits sortBy items parameter', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2901,7 +2913,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'edit_widget',
         {
           path: '0',
@@ -2927,7 +2939,7 @@ describe('executeToolCall', () => {
   });
 
   describe('remove_widget', () => {
-    it('calls onDeleteBlock for valid path', () => {
+    it('calls onDeleteBlock for valid path', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2939,7 +2951,11 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall('remove_widget', { path: '0' }, callbacks);
+      const result = await executeToolCall(
+        'remove_widget',
+        { path: '0' },
+        callbacks
+      );
 
       expect(callbacks.onDeleteBlock).toHaveBeenCalledWith([0]);
       expect(result).toMatchObject({
@@ -2948,7 +2964,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('validates path bounds', () => {
+    it('validates path bounds', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2960,13 +2976,17 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall('remove_widget', { path: '3' }, callbacks);
+      const result = await executeToolCall(
+        'remove_widget',
+        { path: '3' },
+        callbacks
+      );
 
       expect(result).toMatchObject({ success: false });
       expect(callbacks.onDeleteBlock).not.toHaveBeenCalled();
     });
 
-    it('removes an index block with children', () => {
+    it('removes an index block with children', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -2984,7 +3004,11 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall('remove_widget', { path: '0' }, callbacks);
+      const result = await executeToolCall(
+        'remove_widget',
+        { path: '0' },
+        callbacks
+      );
 
       expect(callbacks.onDeleteBlock).toHaveBeenCalledWith([0]);
       expect(result).toMatchObject({
@@ -2993,7 +3017,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('removes a nested child widget', () => {
+    it('removes a nested child widget', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -3015,7 +3039,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'remove_widget',
         { path: '0.1' },
         callbacks
@@ -3028,7 +3052,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('rejects malformed paths', () => {
+    it('rejects malformed paths', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -3043,17 +3067,25 @@ describe('executeToolCall', () => {
       const malformedPaths = ['', '.', 'a.b', '0.0.0', '-1'];
 
       for (const path of malformedPaths) {
-        const result = executeToolCall('remove_widget', { path }, callbacks);
+        const result = await executeToolCall(
+          'remove_widget',
+          { path },
+          callbacks
+        );
         expect(result).toMatchObject({ success: false });
       }
 
       expect(callbacks.onDeleteBlock).not.toHaveBeenCalled();
     });
 
-    it('returns a clear error for empty experience', () => {
+    it('returns a clear error for empty experience', async () => {
       const callbacks = createCallbacks({ blocks: [], indexName: '' });
 
-      const result = executeToolCall('remove_widget', { path: '0' }, callbacks);
+      const result = await executeToolCall(
+        'remove_widget',
+        { path: '0' },
+        callbacks
+      );
 
       expect(result).toMatchObject({
         success: false,
@@ -3063,7 +3095,7 @@ describe('executeToolCall', () => {
   });
 
   describe('move_widget', () => {
-    it('calls onMoveBlock for valid nested path', () => {
+    it('calls onMoveBlock for valid nested path', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -3086,7 +3118,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'move_widget',
         { path: '0.0', to_index: 1 },
         callbacks
@@ -3099,7 +3131,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    it('rejects top-level paths', () => {
+    it('rejects top-level paths', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -3111,7 +3143,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'move_widget',
         { path: '0', to_index: 1 },
         callbacks
@@ -3120,7 +3152,7 @@ describe('executeToolCall', () => {
       expect(result).toMatchObject({ success: false });
     });
 
-    it('rejects out-of-bounds to_index', () => {
+    it('rejects out-of-bounds to_index', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -3138,7 +3170,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'move_widget',
         { path: '0.0', to_index: 99 },
         callbacks
@@ -3151,7 +3183,7 @@ describe('executeToolCall', () => {
       expect(callbacks.onMoveBlock).not.toHaveBeenCalled();
     });
 
-    it('rejects non-existent nested path', () => {
+    it('rejects non-existent nested path', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -3169,7 +3201,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'move_widget',
         { path: '0.5', to_index: 1 },
         callbacks
@@ -3182,7 +3214,7 @@ describe('executeToolCall', () => {
       expect(callbacks.onMoveBlock).not.toHaveBeenCalled();
     });
 
-    it('rejects non-index target', () => {
+    it('rejects non-index target', async () => {
       const experience: ExperienceApiResponse = {
         blocks: [
           {
@@ -3204,7 +3236,7 @@ describe('executeToolCall', () => {
       };
       const callbacks = createCallbacks(experience);
 
-      const result = executeToolCall(
+      const result = await executeToolCall(
         'move_widget',
         { path: '0.0', to_index: 1 },
         callbacks
@@ -3219,13 +3251,13 @@ describe('executeToolCall', () => {
 });
 
 describe('describeToolAction', () => {
-  it('describes get_experience', () => {
+  it('describes get_experience', async () => {
     expect(describeToolAction('get_experience', {}, {})).toBe(
       'Checked experience state'
     );
   });
 
-  it('describes add_widget with type and container', () => {
+  it('describes add_widget with type and container', async () => {
     expect(
       describeToolAction(
         'add_widget',
@@ -3235,13 +3267,13 @@ describe('describeToolAction', () => {
     ).toBe('Added ais.autocomplete to #search');
   });
 
-  it('describes add_widget without container', () => {
+  it('describes add_widget without container', async () => {
     expect(
       describeToolAction('add_widget', { type: 'ais.chat' }, { success: true })
     ).toBe('Added ais.chat');
   });
 
-  it('describes add_widget with body placement', () => {
+  it('describes add_widget with body placement', async () => {
     expect(
       describeToolAction(
         'add_widget',
@@ -3251,7 +3283,7 @@ describe('describeToolAction', () => {
     ).toBe('Added ais.chat to body');
   });
 
-  it('describes add_widget with before placement', () => {
+  it('describes add_widget with before placement', async () => {
     expect(
       describeToolAction(
         'add_widget',
@@ -3265,7 +3297,7 @@ describe('describeToolAction', () => {
     ).toBe('Added ais.autocomplete before #search');
   });
 
-  it('describes edit_widget with applied params', () => {
+  it('describes edit_widget with applied params', async () => {
     expect(
       describeToolAction(
         'edit_widget',
@@ -3275,7 +3307,7 @@ describe('describeToolAction', () => {
     ).toBe('Edited widget 0 — container, showRecent');
   });
 
-  it('describes edit_widget with no applied params', () => {
+  it('describes edit_widget with no applied params', async () => {
     expect(
       describeToolAction(
         'edit_widget',
@@ -3285,7 +3317,7 @@ describe('describeToolAction', () => {
     ).toBe('Edited widget 2');
   });
 
-  it('describes remove_widget', () => {
+  it('describes remove_widget', async () => {
     expect(
       describeToolAction(
         'remove_widget',
@@ -3295,7 +3327,7 @@ describe('describeToolAction', () => {
     ).toBe('Removed widget 1');
   });
 
-  it('describes move_widget', () => {
+  it('describes move_widget', async () => {
     expect(
       describeToolAction(
         'move_widget',
@@ -3305,11 +3337,11 @@ describe('describeToolAction', () => {
     ).toBe('Moved widget 0.0 to index 1');
   });
 
-  it('falls back for unknown tools', () => {
+  it('falls back for unknown tools', async () => {
     expect(describeToolAction('unknown_tool', {}, {})).toBe('Action completed');
   });
 
-  it('handles undefined input and output', () => {
+  it('handles undefined input and output', async () => {
     expect(describeToolAction('add_widget', undefined, undefined)).toBe(
       'Added widget'
     );
@@ -3320,15 +3352,25 @@ describe('describeToolAction', () => {
       'Removed widget '
     );
   });
+
+  it('describes get_suggestions', async () => {
+    expect(
+      describeToolAction(
+        'get_suggestions',
+        { param: 'attribute', indexName: 'products' },
+        { values: ['brand', 'color'] }
+      )
+    ).toBe('Fetched suggestions for attribute');
+  });
 });
 
 describe('buildToolDefinitions', () => {
-  it('returns 5 tools', () => {
+  it('returns 6 tools', async () => {
     const tools = buildToolDefinitions();
-    expect(tools).toHaveLength(5);
+    expect(tools).toHaveLength(6);
   });
 
-  it('returns tools with the expected names', () => {
+  it('returns tools with the expected names', async () => {
     const tools = buildToolDefinitions();
     const names = tools.map((tool) => {
       return tool.name;
@@ -3339,10 +3381,11 @@ describe('buildToolDefinitions', () => {
       'edit_widget',
       'remove_widget',
       'move_widget',
+      'get_suggestions',
     ]);
   });
 
-  it('each tool has name, description, inputSchema, and type client_side', () => {
+  it('each tool has name, description, inputSchema, and type client_side', async () => {
     const tools = buildToolDefinitions();
     for (const tool of tools) {
       expect(tool).toHaveProperty('name');
@@ -3352,5 +3395,75 @@ describe('buildToolDefinitions', () => {
       expect(typeof tool.description).toBe('string');
       expect(typeof tool.inputSchema).toBe('object');
     }
+  });
+});
+
+describe('get_suggestions', () => {
+  it('returns error when param is missing', async () => {
+    const callbacks = createCallbacks();
+    const result = await executeToolCall(
+      'get_suggestions',
+      { indexName: 'products' },
+      callbacks
+    );
+    expect(result).toEqual({
+      success: false,
+      error: 'Missing required parameter: param',
+    });
+  });
+
+  it('returns error when indexName is missing for index-bound param', async () => {
+    const callbacks = createCallbacks();
+    const result = await executeToolCall(
+      'get_suggestions',
+      { param: 'attribute' },
+      callbacks
+    );
+    expect(result).toEqual({
+      success: false,
+      error: 'Missing required parameter: indexName',
+    });
+  });
+
+  it('returns error for param with no suggestion source', async () => {
+    const callbacks = createCallbacks();
+    const result = await executeToolCall(
+      'get_suggestions',
+      { param: 'showRecent', indexName: 'products' },
+      callbacks
+    );
+    expect(result).toEqual({
+      success: false,
+      error: 'No suggestions available for parameter "showRecent"',
+    });
+  });
+
+  it('calls getCredentials and returns fetch error for valid param', async () => {
+    const callbacks = createCallbacks();
+    const result = await executeToolCall(
+      'get_suggestions',
+      { param: 'attribute', indexName: 'products' },
+      callbacks
+    );
+    expect(callbacks.getCredentials).toHaveBeenCalled();
+    expect(result).toEqual({
+      error:
+        'Failed to fetch suggestions from facetAttributes for index "products"',
+    });
+  });
+
+  it('does not require indexName for agentId param', async () => {
+    const callbacks = createCallbacks();
+    const result = await executeToolCall(
+      'get_suggestions',
+      { param: 'agentId' },
+      callbacks
+    );
+    expect(callbacks.getCredentials).toHaveBeenCalled();
+    expect(callbacks.getEnv).toHaveBeenCalled();
+    // The fetch will fail (no MSW handler), but it should not error on missing indexName
+    expect(result).toEqual({
+      error: 'Failed to fetch suggestions from agentStudioAgents',
+    });
   });
 });

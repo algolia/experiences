@@ -19,6 +19,7 @@ import {
   executeToolCall,
   type ToolCallbacks,
 } from '../ai/tools';
+import { useToolbarContext } from '../lib/toolbar-context';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Button } from './ui/button';
 
@@ -89,6 +90,10 @@ export function AiChat({
   onDeleteBlock,
   onMoveBlock,
 }: AiChatProps) {
+  const { config } = useToolbarContext();
+  const configRef = useRef(config);
+  configRef.current = config;
+
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const experienceRef = useRef(experience);
@@ -125,8 +130,17 @@ export function AiChat({
       getExperience: () => {
         return experienceRef.current;
       },
+      getCredentials: () => {
+        return {
+          appId: configRef.current.appId,
+          apiKey: configRef.current.apiKey,
+        };
+      },
+      getEnv: () => {
+        return env;
+      },
     };
-  }, []);
+  }, [env]);
 
   const transport = useMemo(() => {
     const config = AGENT_STUDIO[env];
@@ -181,18 +195,21 @@ export function AiChat({
     messages: initialMessages,
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     onToolCall: ({ toolCall }) => {
-      const result = executeToolCall(
+      // Fire-and-forget: don't await to avoid deadlocking the serial
+      // job executor (onToolCall runs inside a stream processing job).
+      void executeToolCall(
         toolCall.toolName,
         (toolCall.input as Record<string, unknown>) ?? {},
         callbacks
-      );
-      // Fire-and-forget: don't await to avoid deadlocking the serial
-      // job executor (onToolCall runs inside a stream processing job).
-      void chatRef.current!.addToolOutput({
-        tool: toolCall.toolName,
-        toolCallId: toolCall.toolCallId,
-        output: result,
-      });
+      )
+        .then((output) => {
+          return chatRef.current!.addToolOutput({
+            tool: toolCall.toolName,
+            toolCallId: toolCall.toolCallId,
+            output,
+          });
+        })
+        .catch(() => {});
     },
   });
   chatRef.current = chat;

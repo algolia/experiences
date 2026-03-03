@@ -3,9 +3,11 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import {
+  fetchAgentStudioAgents,
   fetchExperience,
   fetchIndexRecords,
   fetchIndices,
+  fetchIndexSettings,
   fetchQuerySuggestionConfigs,
   saveExperience,
 } from '../src/api';
@@ -452,5 +454,294 @@ describe('fetchQuerySuggestionConfigs', () => {
 
     expect(headers!.get('X-Algolia-Application-ID')).toBe('APP_ID');
     expect(headers!.get('X-Algolia-API-Key')).toBe('API_KEY');
+  });
+});
+
+describe('fetchIndexSettings', () => {
+  it('fetches settings from the Algolia API', async () => {
+    server.use(
+      http.get(
+        'https://APP_ID-dsn.algolia.net/1/indexes/my_index/settings',
+        () => {
+          return HttpResponse.json({
+            attributesForFaceting: ['brand', 'searchable(color)'],
+          });
+        }
+      )
+    );
+
+    const result = await fetchIndexSettings({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      indexName: 'my_index',
+    });
+
+    expect(result).toEqual({
+      attributesForFaceting: ['brand', 'searchable(color)'],
+    });
+  });
+
+  it('sends correct headers', async () => {
+    let headers: Headers;
+
+    server.use(
+      http.get(
+        'https://APP_ID-dsn.algolia.net/1/indexes/my_index/settings',
+        ({ request }) => {
+          headers = request.headers;
+
+          return HttpResponse.json({});
+        }
+      )
+    );
+
+    await fetchIndexSettings({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      indexName: 'my_index',
+    });
+
+    expect(headers!.get('X-Algolia-Application-ID')).toBe('APP_ID');
+    expect(headers!.get('X-Algolia-API-Key')).toBe('API_KEY');
+  });
+
+  it('returns empty object on error', async () => {
+    server.use(
+      http.get(
+        'https://APP_ID-dsn.algolia.net/1/indexes/my_index/settings',
+        () => {
+          return new HttpResponse(null, { status: 403 });
+        }
+      )
+    );
+
+    const result = await fetchIndexSettings({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      indexName: 'my_index',
+    });
+
+    expect(result).toEqual({});
+  });
+});
+
+describe('fetchAgentStudioAgents', () => {
+  it('fetches agents from the beta Agent Studio API', async () => {
+    server.use(
+      http.get('https://agent-studio-staging.eu.algolia.com/1/agents', () => {
+        return HttpResponse.json({
+          data: [{ id: 'id-1', name: 'Agent One', status: 'published' }],
+          pagination: { page: 1, limit: 100, totalCount: 1, totalPages: 1 },
+        });
+      })
+    );
+
+    const result = await fetchAgentStudioAgents({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      env: 'beta',
+    });
+
+    expect(result).toEqual([
+      { id: 'id-1', name: 'Agent One', status: 'published' },
+    ]);
+  });
+
+  it('uses prod URL when env is prod', async () => {
+    let requestUrl = '';
+
+    server.use(
+      http.get(
+        'https://APP_ID.algolia.net/agent-studio/1/agents',
+        ({ request }) => {
+          requestUrl = request.url;
+
+          return HttpResponse.json({
+            data: [],
+            pagination: { page: 1, limit: 100, totalCount: 0, totalPages: 0 },
+          });
+        }
+      )
+    );
+
+    await fetchAgentStudioAgents({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      env: 'prod',
+    });
+
+    expect(requestUrl).toContain('app_id.algolia.net/agent-studio');
+  });
+
+  it('sends correct headers', async () => {
+    let headers: Headers;
+
+    server.use(
+      http.get(
+        'https://agent-studio-staging.eu.algolia.com/1/agents',
+        ({ request }) => {
+          headers = request.headers;
+
+          return HttpResponse.json({
+            data: [],
+            pagination: { page: 1, limit: 100, totalCount: 0, totalPages: 0 },
+          });
+        }
+      )
+    );
+
+    await fetchAgentStudioAgents({
+      appId: 'MY_APP_ID',
+      apiKey: 'MY_API_KEY',
+      env: 'beta',
+    });
+
+    expect(headers!.get('X-Algolia-Application-ID')).toBe('MY_APP_ID');
+    expect(headers!.get('X-Algolia-API-Key')).toBe('MY_API_KEY');
+  });
+
+  it('fetches all pages', async () => {
+    server.use(
+      http.get(
+        'https://agent-studio-staging.eu.algolia.com/1/agents',
+        ({ request }) => {
+          const url = new URL(request.url);
+          const page = url.searchParams.get('page') ?? '1';
+
+          if (page === '1') {
+            return HttpResponse.json({
+              data: [{ id: 'id-a', name: 'Agent A', status: 'published' }],
+              pagination: { page: 1, limit: 1, totalCount: 2, totalPages: 2 },
+            });
+          }
+
+          return HttpResponse.json({
+            data: [{ id: 'id-b', name: 'Agent B', status: 'published' }],
+            pagination: { page: 2, limit: 1, totalCount: 2, totalPages: 2 },
+          });
+        }
+      )
+    );
+
+    const result = await fetchAgentStudioAgents({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      env: 'beta',
+    });
+
+    expect(result).toEqual([
+      { id: 'id-a', name: 'Agent A', status: 'published' },
+      { id: 'id-b', name: 'Agent B', status: 'published' },
+    ]);
+  });
+
+  it('filters out draft agents and sorts by name', async () => {
+    server.use(
+      http.get('https://agent-studio-staging.eu.algolia.com/1/agents', () => {
+        return HttpResponse.json({
+          data: [
+            { id: 'id-z', name: 'Zebra', status: 'published' },
+            { id: 'id-d', name: 'Draft', status: 'draft' },
+            { id: 'id-a', name: 'Alpha', status: 'published' },
+          ],
+          pagination: { page: 1, limit: 100, totalCount: 3, totalPages: 1 },
+        });
+      })
+    );
+
+    const result = await fetchAgentStudioAgents({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      env: 'beta',
+    });
+
+    expect(result).toEqual([
+      { id: 'id-a', name: 'Alpha', status: 'published' },
+      { id: 'id-z', name: 'Zebra', status: 'published' },
+    ]);
+  });
+
+  it('returns empty array when response has no data field', async () => {
+    server.use(
+      http.get('https://agent-studio-staging.eu.algolia.com/1/agents', () => {
+        return HttpResponse.json({});
+      })
+    );
+
+    const result = await fetchAgentStudioAgents({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      env: 'beta',
+    });
+
+    expect(result).toEqual([]);
+  });
+
+  it('stops paginating when pagination field is missing', async () => {
+    server.use(
+      http.get('https://agent-studio-staging.eu.algolia.com/1/agents', () => {
+        return HttpResponse.json({
+          data: [{ id: 'id-1', name: 'Agent', status: 'published' }],
+        });
+      })
+    );
+
+    const result = await fetchAgentStudioAgents({
+      appId: 'APP_ID',
+      apiKey: 'API_KEY',
+      env: 'beta',
+    });
+
+    expect(result).toEqual([
+      { id: 'id-1', name: 'Agent', status: 'published' },
+    ]);
+  });
+
+  it('throws when the API responds with an error', async () => {
+    server.use(
+      http.get('https://agent-studio-staging.eu.algolia.com/1/agents', () => {
+        return new HttpResponse(null, { status: 403, statusText: 'Forbidden' });
+      })
+    );
+
+    await expect(
+      fetchAgentStudioAgents({
+        appId: 'APP_ID',
+        apiKey: 'API_KEY',
+        env: 'beta',
+      })
+    ).rejects.toThrow('Failed to fetch agents: 403');
+  });
+
+  it('throws when a subsequent page fails', async () => {
+    server.use(
+      http.get(
+        'https://agent-studio-staging.eu.algolia.com/1/agents',
+        ({ request }) => {
+          const url = new URL(request.url);
+          const page = url.searchParams.get('page') ?? '1';
+
+          if (page === '1') {
+            return HttpResponse.json({
+              data: [{ id: 'id-a', name: 'Agent A', status: 'published' }],
+              pagination: { page: 1, limit: 1, totalCount: 2, totalPages: 2 },
+            });
+          }
+
+          return new HttpResponse(null, {
+            status: 500,
+            statusText: 'Internal Server Error',
+          });
+        }
+      )
+    );
+
+    await expect(
+      fetchAgentStudioAgents({
+        appId: 'APP_ID',
+        apiKey: 'API_KEY',
+        env: 'beta',
+      })
+    ).rejects.toThrow('Failed to fetch agents: 500');
   });
 });

@@ -7,16 +7,17 @@ import type {
   ExperienceApiResponse,
   SaveState,
 } from '../types';
-import { useIndices } from '../hooks/use-indices';
+import { useAgentStudioAgents, useIndices } from '../hooks/use-indices';
 import type { IndexSuggestKind } from '../widget-types';
 import { AddWidgetPopover } from './add-widget-popover';
 import { AiChat } from './ai-chat';
 import { BlockCard } from './block-card';
 import { IndexBlockGroup } from './index-block-group';
 import { Button } from './ui/button';
+import type { Suggestion } from './ui/combobox';
 import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 
-export type SuggestLists = Partial<Record<IndexSuggestKind, string[]>>;
+export type SuggestLists = Partial<Record<IndexSuggestKind, Suggestion[]>>;
 
 type PanelProps = {
   env: Environment;
@@ -69,12 +70,20 @@ export function Panel({
       expandedBlock !== null &&
       experience.blocks[Number(expandedBlock)]?.type === 'ais.autocomplete',
   });
+  const agentStudioAgents = useAgentStudioAgents();
+  const agentSuggestions = useMemo(() => {
+    return agentStudioAgents.map((agent) => {
+      return { value: agent.id, label: agent.name };
+    });
+  }, [agentStudioAgents]);
   const suggestLists: SuggestLists = useMemo(() => {
     return {
       indices: allIndexNames.length > 0 ? allIndexNames : undefined,
       'indices:qs': qsIndexNames.length > 0 ? qsIndexNames : undefined,
+      agentStudioAgents:
+        agentSuggestions.length > 0 ? agentSuggestions : undefined,
     };
-  }, [allIndexNames, qsIndexNames]);
+  }, [allIndexNames, qsIndexNames, agentSuggestions]);
 
   const widgetCount = experience.blocks.reduce((count, block) => {
     return block.type === 'ais.index'

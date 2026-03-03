@@ -9,11 +9,23 @@ import {
 
 import { Input } from './input';
 
+export type Suggestion = string | { value: string; label: string };
+
+type NormalizedSuggestion = { value: string; label: string };
+
+function normalize(suggestion: Suggestion): NormalizedSuggestion {
+  if (typeof suggestion === 'string') {
+    return { value: suggestion, label: suggestion };
+  }
+
+  return suggestion;
+}
+
 type ComboboxProps = Omit<
   JSX.IntrinsicElements['input'],
   'onInput' | 'onSelect'
 > & {
-  suggestions: string[];
+  suggestions: Suggestion[];
   onInput: (value: string) => void;
   label: string;
 };
@@ -32,8 +44,13 @@ export function Combobox({
   const listboxRef = useRef<HTMLUListElement>(null);
 
   const text = typeof value === 'string' ? value : '';
-  const filtered = suggestions.filter((item) => {
-    return item.toLowerCase().includes(text.toLowerCase());
+  const query = text.toLowerCase();
+  const items = suggestions.map(normalize);
+  const filtered = items.filter((item) => {
+    return (
+      item.value.toLowerCase().includes(query) ||
+      item.label.toLowerCase().includes(query)
+    );
   });
 
   const safeIndex = activeIndex >= filtered.length ? -1 : activeIndex;
@@ -80,8 +97,12 @@ export function Combobox({
     }
   }, [safeIndex]);
 
-  function select(item: string) {
-    onInput(item);
+  const resolvedLabel = items.find((item) => {
+    return item.value === text && item.label !== item.value;
+  })?.label;
+
+  function select(item: NormalizedSuggestion) {
+    onInput(item.value);
     setOpen(false);
     setActiveIndex(-1);
   }
@@ -161,6 +182,9 @@ export function Combobox({
         }}
         onKeyDown={onKeyDown}
       />
+      {resolvedLabel && (
+        <p class="text-muted-foreground text-xs mt-1">{resolvedLabel}</p>
+      )}
       {showDropdown && (
         <ul
           ref={listboxRef}
@@ -172,7 +196,7 @@ export function Combobox({
           {filtered.map((item, index) => {
             return (
               <li
-                key={item}
+                key={item.value}
                 id={`${listboxId}-${index}`}
                 role="option"
                 aria-selected={index === safeIndex}
@@ -185,7 +209,16 @@ export function Combobox({
                   setActiveIndex(index);
                 }}
               >
-                {item}
+                {item.label !== item.value ? (
+                  <>
+                    <span class="block">{item.label}</span>
+                    <span class="block text-[11px] opacity-60">
+                      {item.value}
+                    </span>
+                  </>
+                ) : (
+                  item.value
+                )}
               </li>
             );
           })}
