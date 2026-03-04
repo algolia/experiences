@@ -223,7 +223,7 @@ export async function fetchAgentStudioAgents({
 }: FetchAgentStudioAgentsParams): Promise<AgentStudioAgent[]> {
   const baseUrl =
     env === 'beta'
-      ? 'https://agent-studio-staging.eu.algolia.com/1/agents'
+      ? 'https://agent-studio.staging.eu.algolia.com/1/agents'
       : `https://${appId}.algolia.net/agent-studio/1/agents`;
 
   const agents: AgentStudioAgent[] = [];

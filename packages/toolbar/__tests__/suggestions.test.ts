@@ -126,7 +126,7 @@ describe('fetchSuggestions', () => {
 
   it('returns agents sorted by name with draft agents filtered out', async () => {
     server.use(
-      http.get('https://agent-studio-staging.eu.algolia.com/1/agents', () => {
+      http.get('https://agent-studio.staging.eu.algolia.com/1/agents', () => {
         return HttpResponse.json({
           data: [
             { id: 'id-zebra', name: 'Zebra Agent', status: 'published' },
@@ -157,7 +157,7 @@ describe('fetchSuggestions', () => {
   it('fetches all pages of agents', async () => {
     server.use(
       http.get(
-        'https://agent-studio-staging.eu.algolia.com/1/agents',
+        'https://agent-studio.staging.eu.algolia.com/1/agents',
         ({ request }) => {
           const url = new URL(request.url);
           const page = url.searchParams.get('page') ?? '1';
@@ -205,7 +205,7 @@ describe('fetchSuggestions', () => {
 
   it('returns error when agent fetch fails', async () => {
     server.use(
-      http.get('https://agent-studio-staging.eu.algolia.com/1/agents', () => {
+      http.get('https://agent-studio.staging.eu.algolia.com/1/agents', () => {
         return HttpResponse.error();
       })
     );

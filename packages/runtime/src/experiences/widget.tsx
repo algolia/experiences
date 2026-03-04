@@ -383,7 +383,7 @@ function createAgentConfig(
 
   return {
     transport: {
-      api: `https://agent-studio-staging.eu.algolia.com/1/agents/${agentId}/completions?compatibilityMode=ai-sdk-5`,
+      api: `https://agent-studio.staging.eu.algolia.com/1/agents/${agentId}/completions?compatibilityMode=ai-sdk-5`,
       headers: {
         'x-algolia-application-id': appId!,
         'x-algolia-api-key': apiKey!,
