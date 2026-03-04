@@ -6,10 +6,10 @@ import type {
   ExperienceApiResponse,
   Placement,
 } from '../types';
+import type { FieldConfig, IndexSuggestKind } from '../widget-types';
 import { WIDGET_TYPES } from '../widget-types';
 import {
   fetchSuggestions,
-  getSuggestionSourceForParam,
   suggestionSourceRequiresIndexName,
 } from './suggestions';
 
@@ -28,6 +28,39 @@ function getEnabledTypes() {
   return Object.entries(WIDGET_TYPES).filter(([, config]) => {
     return config.enabled;
   });
+}
+
+type SuggestAnnotation = { key?: string; kind: IndexSuggestKind };
+
+function getSuggestAnnotations(
+  field: FieldConfig | undefined
+): SuggestAnnotation[] {
+  if (!field) {
+    return [];
+  }
+
+  if (
+    (field.type === 'text' || field.type === 'list') &&
+    'suggest' in field &&
+    field.suggest
+  ) {
+    return [{ kind: field.suggest }];
+  }
+
+  if (
+    (field.type === 'object' || field.type === 'items-list') &&
+    'fields' in field
+  ) {
+    return field.fields
+      .filter((nested) => {
+        return 'suggest' in nested && nested.suggest;
+      })
+      .map((nested) => {
+        return { key: nested.key, kind: nested.suggest! };
+      });
+  }
+
+  return [];
 }
 
 export function describeWidgetTypes(): string {
@@ -68,8 +101,13 @@ export function describeWidgetTypes(): string {
           if (param.description) {
             line += `: ${param.description}`;
           }
-          if (getSuggestionSourceForParam(param.key)) {
-            line += ' [has suggestions]';
+          const annotations = getSuggestAnnotations(param.field);
+          for (const annotation of annotations) {
+            if (annotation.key) {
+              line += ` (${annotation.key} [suggests: ${annotation.kind}])`;
+            } else {
+              line += ` [suggests: ${annotation.kind}]`;
+            }
           }
 
           return line;
@@ -212,7 +250,7 @@ export function describeToolAction(
     case 'move_widget':
       return `Moved widget ${input?.path ?? ''} to index ${input?.to_index ?? ''}`;
     case 'get_suggestions':
-      return `Fetched suggestions for ${input?.param ?? 'parameter'}`;
+      return `Fetched suggestions for ${input?.suggestKind ?? 'parameter'}`;
     default:
       return 'Action completed';
   }
@@ -457,29 +495,24 @@ async function executeGetSuggestions(
   args: Record<string, unknown>,
   callbacks: ToolCallbacks
 ): Promise<Record<string, unknown>> {
-  const param = args.param as string | undefined;
+  const suggestKind = args.suggestKind as string | undefined;
   const indexName = args.indexName as string | undefined;
 
-  if (!param) {
-    return { success: false, error: 'Missing required parameter: param' };
-  }
-
-  const sourceName = getSuggestionSourceForParam(param);
-  if (!sourceName) {
+  if (!suggestKind) {
     return {
       success: false,
-      error: `No suggestions available for parameter "${param}"`,
+      error: 'Missing required parameter: suggestKind',
     };
   }
 
-  if (suggestionSourceRequiresIndexName(sourceName) && !indexName) {
+  if (suggestionSourceRequiresIndexName(suggestKind) && !indexName) {
     return { success: false, error: 'Missing required parameter: indexName' };
   }
 
   const credentials = callbacks.getCredentials();
   const env = callbacks.getEnv();
   const result = await fetchSuggestions(
-    sourceName,
+    suggestKind,
     credentials,
     env,
     indexName
@@ -616,22 +649,22 @@ export function buildToolDefinitions(): AgentStudioTool[] {
     get_suggestions: {
       name: 'get_suggestions',
       description:
-        'Get valid values for a widget parameter. Returns a list of values (e.g., facet attributes for "attribute", available agents for "agentId").',
+        'Get valid values for a widget parameter. Returns a list of values based on the suggestion kind from [suggests: <kind>] annotations.',
       inputSchema: {
         type: 'object',
         properties: {
-          param: {
+          suggestKind: {
             type: 'string',
             description:
-              'The parameter name to get suggestions for (e.g., "attribute", "agentId")',
+              'The suggestion kind from [suggests: <kind>] annotations (e.g., "facetAttributes", "indices", "indices:replicas")',
           },
           indexName: {
             type: 'string',
             description:
-              'The Algolia index name to fetch suggestions from (required for index-bound parameters like "attribute")',
+              'The Algolia index name (required for index-bound suggestion kinds like "facetAttributes", "indices:replicas", "indexAttributes")',
           },
         },
-        required: ['param'],
+        required: ['suggestKind'],
       },
       type: 'client_side',
     },
@@ -666,7 +699,7 @@ Each widget type has a default placement listed above. When placement is \`body\
 - Before editing or removing, ALWAYS call get_experience first to verify current widget paths and state.
 - Refer to widgets by their path from get_experience results.
 - If the user's request is ambiguous, ask for clarification.
-- When setting a parameter marked [has suggestions], ALWAYS call get_suggestions first to discover valid values. For index-bound parameters (like "attribute"), pass the indexName from the relevant ais.index block. For other parameters (like "agentId"), only the param name is needed.`;
+- When setting a parameter marked [suggests: <kind>], ALWAYS call get_suggestions first with that suggestKind to discover valid values. For index-bound kinds (like "facetAttributes", "indices:replicas", "indexAttributes"), also pass the indexName from the relevant ais.index block.`;
 }
 
 export async function executeToolCall(

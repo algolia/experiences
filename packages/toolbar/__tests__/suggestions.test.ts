@@ -4,7 +4,6 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import {
   fetchSuggestions,
-  getSuggestionSourceForParam,
   suggestionSourceRequiresIndexName,
 } from '../src/ai/suggestions';
 
@@ -20,34 +19,29 @@ afterAll(() => {
   return server.close();
 });
 
-describe('getSuggestionSourceForParam', () => {
-  it('returns source name for attribute param', () => {
-    expect(getSuggestionSourceForParam('attribute')).toBe('facetAttributes');
-    expect(getSuggestionSourceForParam('attributes')).toBe('facetAttributes');
-    expect(getSuggestionSourceForParam('includedAttributes')).toBe(
-      'facetAttributes'
-    );
-    expect(getSuggestionSourceForParam('excludedAttributes')).toBe(
-      'facetAttributes'
-    );
-  });
-
-  it('returns source name for agentId param', () => {
-    expect(getSuggestionSourceForParam('agentId')).toBe('agentStudioAgents');
-  });
-
-  it('returns undefined for unknown param', () => {
-    expect(getSuggestionSourceForParam('unknownParam')).toBeUndefined();
-  });
-});
-
 describe('suggestionSourceRequiresIndexName', () => {
   it('returns true for facetAttributes', () => {
     expect(suggestionSourceRequiresIndexName('facetAttributes')).toBe(true);
   });
 
+  it('returns true for indices:replicas', () => {
+    expect(suggestionSourceRequiresIndexName('indices:replicas')).toBe(true);
+  });
+
+  it('returns true for indexAttributes', () => {
+    expect(suggestionSourceRequiresIndexName('indexAttributes')).toBe(true);
+  });
+
   it('returns false for agentStudioAgents', () => {
     expect(suggestionSourceRequiresIndexName('agentStudioAgents')).toBe(false);
+  });
+
+  it('returns false for indices', () => {
+    expect(suggestionSourceRequiresIndexName('indices')).toBe(false);
+  });
+
+  it('returns false for indices:qs', () => {
+    expect(suggestionSourceRequiresIndexName('indices:qs')).toBe(false);
   });
 
   it('returns false for unknown source', () => {
@@ -241,6 +235,188 @@ describe('fetchSuggestions', () => {
       values: ['id-prod'],
       description: 'Available Agent Studio agents',
       labels: { 'id-prod': 'Prod Agent' },
+    });
+  });
+
+  it('returns sorted index names', async () => {
+    server.use(
+      http.get('https://APP_ID-dsn.algolia.net/1/indexes', () => {
+        return HttpResponse.json({
+          items: [
+            { name: 'products' },
+            { name: 'articles' },
+            { name: 'categories' },
+          ],
+          nbPages: 1,
+        });
+      })
+    );
+
+    const result = await fetchSuggestions('indices', credentials, 'beta');
+
+    expect(result).toEqual({
+      values: ['articles', 'categories', 'products'],
+      description: 'Available Algolia indices',
+    });
+  });
+
+  it('returns empty values when indices fetch fails', async () => {
+    server.use(
+      http.get('https://APP_ID-dsn.algolia.net/1/indexes', () => {
+        return HttpResponse.error();
+      })
+    );
+
+    const result = await fetchSuggestions('indices', credentials, 'beta');
+
+    expect(result).toEqual({
+      values: [],
+      description: 'Available Algolia indices',
+    });
+  });
+
+  it('returns sorted replica names for a given index', async () => {
+    server.use(
+      http.get('https://APP_ID-dsn.algolia.net/1/indexes', () => {
+        return HttpResponse.json({
+          items: [
+            {
+              name: 'products',
+              replicas: ['products_price_asc', 'products_name_desc'],
+            },
+            { name: 'articles' },
+          ],
+          nbPages: 1,
+        });
+      })
+    );
+
+    const result = await fetchSuggestions(
+      'indices:replicas',
+      credentials,
+      'beta',
+      'products'
+    );
+
+    expect(result).toEqual({
+      values: ['products_name_desc', 'products_price_asc'],
+      description: 'Replica indices for the given index',
+    });
+  });
+
+  it('returns empty values when index has no replicas', async () => {
+    server.use(
+      http.get('https://APP_ID-dsn.algolia.net/1/indexes', () => {
+        return HttpResponse.json({
+          items: [{ name: 'products' }],
+          nbPages: 1,
+        });
+      })
+    );
+
+    const result = await fetchSuggestions(
+      'indices:replicas',
+      credentials,
+      'beta',
+      'products'
+    );
+
+    expect(result).toEqual({
+      values: [],
+      description: 'Replica indices for the given index',
+    });
+  });
+
+  it('returns sorted query suggestion index names', async () => {
+    server.use(
+      http.get('https://query-suggestions.us.algolia.com/1/configs', () => {
+        return HttpResponse.json([
+          {
+            indexName: 'products_query_suggestions',
+            sourceIndices: [{ indexName: 'products' }],
+          },
+          {
+            indexName: 'articles_query_suggestions',
+            sourceIndices: [{ indexName: 'articles' }],
+          },
+        ]);
+      })
+    );
+
+    const result = await fetchSuggestions('indices:qs', credentials, 'beta');
+
+    expect(result).toEqual({
+      values: ['articles_query_suggestions', 'products_query_suggestions'],
+      description: 'Query Suggestion indices',
+    });
+  });
+
+  it('returns error when QS config fetch fails', async () => {
+    server.use(
+      http.get('https://query-suggestions.us.algolia.com/1/configs', () => {
+        return HttpResponse.error();
+      }),
+      http.get('https://query-suggestions.eu.algolia.com/1/configs', () => {
+        return HttpResponse.error();
+      })
+    );
+
+    const result = await fetchSuggestions('indices:qs', credentials, 'beta');
+
+    expect(result).toEqual({
+      values: [],
+      description: 'Query Suggestion indices',
+    });
+  });
+
+  it('returns sorted attribute names from index records', async () => {
+    server.use(
+      http.post(
+        'https://APP_ID-dsn.algolia.net/1/indexes/products/query',
+        () => {
+          return HttpResponse.json({
+            hits: [
+              { objectID: '1', name: 'Widget', price: 9.99, brand: 'Acme' },
+              { objectID: '2', name: 'Gadget', color: 'red', brand: 'Beta' },
+            ],
+          });
+        }
+      )
+    );
+
+    const result = await fetchSuggestions(
+      'indexAttributes',
+      credentials,
+      'beta',
+      'products'
+    );
+
+    expect(result).toEqual({
+      values: ['brand', 'color', 'name', 'price'],
+      description: 'Attributes found in index records',
+    });
+  });
+
+  it('returns error when index records fetch fails', async () => {
+    server.use(
+      http.post(
+        'https://APP_ID-dsn.algolia.net/1/indexes/products/query',
+        () => {
+          return HttpResponse.error();
+        }
+      )
+    );
+
+    const result = await fetchSuggestions(
+      'indexAttributes',
+      credentials,
+      'beta',
+      'products'
+    );
+
+    expect(result).toEqual({
+      error:
+        'Failed to fetch suggestions from indexAttributes for index "products"',
     });
   });
 });
