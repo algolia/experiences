@@ -12,7 +12,7 @@ export const AGENT_STUDIO: Record<Environment, AgentStudioEnvironment> = {
     appId: process.env.AGENT_STUDIO_BETA_APP_ID!,
     agentId: process.env.AGENT_STUDIO_BETA_AGENT_ID!,
     searchApiKey: process.env.AGENT_STUDIO_BETA_SEARCH_API_KEY!,
-    baseUrl: `https://agent-studio-staging.eu.algolia.com/1/agents/${process.env.AGENT_STUDIO_BETA_AGENT_ID}`,
+    baseUrl: `https://agent-studio.staging.eu.algolia.com/1/agents/${process.env.AGENT_STUDIO_BETA_AGENT_ID}`,
   },
   prod: {
     appId: process.env.AGENT_STUDIO_PROD_APP_ID!,
