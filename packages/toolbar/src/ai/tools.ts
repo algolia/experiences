@@ -699,7 +699,8 @@ Each widget type has a default placement listed above. When placement is \`body\
 - Before editing or removing, ALWAYS call get_experience first to verify current widget paths and state.
 - Refer to widgets by their path from get_experience results.
 - If the user's request is ambiguous, ask for clarification.
-- When setting a parameter marked [suggests: <kind>], ALWAYS call get_suggestions first with that suggestKind to discover valid values. For index-bound kinds (like "facetAttributes", "indices:replicas", "indexAttributes"), also pass the indexName from the relevant ais.index block.`;
+- When setting a parameter marked [suggests: <kind>], ALWAYS call get_suggestions first with that suggestKind to discover valid values. For index-bound kinds (like "facetAttributes", "indices:replicas", "indexAttributes"), also pass the indexName from the relevant ais.index block.
+- When filling or updating a \`template\` (item-template) parameter: first call get_experience to find the widget and its parent ais.index indexName, then call get_suggestions with suggestKind "indexAttributes" and that indexName. Match returned attributes to template slots by semantic similarity (e.g. "product_name"/"title" → name, "brand"/"product_type" → category, "description"/"short_description" → description, "image_url"/"thumbnail"/"images.0" → image, "price"/"sale_price" → price). Prefer the most specific match. Leave a slot empty ("") if no attribute is a reasonable match.`;
 }
 
 export async function executeToolCall(
