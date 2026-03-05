@@ -242,6 +242,52 @@ describe('/{experienceId}', () => {
       expect(storedVersion).toBe('3.0.0');
     });
   });
+  describe('DELETE', () => {
+    it('returns 403 when getApiKey throws (invalid credentials)', async () => {
+      mockGetApiKey.mockRejectedValue(new Error('Invalid API key'));
+
+      const response = await createTestRequest('/exp123', {
+        method: 'DELETE',
+        headers: CREDENTIALS_HEADERS,
+      });
+
+      expect(response.status).toBe(403);
+      const body = await response.json<ResponseBody>();
+      expect(body.message).toBe('Forbidden');
+    });
+
+    it('returns 403 when API key lacks editSettings ACL', async () => {
+      mockGetApiKey.mockResolvedValue({ acl: ['search'] });
+
+      const response = await createTestRequest('/exp123', {
+        method: 'DELETE',
+        headers: CREDENTIALS_HEADERS,
+      });
+
+      expect(response.status).toBe(403);
+      const body = await response.json<ResponseBody>();
+      expect(body.message).toBe('Forbidden');
+    });
+
+    it('returns 200 and deletes KV entry', async () => {
+      mockGetApiKey.mockResolvedValue({ acl: ['editSettings'] });
+      await env.EXPERIENCES_BUNDLE_VERSIONS.put('TEST_APP_ID:exp123', '1.0.0');
+
+      const response = await createTestRequest('/exp123', {
+        method: 'DELETE',
+        headers: CREDENTIALS_HEADERS,
+      });
+
+      expect(response.status).toBe(200);
+      const body = await response.json<ResponseBody>();
+      expect(body.experienceId).toBe('exp123');
+
+      // Verify KV entry was deleted
+      const storedVersion =
+        await env.EXPERIENCES_BUNDLE_VERSIONS.get('TEST_APP_ID:exp123');
+      expect(storedVersion).toBeNull();
+    });
+  });
 });
 
 function createTestRequest(
