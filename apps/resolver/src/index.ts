@@ -4,7 +4,7 @@ import type { Acl, Algoliasearch } from 'algoliasearch';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
   'Access-Control-Allow-Headers':
     'X-Algolia-Application-Id, X-Algolia-API-Key, Content-Type',
   'Access-Control-Max-Age': '86400',
@@ -77,6 +77,17 @@ export default {
       }
 
       await env.EXPERIENCES_BUNDLE_VERSIONS.put(kvKey, bundleVersion);
+
+      return response({ experienceId });
+    }
+
+    if (request.method === 'DELETE') {
+      const hasAccess = await validateAcl(client, apiKey, 'editSettings');
+      if (!hasAccess) {
+        return response({ message: 'Forbidden' }, 403);
+      }
+
+      await env.EXPERIENCES_BUNDLE_VERSIONS.delete(kvKey);
 
       return response({ experienceId });
     }
