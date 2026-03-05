@@ -1,5 +1,11 @@
 import { resolve } from 'node:path';
-import { mkdirSync, readFileSync, watch, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  mkdirSync,
+  readFileSync,
+  watch,
+  writeFileSync,
+} from 'node:fs';
 
 const CANARY_URL =
   'https://github.com/algolia/experiences/releases/download/canary/';
@@ -157,6 +163,32 @@ export default {
       },
       closeBundle() {
         const outDir = resolve(__dirname, 'dist');
+
+        // Copy local dist files so Netlify serves them at /__local__/
+        const localDir = resolve(outDir, '__local__');
+        mkdirSync(localDir, { recursive: true });
+
+        // Copy loader bundles, patched to use the local resolver
+        for (const name of ['experiences.js', 'experiences.preview.js']) {
+          let content = readFileSync(resolveDistFile(name), 'utf-8');
+          content = content.replaceAll(RESOLVER_URL, '/__resolver__');
+          writeFileSync(resolve(localDir, name), content);
+        }
+
+        // Copy runtime and toolbar as-is
+        for (const name of ['runtime.js', 'runtime.css', 'toolbar.js']) {
+          copyFileSync(resolveDistFile(name), resolve(localDir, name));
+        }
+
+        // Static resolver response pointing to the local runtime
+        const resolverDir = resolve(outDir, '__resolver__');
+        mkdirSync(resolverDir, { recursive: true });
+        writeFileSync(
+          resolve(resolverDir, 'response.json'),
+          JSON.stringify({ bundleUrl: '/__local__/runtime.js' })
+        );
+
+        // Generate preview variants
         const previewDir = resolve(outDir, 'preview');
         mkdirSync(previewDir, { recursive: true });
 
