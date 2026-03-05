@@ -7,6 +7,9 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@algolia/experiences": "*",
+    "@experiences/runtime": "*",
+    "@experiences/toolbar": "*",
     "vite": "^6.3.0"
   }
 }
