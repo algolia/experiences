@@ -176,7 +176,7 @@ export default {
         }
 
         // Copy runtime and toolbar as-is
-        for (const name of ['runtime.js', 'runtime.css', 'toolbar.js']) {
+        for (const name of ['runtime.js', 'toolbar.js']) {
           copyFileSync(resolveDistFile(name), resolve(localDir, name));
         }
 
