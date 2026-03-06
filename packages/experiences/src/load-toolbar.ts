@@ -1,6 +1,11 @@
 import type { LoaderConfiguration } from './core';
 
 export function loadToolbar(bundleUrl: string, config: LoaderConfiguration) {
+  // Do not load the toolbar from within the Dashboard's preview iframe
+  if (location.href === 'about:srcdoc') {
+    return;
+  }
+
   window.__ALGOLIA_EXPERIENCES_TOOLBAR_CONFIG__ = {
     appId: config.appId,
     apiKey: config.apiKey,
