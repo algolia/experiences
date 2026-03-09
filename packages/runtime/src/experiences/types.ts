@@ -34,6 +34,7 @@ type ExperienceApiBlock = {
 
 export type ExperienceApiResponse = {
   blocks: ExperienceApiBlock[];
+  cssVariables?: Record<string, string>;
 };
 
 export type ExperienceWidgetParams = {

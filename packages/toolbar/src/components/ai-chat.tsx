@@ -76,7 +76,7 @@ type AiChatProps = {
   experience: ExperienceApiResponse;
   onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
   onParameterChange: (path: BlockPath, key: string, value: unknown) => void;
-  onCssVariableChange: (path: BlockPath, key: string, value: string) => void;
+  onCssVariableChange: (key: string, value: string) => void;
   onDeleteBlock: (path: BlockPath) => void;
   onMoveBlock: (fromPath: BlockPath, toParentIndex: number) => void;
 };

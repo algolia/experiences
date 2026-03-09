@@ -19,6 +19,14 @@ const autocompleteCssPath = resolve(
   '../../node_modules/instantsearch.css/components/autocomplete.css'
 );
 const autocompleteCss = readFileSync(autocompleteCssPath, 'utf-8');
+const autocompleteOverridesCssPath = resolve(
+  __dirname,
+  'src/experiences/autocomplete-overrides.css'
+);
+const autocompleteOverridesCss = readFileSync(
+  autocompleteOverridesCssPath,
+  'utf-8'
+);
 const satelliteCssPath = resolve(
   __dirname,
   '../../node_modules/instantsearch.css/themes/satellite-min.css'
@@ -38,6 +46,7 @@ export default defineConfig({
   define: {
     __CHAT_CSS__: JSON.stringify(chatCss),
     __AUTOCOMPLETE_CSS__: JSON.stringify(autocompleteCss),
+    __AUTOCOMPLETE_OVERRIDES_CSS__: JSON.stringify(autocompleteOverridesCss),
     __SATELLITE_CSS__: JSON.stringify(satelliteCss),
   },
 });

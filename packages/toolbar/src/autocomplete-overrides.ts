@@ -1,0 +1,98 @@
+/**
+ * Override CSS that introduces granular, component-scoped CSS variables for the
+ * Autocomplete widget. Each variable defaults to a global `--ais-*` value so
+ * that changing a global variable still cascades, but users can override
+ * individual parts without affecting unrelated components.
+ *
+ * This stylesheet must be injected AFTER the instantsearch.css component
+ * styles so the more-specific selectors win.
+ */
+export const AUTOCOMPLETE_OVERRIDES_CSS = /* css */ `
+:root {
+  --ais-autocomplete-input-border-radius: var(--ais-border-radius-sm);
+  --ais-autocomplete-input-focus-color-rgb: var(--ais-primary-color-rgb);
+  --ais-autocomplete-search-icon-color-rgb: var(--ais-primary-color-rgb);
+  --ais-autocomplete-search-icon-size: var(--ais-icon-size);
+  --ais-autocomplete-search-icon-padding-left: 14px;
+  --ais-autocomplete-search-icon-padding-right: 11px;
+  --ais-autocomplete-panel-border-radius: var(--ais-border-radius-sm);
+  --ais-autocomplete-panel-gap: 8px;
+  --ais-autocomplete-panel-padding: 8px;
+  --ais-autocomplete-item-border-radius: var(--ais-border-radius-sm);
+  --ais-autocomplete-item-selected-color-rgb: var(--ais-primary-color-rgb);
+  --ais-autocomplete-item-padding: 4px;
+  --ais-autocomplete-item-gap: 8px;
+  --ais-autocomplete-item-icon-border-radius: var(--ais-border-radius-sm);
+  --ais-autocomplete-item-icon-size: var(--ais-icon-size);
+  --ais-autocomplete-highlight-weight: var(--ais-font-weight-bold);
+  --ais-autocomplete-header-color-rgb: var(--ais-primary-color-rgb);
+}
+
+/* Input */
+.ais-AutocompleteForm {
+  border-radius: var(--ais-autocomplete-input-border-radius);
+}
+.ais-AutocompleteForm:focus-within {
+  border-color: rgba(var(--ais-autocomplete-input-focus-color-rgb), 1);
+  box-shadow: rgba(var(--ais-autocomplete-input-focus-color-rgb), 0.2) 0 0 0 2px,
+    inset rgba(var(--ais-autocomplete-input-focus-color-rgb), 0.2) 0 0 0 2px;
+}
+.ais-AutocompleteSubmitButton,
+.ais-AutocompleteLoadingIndicator {
+  padding-left: var(--ais-autocomplete-search-icon-padding-left);
+  padding-right: var(--ais-autocomplete-search-icon-padding-right);
+  width: calc(var(--ais-autocomplete-search-icon-padding-left) + var(--ais-autocomplete-search-icon-size) + var(--ais-autocomplete-search-icon-padding-right));
+}
+.ais-AutocompleteLabel svg,
+.ais-AutocompleteLoadingIndicator svg {
+  color: rgba(var(--ais-autocomplete-search-icon-color-rgb), 1);
+  max-height: var(--ais-autocomplete-search-icon-size);
+  width: var(--ais-autocomplete-search-icon-size);
+}
+
+/* Panel */
+.ais-AutocompletePanel {
+  border-radius: var(--ais-autocomplete-panel-border-radius);
+  margin-top: var(--ais-autocomplete-panel-gap);
+}
+.ais-AutocompletePanelLayout {
+  padding: var(--ais-autocomplete-panel-padding);
+}
+
+/* Items */
+.ais-AutocompleteIndexItem {
+  border-radius: var(--ais-autocomplete-item-border-radius);
+  padding: var(--ais-autocomplete-item-padding);
+}
+@media (hover: hover) {
+  .ais-AutocompleteIndexItem:hover {
+    background-color: rgba(var(--ais-autocomplete-item-selected-color-rgb), 0.1);
+  }
+}
+.ais-AutocompleteIndexItem[aria-selected=true] {
+  background-color: rgba(var(--ais-autocomplete-item-selected-color-rgb), 0.1);
+}
+.ais-AutocompleteItemContent {
+  gap: var(--ais-autocomplete-item-gap);
+}
+.ais-AutocompleteItemIcon {
+  border-radius: var(--ais-autocomplete-item-icon-border-radius);
+  height: calc(var(--ais-autocomplete-item-icon-size) + 8px);
+  width: calc(var(--ais-autocomplete-item-icon-size) + 8px);
+}
+.ais-AutocompleteItemIcon svg {
+  height: var(--ais-autocomplete-item-icon-size);
+  width: var(--ais-autocomplete-item-icon-size);
+}
+.ais-AutocompleteItemContent mark {
+  font-weight: var(--ais-autocomplete-highlight-weight);
+}
+
+/* Section headers */
+.ais-AutocompleteIndexHeaderTitle {
+  color: rgba(var(--ais-autocomplete-header-color-rgb), 1);
+}
+.ais-AutocompleteIndexHeaderLine {
+  border-bottom-color: rgba(var(--ais-autocomplete-header-color-rgb), 1);
+}
+`;

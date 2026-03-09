@@ -21,7 +21,6 @@ type IndexBlockGroupProps = {
   suggestLists?: SuggestLists;
   onToggleExpand: (key: string) => void;
   onParameterChange: (path: BlockPath, key: string, value: unknown) => void;
-  onCssVariableChange: (path: BlockPath, key: string, value: string) => void;
   onLocate: (container: string, placement: string | undefined) => void;
   onDeleteBlock: (path: BlockPath) => void;
   onChangeWidgetIndex: (widgetPath: BlockPath, targetIndexName: string) => void;
@@ -36,7 +35,6 @@ export function IndexBlockGroup({
   suggestLists,
   onToggleExpand,
   onParameterChange,
-  onCssVariableChange,
   onLocate,
   onDeleteBlock,
   onChangeWidgetIndex,
@@ -184,9 +182,6 @@ export function IndexBlockGroup({
             }}
             onParameterChange={(key, value) => {
               return onParameterChange([parentIndex, childIndex], key, value);
-            }}
-            onCssVariableChange={(key, value) => {
-              return onCssVariableChange([parentIndex, childIndex], key, value);
             }}
             onLocate={() => {
               return onLocate(

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 
+import { AUTOCOMPLETE_OVERRIDES_CSS } from '../autocomplete-overrides';
 import { saveExperience } from '../api';
 import { useElementPicker } from '../hooks/use-element-picker';
 import { ToolbarProvider } from '../lib/toolbar-context';
@@ -185,12 +186,7 @@ export function App({ config, initialExperience }: AppProps) {
   }, []);
 
   const updateCssVariablesOnPage = useCallback(
-    (
-      blocks: ExperienceApiBlock[],
-      path: BlockPath,
-      key: string,
-      value: string
-    ) => {
+    (cssVariables: Record<string, string>) => {
       const existingStyle = document.querySelector(
         'style[data-algolia-experiences-toolbar]'
       );
@@ -201,40 +197,13 @@ export function App({ config, initialExperience }: AppProps) {
         document.head.appendChild(style);
       }
 
-      const allVars: Record<string, string> = {};
-
-      const collectVars = (items: ExperienceApiBlock[], parentIdx?: number) => {
-        items.forEach((block, i) => {
-          const currentPath: BlockPath =
-            parentIdx !== undefined ? [parentIdx, i] : [i];
-          const vars = block.parameters.cssVariables ?? {};
-          const isTarget =
-            currentPath.length === path.length &&
-            currentPath.every((val, idx) => {
-              return val === path[idx];
-            });
-
-          Object.entries(vars).forEach(([varName, varValue]) => {
-            if (isTarget && varName === key) {
-              allVars[`--ais-${varName}`] = value;
-            } else {
-              allVars[`--ais-${varName}`] = varValue;
-            }
-          });
-
-          if (block.children) {
-            collectVars(block.children, i);
-          }
-        });
-      };
-
-      collectVars(blocks);
-
-      style.textContent = `:root { ${Object.entries(allVars)
-        .map(([prop, val]) => {
-          return `${prop}: ${val}`;
+      const declarations = Object.entries(cssVariables)
+        .map(([varName, varValue]) => {
+          return `--ais-${varName}: ${varValue}`;
         })
-        .join('; ')} }`;
+        .join('; ');
+
+      style.textContent = declarations ? `:root { ${declarations} }` : '';
     },
     []
   );
@@ -325,25 +294,13 @@ export function App({ config, initialExperience }: AppProps) {
   );
 
   const onCssVariableChange = useCallback(
-    (path: BlockPath, key: string, value: string) => {
+    (key: string, value: string) => {
       setExperience((prev) => {
-        updateCssVariablesOnPage(prev.blocks, path, key, value);
+        const updatedVars = { ...prev.cssVariables, [key]: value };
 
-        return {
-          ...prev,
-          blocks: updateBlockAtPath(prev.blocks, path, (block) => {
-            return {
-              ...block,
-              parameters: {
-                ...block.parameters,
-                cssVariables: {
-                  ...block.parameters.cssVariables,
-                  [key]: value,
-                },
-              },
-            };
-          }),
-        };
+        updateCssVariablesOnPage(updatedVars);
+
+        return { ...prev, cssVariables: updatedVars };
       });
 
       setIsDirty(true);
@@ -676,12 +633,18 @@ export function App({ config, initialExperience }: AppProps) {
     document.head.appendChild(style);
     document.body.classList.add('algolia-experiences-toolbar');
 
+    const overrideStyle = document.createElement('style');
+    overrideStyle.id = 'algolia-experiences-autocomplete-overrides';
+    overrideStyle.textContent = AUTOCOMPLETE_OVERRIDES_CSS;
+    document.head.appendChild(overrideStyle);
+
     return () => {
       document.body.classList.remove(
         'algolia-experiences-toolbar',
         'algolia-experiences-toolbar--open'
       );
       style.remove();
+      overrideStyle.remove();
     };
   }, []);
 

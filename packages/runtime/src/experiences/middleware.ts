@@ -30,6 +30,25 @@ export function createExperienceMiddleware(
       $$internal: true,
       onStateChange: () => {},
       subscribe() {
+        // Inject experience-level CSS variables
+        const cssVariables = config.cssVariables ?? {};
+        const cssVariablesKeys = Object.keys(cssVariables);
+
+        if (cssVariablesKeys.length > 0) {
+          const style = injectStyleElement(`
+            :root {
+              ${cssVariablesKeys
+                .map((key) => {
+                  return `--ais-${key}: ${cssVariables[key]};`;
+                })
+                .join(';')}
+            }
+          `);
+          cleanups.push(() => {
+            return style.remove();
+          });
+        }
+
         const experienceWidgets: ExperienceWidget[] = [];
         walkIndex(instantSearchInstance.mainIndex, (index) => {
           const widgets = index.getWidgets();
@@ -181,24 +200,6 @@ function processBlocks({
       }
 
       return;
-    }
-
-    const cssVariables = parameters.cssVariables ?? {};
-    const cssVariablesKeys = Object.keys(cssVariables);
-
-    if (cssVariablesKeys.length > 0) {
-      const style = injectStyleElement(`
-          :root {
-            ${cssVariablesKeys
-              .map((key) => {
-                return `--ais-${key}: ${cssVariables[key]};`;
-              })
-              .join(';')}
-          }
-        `);
-      cleanups.push(() => {
-        return style.remove();
-      });
     }
 
     const supportedWidget = widget.$$supportedWidgets[type];

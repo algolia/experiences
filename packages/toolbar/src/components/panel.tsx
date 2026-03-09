@@ -18,6 +18,7 @@ import { AddWidgetPopover } from './add-widget-popover';
 import { AiChat } from './ai-chat';
 import { BlockCard } from './block-card';
 import { IndexBlockGroup } from './index-block-group';
+import { ThemeEditor } from './theme-editor';
 import { Button } from './ui/button';
 import type { Suggestion } from './ui/combobox';
 import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
@@ -33,7 +34,7 @@ type PanelProps = {
   onClose: () => void;
   onSave: () => void;
   onParameterChange: (path: BlockPath, key: string, value: unknown) => void;
-  onCssVariableChange: (path: BlockPath, key: string, value: string) => void;
+  onCssVariableChange: (key: string, value: string) => void;
   onLocate: (container: string, placement: string | undefined) => void;
   onDeleteBlock: (path: BlockPath) => void;
   onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
@@ -43,7 +44,7 @@ type PanelProps = {
   panelRef?: Ref<HTMLDivElement>;
 };
 
-type Tab = 'manual' | 'ai';
+type Tab = 'manual' | 'ai' | 'theme';
 
 export function Panel({
   env,
@@ -298,6 +299,28 @@ export function Panel({
             </svg>
             AI
           </TabsTrigger>
+          <TabsTrigger
+            active={tab === 'theme'}
+            onClick={() => {
+              return setTab('theme');
+            }}
+          >
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 2a10 10 0 0 1 0 20 1.96 1.96 0 0 1-1.28-3.45c.63-.58.07-1.55-.72-1.55H8a6 6 0 0 1-6-5.5C1.58 6.19 6.26 2 12 2Z" />
+              <circle cx="12" cy="8" r="1" />
+              <circle cx="8" cy="11" r="1" />
+              <circle cx="16" cy="11" r="1" />
+            </svg>
+            Theme
+          </TabsTrigger>
         </TabsList>
       </div>
 
@@ -321,7 +344,6 @@ export function Panel({
                     suggestLists={suggestLists}
                     onToggleExpand={handleToggleExpand}
                     onParameterChange={onParameterChange}
-                    onCssVariableChange={onCssVariableChange}
                     onLocate={onLocate}
                     onDeleteBlock={onDeleteBlock}
                     onChangeWidgetIndex={onChangeWidgetIndex}
@@ -341,9 +363,6 @@ export function Panel({
                   }}
                   onParameterChange={(key, value) => {
                     return onParameterChange([index], key, value);
-                  }}
-                  onCssVariableChange={(key, value) => {
-                    return onCssVariableChange([index], key, value);
                   }}
                   onLocate={() => {
                     return onLocate(
@@ -387,6 +406,19 @@ export function Panel({
           />
         </div>
       )}
+
+      {/* Theme tab */}
+      <TabsContent
+        active={tab === 'theme'}
+        class="flex flex-1 flex-col overflow-hidden"
+      >
+        <div class="flex-1 overflow-y-auto">
+          <ThemeEditor
+            cssVariables={experience.cssVariables ?? {}}
+            onChange={onCssVariableChange}
+          />
+        </div>
+      </TabsContent>
     </div>
   );
 }

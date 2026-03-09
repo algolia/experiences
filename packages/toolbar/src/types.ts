@@ -7,7 +7,6 @@ export type SaveState = 'idle' | 'saving' | 'saved';
 export type ExperienceApiBlockParameters = {
   container?: string;
   placement?: Placement;
-  cssVariables?: Record<string, string>;
   indexName?: string;
   indexId?: string;
 } & Record<string, unknown>;
@@ -28,6 +27,7 @@ export type AddBlockResult = {
 export type ExperienceApiResponse = {
   blocks: ExperienceApiBlock[];
   indexName: string;
+  cssVariables?: Record<string, string>;
 };
 
 export type ToolbarConfig = {

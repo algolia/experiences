@@ -1928,11 +1928,11 @@ describe('executeToolCall', () => {
             type: 'ais.autocomplete',
             parameters: {
               container: '#search',
-              cssVariables: { 'primary-color-rgb': '#003dff' },
             },
           },
         ],
         indexName: '',
+        cssVariables: { 'primary-color-rgb': '#003dff' },
       };
       const callbacks = createCallbacks(experience);
 
@@ -1949,7 +1949,6 @@ describe('executeToolCall', () => {
 
       expect(result).toMatchObject({ success: true });
       expect(callbacks.onCssVariableChange).toHaveBeenCalledWith(
-        [0],
         'primary-color-rgb',
         '#ff0000'
       );
@@ -1962,11 +1961,11 @@ describe('executeToolCall', () => {
             type: 'ais.autocomplete',
             parameters: {
               container: '#search',
-              cssVariables: { 'primary-color-rgb': '#003dff' },
             },
           },
         ],
         indexName: '',
+        cssVariables: { 'primary-color-rgb': '#003dff' },
       };
       const callbacks = createCallbacks(experience);
 
@@ -2001,11 +2000,11 @@ describe('executeToolCall', () => {
             type: 'ais.autocomplete',
             parameters: {
               container: '#search',
-              cssVariables: { 'primary-color-rgb': '#003dff' },
             },
           },
         ],
         indexName: '',
+        cssVariables: { 'primary-color-rgb': '#003dff' },
       };
       const callbacks = createCallbacks(experience);
 
@@ -2034,7 +2033,6 @@ describe('executeToolCall', () => {
         true
       );
       expect(callbacks.onCssVariableChange).toHaveBeenCalledWith(
-        [0],
         'primary-color-rgb',
         '#ff0000'
       );
