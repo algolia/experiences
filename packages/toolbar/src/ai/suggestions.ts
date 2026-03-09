@@ -1,4 +1,11 @@
-import { fetchAgentStudioAgents, fetchIndexSettings } from '../api';
+import {
+  fetchAgentStudioAgents,
+  fetchIndexRecords,
+  fetchIndexSettings,
+  fetchIndices,
+  fetchQuerySuggestionConfigs,
+} from '../api';
+import { extractAttributeNames } from '../lib/extract-attribute-names';
 import type { Environment } from '../types';
 
 type Credentials = {
@@ -54,19 +61,66 @@ const SUGGESTION_SOURCES: Record<string, SuggestionSource> = {
       });
     },
   },
-};
+  indices: {
+    description: 'Available Algolia indices',
+    fetcher: async (context) => {
+      const indices = await fetchIndices({
+        appId: context.credentials.appId,
+        apiKey: context.credentials.apiKey,
+      });
 
-const PARAM_SUGGESTIONS: Record<string, string> = {
-  attribute: 'facetAttributes',
-  agentId: 'agentStudioAgents',
-  attributes: 'facetAttributes',
-  includedAttributes: 'facetAttributes',
-  excludedAttributes: 'facetAttributes',
-};
+      return indices
+        .map((index) => {
+          return index.name;
+        })
+        .sort();
+    },
+  },
+  'indices:replicas': {
+    description: 'Replica indices for the given index',
+    requiresIndexName: true,
+    fetcher: async (context) => {
+      const indices = await fetchIndices({
+        appId: context.credentials.appId,
+        apiKey: context.credentials.apiKey,
+      });
 
-export function getSuggestionSourceForParam(param: string): string | undefined {
-  return PARAM_SUGGESTIONS[param];
-}
+      const primary = indices.find((index) => {
+        return index.name === context.indexName;
+      });
+
+      return (primary?.replicas ?? []).sort();
+    },
+  },
+  'indices:qs': {
+    description: 'Query Suggestion indices',
+    fetcher: async (context) => {
+      const configs = await fetchQuerySuggestionConfigs({
+        appId: context.credentials.appId,
+        apiKey: context.credentials.apiKey,
+      });
+
+      return configs
+        .map((config) => {
+          return config.indexName;
+        })
+        .sort();
+    },
+  },
+  indexAttributes: {
+    description: 'Attributes found in index records',
+    requiresIndexName: true,
+    fetcher: async (context) => {
+      const records = await fetchIndexRecords({
+        appId: context.credentials.appId,
+        apiKey: context.credentials.apiKey,
+        indexName: context.indexName!,
+      });
+
+      return extractAttributeNames(records);
+    },
+  },
+};
 
 export function suggestionSourceRequiresIndexName(sourceName: string): boolean {
   return SUGGESTION_SOURCES[sourceName]?.requiresIndexName === true;
