@@ -190,7 +190,7 @@ export function AiChat({
   const chatRef = useRef<ReturnType<typeof useChat>>();
 
   const chat = useChat({
-    id: 'algolia-experiences',
+    id: `algolia-experiences-${env}`,
     transport,
     messages: initialMessages,
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,

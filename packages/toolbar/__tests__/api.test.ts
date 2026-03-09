@@ -528,7 +528,7 @@ describe('fetchIndexSettings', () => {
 describe('fetchAgentStudioAgents', () => {
   it('fetches agents from the beta Agent Studio API', async () => {
     server.use(
-      http.get('https://agent-studio-staging.eu.algolia.com/1/agents', () => {
+      http.get('https://agent-studio.staging.eu.algolia.com/1/agents', () => {
         return HttpResponse.json({
           data: [{ id: 'id-1', name: 'Agent One', status: 'published' }],
           pagination: { page: 1, limit: 100, totalCount: 1, totalPages: 1 },
@@ -578,7 +578,7 @@ describe('fetchAgentStudioAgents', () => {
 
     server.use(
       http.get(
-        'https://agent-studio-staging.eu.algolia.com/1/agents',
+        'https://agent-studio.staging.eu.algolia.com/1/agents',
         ({ request }) => {
           headers = request.headers;
 
@@ -603,7 +603,7 @@ describe('fetchAgentStudioAgents', () => {
   it('fetches all pages', async () => {
     server.use(
       http.get(
-        'https://agent-studio-staging.eu.algolia.com/1/agents',
+        'https://agent-studio.staging.eu.algolia.com/1/agents',
         ({ request }) => {
           const url = new URL(request.url);
           const page = url.searchParams.get('page') ?? '1';
@@ -637,7 +637,7 @@ describe('fetchAgentStudioAgents', () => {
 
   it('filters out draft agents and sorts by name', async () => {
     server.use(
-      http.get('https://agent-studio-staging.eu.algolia.com/1/agents', () => {
+      http.get('https://agent-studio.staging.eu.algolia.com/1/agents', () => {
         return HttpResponse.json({
           data: [
             { id: 'id-z', name: 'Zebra', status: 'published' },
@@ -663,7 +663,7 @@ describe('fetchAgentStudioAgents', () => {
 
   it('returns empty array when response has no data field', async () => {
     server.use(
-      http.get('https://agent-studio-staging.eu.algolia.com/1/agents', () => {
+      http.get('https://agent-studio.staging.eu.algolia.com/1/agents', () => {
         return HttpResponse.json({});
       })
     );
@@ -679,7 +679,7 @@ describe('fetchAgentStudioAgents', () => {
 
   it('stops paginating when pagination field is missing', async () => {
     server.use(
-      http.get('https://agent-studio-staging.eu.algolia.com/1/agents', () => {
+      http.get('https://agent-studio.staging.eu.algolia.com/1/agents', () => {
         return HttpResponse.json({
           data: [{ id: 'id-1', name: 'Agent', status: 'published' }],
         });
@@ -699,7 +699,7 @@ describe('fetchAgentStudioAgents', () => {
 
   it('throws when the API responds with an error', async () => {
     server.use(
-      http.get('https://agent-studio-staging.eu.algolia.com/1/agents', () => {
+      http.get('https://agent-studio.staging.eu.algolia.com/1/agents', () => {
         return new HttpResponse(null, { status: 403, statusText: 'Forbidden' });
       })
     );
@@ -716,7 +716,7 @@ describe('fetchAgentStudioAgents', () => {
   it('throws when a subsequent page fails', async () => {
     server.use(
       http.get(
-        'https://agent-studio-staging.eu.algolia.com/1/agents',
+        'https://agent-studio.staging.eu.algolia.com/1/agents',
         ({ request }) => {
           const url = new URL(request.url);
           const page = url.searchParams.get('page') ?? '1';
