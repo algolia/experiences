@@ -6,8 +6,9 @@ Cloudflare Worker that resolves experience bundle URLs based on configured versi
 
 - `GET /{experienceId}` - Returns the bundle URL for an experience
 - `POST /{experienceId}` - Updates the bundle version for an experience
+- `DELETE /{experienceId}` - Deletes the bundle version for an experience
 
-Both endpoints require `X-Algolia-Application-Id` and `X-Algolia-API-Key` headers.
+All endpoints require `X-Algolia-Application-Id` and `X-Algolia-API-Key` headers.
 
 ## Running dev
 

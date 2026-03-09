@@ -75,13 +75,16 @@ describe('describeWidgetTypes', () => {
     expect(result).toContain('attribute');
   });
 
-  it('marks params with available suggestions', async () => {
+  it('marks params with suggest kind annotations', async () => {
     const result = describeWidgetTypes();
-    expect(result).toMatch(/attribute.*\[has suggestions\]/);
-    expect(result).toMatch(/agentId.*\[has suggestions\]/);
-    expect(result).toMatch(/attributes.*\[has suggestions\]/);
-    expect(result).toMatch(/includedAttributes.*\[has suggestions\]/);
-    expect(result).toMatch(/excludedAttributes.*\[has suggestions\]/);
+    expect(result).toMatch(/attribute.*\[suggests: facetAttributes\]/);
+    expect(result).toMatch(/agentId.*\[suggests: agentStudioAgents\]/);
+    expect(result).toMatch(/attributes.*\[suggests: indexAttributes\]/);
+    expect(result).toMatch(/includedAttributes.*\[suggests: facetAttributes\]/);
+    expect(result).toMatch(/excludedAttributes.*\[suggests: facetAttributes\]/);
+    expect(result).toMatch(/indexName.*\[suggests: indices\]/);
+    expect(result).toMatch(/\(indexName \[suggests: indices:qs\]\)/);
+    expect(result).toMatch(/\(value \[suggests: indices:replicas\]\)/);
   });
 
   it('includes default placement per widget type', async () => {
@@ -3360,10 +3363,10 @@ describe('describeToolAction', () => {
     expect(
       describeToolAction(
         'get_suggestions',
-        { param: 'attribute', indexName: 'products' },
+        { suggestKind: 'facetAttributes', indexName: 'products' },
         { values: ['brand', 'color'] }
       )
-    ).toBe('Fetched suggestions for attribute');
+    ).toBe('Fetched suggestions for facetAttributes');
   });
 });
 
@@ -3402,7 +3405,7 @@ describe('buildToolDefinitions', () => {
 });
 
 describe('get_suggestions', () => {
-  it('returns error when param is missing', async () => {
+  it('returns error when suggestKind is missing', async () => {
     const callbacks = createCallbacks();
     const result = await executeToolCall(
       'get_suggestions',
@@ -3411,15 +3414,15 @@ describe('get_suggestions', () => {
     );
     expect(result).toEqual({
       success: false,
-      error: 'Missing required parameter: param',
+      error: 'Missing required parameter: suggestKind',
     });
   });
 
-  it('returns error when indexName is missing for index-bound param', async () => {
+  it('returns error when indexName is missing for index-bound kind', async () => {
     const callbacks = createCallbacks();
     const result = await executeToolCall(
       'get_suggestions',
-      { param: 'attribute' },
+      { suggestKind: 'facetAttributes' },
       callbacks
     );
     expect(result).toEqual({
@@ -3428,24 +3431,23 @@ describe('get_suggestions', () => {
     });
   });
 
-  it('returns error for param with no suggestion source', async () => {
+  it('returns error for unknown suggestKind', async () => {
     const callbacks = createCallbacks();
     const result = await executeToolCall(
       'get_suggestions',
-      { param: 'showRecent', indexName: 'products' },
+      { suggestKind: 'unknownKind', indexName: 'products' },
       callbacks
     );
     expect(result).toEqual({
-      success: false,
-      error: 'No suggestions available for parameter "showRecent"',
+      error: 'Unknown suggestion source: unknownKind',
     });
   });
 
-  it('calls getCredentials and returns fetch error for valid param', async () => {
+  it('calls getCredentials and returns fetch error for valid kind', async () => {
     const callbacks = createCallbacks();
     const result = await executeToolCall(
       'get_suggestions',
-      { param: 'attribute', indexName: 'products' },
+      { suggestKind: 'facetAttributes', indexName: 'products' },
       callbacks
     );
     expect(callbacks.getCredentials).toHaveBeenCalled();
@@ -3455,11 +3457,11 @@ describe('get_suggestions', () => {
     });
   });
 
-  it('does not require indexName for agentId param', async () => {
+  it('does not require indexName for agentStudioAgents kind', async () => {
     const callbacks = createCallbacks();
     const result = await executeToolCall(
       'get_suggestions',
-      { param: 'agentId' },
+      { suggestKind: 'agentStudioAgents' },
       callbacks
     );
     expect(callbacks.getCredentials).toHaveBeenCalled();
@@ -3467,6 +3469,34 @@ describe('get_suggestions', () => {
     // The fetch will fail (no MSW handler), but it should not error on missing indexName
     expect(result).toEqual({
       error: 'Failed to fetch suggestions from agentStudioAgents',
+    });
+  });
+
+  it('does not require indexName for indices kind', async () => {
+    const callbacks = createCallbacks();
+    const result = await executeToolCall(
+      'get_suggestions',
+      { suggestKind: 'indices' },
+      callbacks
+    );
+    expect(callbacks.getCredentials).toHaveBeenCalled();
+    // Returns empty (fetchIndices returns [] on network error) — no indexName error
+    expect(result).toEqual({
+      values: [],
+      description: 'Available Algolia indices',
+    });
+  });
+
+  it('requires indexName for indices:replicas kind', async () => {
+    const callbacks = createCallbacks();
+    const result = await executeToolCall(
+      'get_suggestions',
+      { suggestKind: 'indices:replicas' },
+      callbacks
+    );
+    expect(result).toEqual({
+      success: false,
+      error: 'Missing required parameter: indexName',
     });
   });
 });
