@@ -1,5 +1,11 @@
 import { resolve } from 'node:path';
-import { mkdirSync, readFileSync, watch, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  mkdirSync,
+  readFileSync,
+  watch,
+  writeFileSync,
+} from 'node:fs';
 
 const CANARY_URL =
   'https://github.com/algolia/experiences/releases/download/canary/';
@@ -77,9 +83,12 @@ export default {
     },
     {
       name: 'local-canary-proxy',
-      // Rewrite GitHub canary URLs to a local prefix so Vite serves them.
-      transformIndexHtml(html) {
-        return html.replaceAll(CANARY_URL, LOCAL_PREFIX);
+      // In dev and on Netlify, rewrite GitHub canary URLs to a local prefix.
+      // For plain builds (e.g. npx vite build), keep the canary URLs.
+      transformIndexHtml(html, ctx) {
+        if (ctx.server || process.env.DEPLOY_PRIME_URL) {
+          return html.replaceAll(CANARY_URL, LOCAL_PREFIX);
+        }
       },
       configureServer(server) {
         // Reload the browser when local dist files change (e.g. after
@@ -157,6 +166,36 @@ export default {
       },
       closeBundle() {
         const outDir = resolve(__dirname, 'dist');
+
+        // On Netlify, bundle the locally-built packages so the deploy
+        // serves them at /__local__/ instead of fetching from GitHub releases.
+        const origin = process.env.DEPLOY_PRIME_URL;
+        if (origin) {
+          const localDir = resolve(outDir, '__local__');
+          mkdirSync(localDir, { recursive: true });
+
+          // Copy loader bundles, patched to use the local resolver
+          for (const name of ['experiences.js', 'experiences.preview.js']) {
+            let content = readFileSync(resolveDistFile(name), 'utf-8');
+            content = content.replaceAll(RESOLVER_URL, '/__resolver__');
+            writeFileSync(resolve(localDir, name), content);
+          }
+
+          // Copy runtime and toolbar as-is
+          for (const name of ['runtime.js', 'toolbar.js']) {
+            copyFileSync(resolveDistFile(name), resolve(localDir, name));
+          }
+
+          // Static resolver response pointing to the local runtime
+          const resolverDir = resolve(outDir, '__resolver__');
+          mkdirSync(resolverDir, { recursive: true });
+          writeFileSync(
+            resolve(resolverDir, 'response.json'),
+            JSON.stringify({ bundleUrl: `${origin}/__local__/runtime.js` })
+          );
+        }
+
+        // Generate preview variants
         const previewDir = resolve(outDir, 'preview');
         mkdirSync(previewDir, { recursive: true });
 
