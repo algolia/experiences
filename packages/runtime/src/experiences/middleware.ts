@@ -6,6 +6,9 @@ import type {
   InternalMiddleware,
   InstantSearch,
 } from 'instantsearch.js/es/types';
+import { generateThemeCss } from '@experiences/theme';
+import { AUTOCOMPLETE_VARIABLES } from '@experiences/theme/autocomplete';
+
 import type {
   Environment,
   ExperienceApiResponse,
@@ -183,23 +186,13 @@ function processBlocks({
       return;
     }
 
-    const cssVariables = parameters.cssVariables ?? {};
-    const cssVariablesKeys = Object.keys(cssVariables);
-
-    if (cssVariablesKeys.length > 0) {
-      const style = injectStyleElement(`
-          :root {
-            ${cssVariablesKeys
-              .map((key) => {
-                return `--ais-${key}: ${cssVariables[key]};`;
-              })
-              .join(';')}
-          }
-        `);
-      cleanups.push(() => {
-        return style.remove();
-      });
-    }
+    const cssVariables =
+      (parameters.cssVariables as Record<string, string>) ?? {};
+    const themeCss = generateThemeCss(AUTOCOMPLETE_VARIABLES, cssVariables);
+    const themeStyle = injectStyleElement(themeCss);
+    cleanups.push(() => {
+      return themeStyle.remove();
+    });
 
     const supportedWidget = widget.$$supportedWidgets[type];
 

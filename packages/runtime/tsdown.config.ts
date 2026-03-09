@@ -14,16 +14,8 @@ const chatCssPath = resolve(
   '../../node_modules/instantsearch.css/components/chat.css'
 );
 const chatCss = readFileSync(chatCssPath, 'utf-8');
-const autocompleteCssPath = resolve(
-  __dirname,
-  '../../node_modules/instantsearch.css/components/autocomplete.css'
-);
+const autocompleteCssPath = resolve(__dirname, 'src/autocomplete.css');
 const autocompleteCss = readFileSync(autocompleteCssPath, 'utf-8');
-const satelliteCssPath = resolve(
-  __dirname,
-  '../../node_modules/instantsearch.css/themes/satellite-min.css'
-);
-const satelliteCss = readFileSync(satelliteCssPath, 'utf-8');
 
 export default defineConfig({
   entry: { runtime: 'src/index.ts' },
@@ -38,6 +30,5 @@ export default defineConfig({
   define: {
     __CHAT_CSS__: JSON.stringify(chatCss),
     __AUTOCOMPLETE_CSS__: JSON.stringify(autocompleteCss),
-    __SATELLITE_CSS__: JSON.stringify(satelliteCss),
   },
 });

@@ -1,16 +1,20 @@
 import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom';
 
 import { Link } from './components/Link';
+import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { HomePage } from './pages/HomePage';
 import { ProductPage } from './pages/ProductPage';
 import { SearchPage } from './pages/SearchPage';
 import { PreviewProvider } from './PreviewContext';
 import { useAlgoliaExperiences } from './useAlgoliaExperiences';
 
-const LOADER_SRC =
-  'https://github.com/algolia/experiences/releases/download/canary/experiences.js';
-const PREVIEW_LOADER_SRC =
-  'https://github.com/algolia/experiences/releases/download/canary/experiences.preview.js';
+const CANARY_URL =
+  'https://github.com/algolia/experiences/releases/download/canary/';
+const LOCAL_PREFIX = '/__local__/';
+const BASE = import.meta.env.DEV ? LOCAL_PREFIX : CANARY_URL;
+
+const LOADER_SRC = `${BASE}experiences.js`;
+const PREVIEW_LOADER_SRC = `${BASE}experiences.preview.js`;
 
 const pages = (
   <>
@@ -202,6 +206,8 @@ function Layout({ preview = false }: { preview?: boolean }) {
           <div id="chat"></div>
         </div>
       </div>
+
+      <ThemeSwitcher />
     </PreviewProvider>
   );
 }
