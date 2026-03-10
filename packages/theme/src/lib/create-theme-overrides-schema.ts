@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import type { ThemeVariable } from '..';
 
@@ -13,13 +14,19 @@ import type { ThemeVariable } from '..';
  * Each field includes a `.describe()` with the variable's description, default, and unit.
  */
 export function createThemeOverridesSchema(variables: ThemeVariable[]) {
-  return z.object(
+  const schema = z.object(
     Object.fromEntries(
       variables.map((variable) => {
         return [variable.key, variableToZodField(variable)];
       })
     )
   );
+
+  return Object.assign(schema, {
+    toJsonSchema() {
+      return zodToJsonSchema(schema);
+    },
+  });
 }
 
 function variableToZodField(variable: ThemeVariable) {
