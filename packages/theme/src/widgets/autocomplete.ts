@@ -1,4 +1,6 @@
-import type { ThemeVariable } from '.';
+import { createThemeOverridesSchema } from '../lib/create-theme-overrides-schema';
+
+import type { ThemeVariable } from '..';
 
 export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
   // --- Colors ---
@@ -441,3 +443,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
       'How much of the text color to mix into the scrollbar track color.',
   },
 ];
+
+export const autocompleteOverridesSchema = createThemeOverridesSchema(
+  AUTOCOMPLETE_VARIABLES
+);
