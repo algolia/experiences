@@ -39,5 +39,7 @@ function getPreviewConfig(): LoaderConfiguration {
 export default (async () => {
   const config = getPreviewConfig();
   const bundleUrl = await load(config);
-  loadToolbar(bundleUrl, config);
+  if (!config.hideToolbar) {
+    loadToolbar(bundleUrl, config);
+  }
 })().catch(console.error);

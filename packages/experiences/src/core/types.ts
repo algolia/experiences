@@ -4,4 +4,5 @@ export type LoaderConfiguration = {
   experienceId: string;
   env?: string;
   runtimeConfig?: Record<string, unknown>;
+  hideToolbar?: boolean;
 };
