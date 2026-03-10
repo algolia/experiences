@@ -264,22 +264,36 @@ describe('createThemeOverridesSchema', () => {
   });
 
   describe('toJsonSchema', () => {
+    type JsonSchemaProperty = {
+      type?: string;
+      description?: string;
+      minimum?: number;
+      maximum?: number;
+    };
+    type JsonSchemaObject = {
+      properties: Record<
+        string,
+        { properties?: Record<string, JsonSchemaProperty> }
+      >;
+    };
+
+    function getLightProperties(
+      jsonSchema: ReturnType<typeof schema.toJsonSchema>
+    ) {
+      const top = (jsonSchema as JsonSchemaObject).properties;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- test helper, shape is known
+      return top['light']!.properties!;
+    }
+
     it('has light and dark properties at the top level', () => {
       const jsonSchema = schema.toJsonSchema();
-      const properties = (jsonSchema as { properties: Record<string, unknown> })
-        .properties;
+      const properties = (jsonSchema as JsonSchemaObject).properties;
 
       expect(Object.keys(properties)).toEqual(['light', 'dark']);
     });
 
     it('has variable keys inside each mode', () => {
-      const jsonSchema = schema.toJsonSchema();
-      const topProperties = (
-        jsonSchema as {
-          properties: Record<string, { properties: Record<string, unknown> }>;
-        }
-      ).properties;
-      const lightProperties = topProperties.light.properties;
+      const lightProperties = getLightProperties(schema.toJsonSchema());
 
       expect(Object.keys(lightProperties)).toEqual([
         'brand-color',
@@ -290,113 +304,56 @@ describe('createThemeOverridesSchema', () => {
     });
 
     it('includes descriptions with defaults', () => {
-      const jsonSchema = schema.toJsonSchema();
-      const lightProperties = (
-        jsonSchema as {
-          properties: Record<
-            string,
-            { properties: Record<string, { description: string }> }
-          >;
-        }
-      ).properties.light.properties;
-      const brandColor = lightProperties['brand-color'];
+      const brandColor = getLightProperties(schema.toJsonSchema())[
+        'brand-color'
+      ];
 
-      expect(brandColor.description).toContain('Primary brand color.');
-      expect(brandColor.description).toContain('Default: 30, 89, 255.');
+      expect(brandColor?.description).toContain('Primary brand color.');
+      expect(brandColor?.description).toContain('Default: 30, 89, 255.');
     });
 
     it('includes RGB format hint for color variables', () => {
-      const jsonSchema = schema.toJsonSchema();
-      const lightProperties = (
-        jsonSchema as {
-          properties: Record<
-            string,
-            { properties: Record<string, { description: string }> }
-          >;
-        }
-      ).properties.light.properties;
-      const brandColor = lightProperties['brand-color'];
+      const brandColor = getLightProperties(schema.toJsonSchema())[
+        'brand-color'
+      ];
 
-      expect(brandColor.description).toContain('Format: R, G, B.');
+      expect(brandColor?.description).toContain('Format: R, G, B.');
     });
 
     it('includes unit in descriptions for constrained numbers', () => {
-      const jsonSchema = schema.toJsonSchema();
-      const lightProperties = (
-        jsonSchema as {
-          properties: Record<
-            string,
-            { properties: Record<string, { description: string }> }
-          >;
-        }
-      ).properties.light.properties;
-      const borderRadius = lightProperties['border-radius'];
+      const borderRadius = getLightProperties(schema.toJsonSchema())[
+        'border-radius'
+      ];
 
-      expect(borderRadius.description).toContain('Unit: px.');
+      expect(borderRadius?.description).toContain('Unit: px.');
     });
 
     it('includes numeric constraints', () => {
-      const jsonSchema = schema.toJsonSchema();
-      const lightProperties = (
-        jsonSchema as {
-          properties: Record<
-            string,
-            {
-              properties: Record<
-                string,
-                { minimum?: number; maximum?: number; multipleOf?: number }
-              >;
-            }
-          >;
-        }
-      ).properties.light.properties;
-      const borderRadius = lightProperties['border-radius'];
+      const borderRadius = getLightProperties(schema.toJsonSchema())[
+        'border-radius'
+      ];
 
-      expect(borderRadius.minimum).toBe(0);
-      expect(borderRadius.maximum).toBe(32);
+      expect(borderRadius?.minimum).toBe(0);
+      expect(borderRadius?.maximum).toBe(32);
     });
 
     it('maps color variables to string type', () => {
-      const jsonSchema = schema.toJsonSchema();
-      const lightProperties = (
-        jsonSchema as {
-          properties: Record<
-            string,
-            { properties: Record<string, { type: string }> }
-          >;
-        }
-      ).properties.light.properties;
+      const lightProperties = getLightProperties(schema.toJsonSchema());
 
-      expect(lightProperties['brand-color'].type).toBe('string');
+      expect(lightProperties['brand-color']?.type).toBe('string');
     });
 
     it('maps number variables to number type', () => {
-      const jsonSchema = schema.toJsonSchema();
-      const lightProperties = (
-        jsonSchema as {
-          properties: Record<
-            string,
-            { properties: Record<string, { type: string }> }
-          >;
-        }
-      ).properties.light.properties;
+      const lightProperties = getLightProperties(schema.toJsonSchema());
 
-      expect(lightProperties['border-radius'].type).toBe('number');
-      expect(lightProperties['opacity'].type).toBe('number');
+      expect(lightProperties['border-radius']?.type).toBe('number');
+      expect(lightProperties['opacity']?.type).toBe('number');
     });
 
     it('maps shadow variables to array type', () => {
-      const jsonSchema = schema.toJsonSchema();
-      const lightProperties = (
-        jsonSchema as {
-          properties: Record<
-            string,
-            { properties: Record<string, { type: string }> }
-          >;
-        }
-      ).properties.light.properties;
+      const lightProperties = getLightProperties(schema.toJsonSchema());
 
-      expect(lightProperties['shadow'].type).toBe('array');
+      expect(lightProperties['shadow']?.type).toBe('array');
     });
   });
 });
