@@ -6,8 +6,8 @@ import { defineConfig } from 'tsdown';
 // TODO: Serve CSS from a CDN with proper MIME type and load via <link> from the
 // loader instead of self-injecting. GitHub release downloads serve as
 // application/octet-stream which browsers reject for stylesheets. Remove the
-// __CHAT_CSS__ define and the <style> injection in widget.tsx once we have a
-// proper CDN setup.
+// __AUTOCOMPLETE_CSS__ define and the <style> injection in widget.tsx once we
+// have a proper CDN setup.
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const autocompleteCssPath = resolve(
   __dirname,
