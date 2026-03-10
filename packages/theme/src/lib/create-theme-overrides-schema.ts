@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 
+import { isShadowLayers } from '..';
+
 import type { ThemeVariable } from '..';
 
 /**
@@ -8,6 +10,7 @@ import type { ThemeVariable } from '..';
  *
  * - `color` variables → `z.string()` (RGB triplet like "30, 89, 255")
  * - `number` variables → `z.number()` with min/max/step constraints
+ * - `shadow` variables → `z.array(shadowLayerSchema)` (1–4 structured layers)
  * - `text` variables → `z.string()`
  *
  * All fields are optional — the agent only returns the values it wants to override.
@@ -43,6 +46,15 @@ export function createThemeOverridesSchema(variables: ThemeVariable[]) {
   });
 }
 
+const shadowLayerSchema = z.object({
+  offsetX: z.number(),
+  offsetY: z.number(),
+  blur: z.number().min(0),
+  spread: z.number(),
+  color: z.string(),
+  opacity: z.number().min(0).max(1),
+});
+
 function variableToZodField(variable: ThemeVariable) {
   const description = buildDescription(variable);
 
@@ -63,10 +75,36 @@ function variableToZodField(variable: ThemeVariable) {
       }
       return schema.optional().describe(description);
     }
+    case 'shadow': {
+      return z
+        .array(shadowLayerSchema)
+        .min(1)
+        .max(4)
+        .optional()
+        .describe(description);
+    }
     case 'text': {
       return z.string().optional().describe(description);
     }
   }
+}
+
+function getDefaultString(variable: ThemeVariable): string {
+  const def = variable.default;
+
+  if (typeof def === 'string') {
+    return def;
+  }
+
+  if (isShadowLayers(def)) {
+    return JSON.stringify(def);
+  }
+
+  const modeDefault = def.light;
+
+  return isShadowLayers(modeDefault)
+    ? JSON.stringify(modeDefault)
+    : modeDefault;
 }
 
 function buildDescription(variable: ThemeVariable): string {
@@ -76,10 +114,13 @@ function buildDescription(variable: ThemeVariable): string {
     parts.push('Format: R, G, B.');
   }
 
-  const defaultValue =
-    typeof variable.default === 'string'
-      ? variable.default
-      : variable.default.light;
+  if (variable.type === 'shadow') {
+    parts.push(
+      'Format: array of shadow layers, each with { offsetX, offsetY, blur, spread, color, opacity }. Color is "R, G, B" format. Opacity is 0–1. Blur must be >= 0. Max 4 layers.'
+    );
+  }
+
+  const defaultValue = getDefaultString(variable);
 
   if (variable.constraints?.unit) {
     parts.push(`Unit: ${variable.constraints.unit}.`);

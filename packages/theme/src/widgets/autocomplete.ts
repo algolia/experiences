@@ -250,9 +250,25 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
   {
     key: 'autocomplete-panel-shadow',
     label: 'Panel shadow',
-    type: 'text',
-    default:
-      '0 0 0 1px rgba(23,23,23,0.05), 0 6px 16px -4px rgba(23,23,23,0.15)',
+    type: 'shadow',
+    default: [
+      {
+        offsetX: 0,
+        offsetY: 0,
+        blur: 0,
+        spread: 1,
+        color: '23, 23, 23',
+        opacity: 0.05,
+      },
+      {
+        offsetX: 0,
+        offsetY: 6,
+        blur: 16,
+        spread: -4,
+        color: '23, 23, 23',
+        opacity: 0.15,
+      },
+    ],
     description: 'Box shadow of the results panel.',
   },
   {
@@ -430,9 +446,25 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
   {
     key: 'autocomplete-detached-modal-shadow',
     label: 'Detached modal shadow',
-    type: 'text',
-    default:
-      '0 0 0 1px rgba(23,23,23,0.05), 0 6px 16px -4px rgba(23,23,23,0.15)',
+    type: 'shadow',
+    default: [
+      {
+        offsetX: 0,
+        offsetY: 0,
+        blur: 0,
+        spread: 1,
+        color: '23, 23, 23',
+        opacity: 0.05,
+      },
+      {
+        offsetX: 0,
+        offsetY: 6,
+        blur: 16,
+        spread: -4,
+        color: '23, 23, 23',
+        opacity: 0.15,
+      },
+    ],
     description: 'Box shadow of the detached modal.',
   },
   {

@@ -1,6 +1,8 @@
-import type { ThemeVariable, ThemeOverrides } from '..';
+import { isShadowLayers } from '..';
 
-type ThemeOverrideValue = string | number;
+import type { ShadowLayer, ThemeVariable, ThemeOverrides } from '..';
+
+type ThemeOverrideValue = string | number | ShadowLayer[];
 
 /**
  * Generates a complete theme CSS string with `:root` (light) and dark mode blocks.
@@ -33,6 +35,11 @@ function generateDeclarations(
   return variables
     .map((variable) => {
       const raw = overrides[variable.key] ?? getDefault(variable, mode);
+
+      if (isShadowLayers(raw)) {
+        return `  --ais-${variable.key}: ${shadowLayersToCss(raw)};`;
+      }
+
       const value = variable.constraints?.unit
         ? `${raw}${variable.constraints.unit}`
         : raw;
@@ -42,8 +49,19 @@ function generateDeclarations(
     .join('\n');
 }
 
-function getDefault(variable: ThemeVariable, mode: 'light' | 'dark'): string {
-  if (typeof variable.default === 'string') {
+function shadowLayersToCss(layers: ShadowLayer[]): string {
+  return layers
+    .map((layer) => {
+      return `${layer.offsetX}px ${layer.offsetY}px ${layer.blur}px ${layer.spread}px rgba(${layer.color}, ${layer.opacity})`;
+    })
+    .join(', ');
+}
+
+function getDefault(
+  variable: ThemeVariable,
+  mode: 'light' | 'dark'
+): string | ShadowLayer[] {
+  if (typeof variable.default === 'string' || Array.isArray(variable.default)) {
     return variable.default;
   }
 

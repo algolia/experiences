@@ -30,8 +30,17 @@ const variables: ThemeVariable[] = [
   {
     key: 'shadow',
     label: 'Shadow',
-    type: 'text',
-    default: '0 2px 4px rgba(0,0,0,0.1)',
+    type: 'shadow',
+    default: [
+      {
+        offsetX: 0,
+        offsetY: 2,
+        blur: 4,
+        spread: 0,
+        color: '0, 0, 0',
+        opacity: 0.1,
+      },
+    ],
     description: 'Box shadow value.',
   },
 ];
@@ -92,7 +101,16 @@ describe('createThemeOverridesSchema', () => {
           'brand-color': '255, 0, 0',
           'border-radius': 16,
           opacity: 0.5,
-          shadow: '0 4px 8px rgba(0,0,0,0.2)',
+          shadow: [
+            {
+              offsetX: 0,
+              offsetY: 4,
+              blur: 8,
+              spread: 0,
+              color: '0, 0, 0',
+              opacity: 0.2,
+            },
+          ],
         },
       });
 
@@ -147,9 +165,98 @@ describe('createThemeOverridesSchema', () => {
       expect(result.success).toBe(true);
     });
 
-    it('rejects a number for a text variable', () => {
+    it('accepts a valid shadow layer array', () => {
       const result = schema.safeParse({
-        light: { shadow: 42 },
+        light: {
+          shadow: [
+            {
+              offsetX: 0,
+              offsetY: 2,
+              blur: 4,
+              spread: 0,
+              color: '0, 0, 0',
+              opacity: 0.1,
+            },
+            {
+              offsetX: 0,
+              offsetY: 6,
+              blur: 16,
+              spread: -4,
+              color: '23, 23, 23',
+              opacity: 0.15,
+            },
+          ],
+        },
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it('rejects an empty array for a shadow variable', () => {
+      const result = schema.safeParse({
+        light: { shadow: [] },
+      });
+
+      expect(result.success).toBe(false);
+    });
+
+    it('rejects a shadow array with more than 4 layers', () => {
+      const layer = {
+        offsetX: 0,
+        offsetY: 0,
+        blur: 0,
+        spread: 0,
+        color: '0, 0, 0',
+        opacity: 0.1,
+      };
+      const result = schema.safeParse({
+        light: { shadow: [layer, layer, layer, layer, layer] },
+      });
+
+      expect(result.success).toBe(false);
+    });
+
+    it('rejects a shadow layer with negative blur', () => {
+      const result = schema.safeParse({
+        light: {
+          shadow: [
+            {
+              offsetX: 0,
+              offsetY: 0,
+              blur: -1,
+              spread: 0,
+              color: '0, 0, 0',
+              opacity: 0.5,
+            },
+          ],
+        },
+      });
+
+      expect(result.success).toBe(false);
+    });
+
+    it('rejects a shadow layer with opacity > 1', () => {
+      const result = schema.safeParse({
+        light: {
+          shadow: [
+            {
+              offsetX: 0,
+              offsetY: 0,
+              blur: 4,
+              spread: 0,
+              color: '0, 0, 0',
+              opacity: 1.5,
+            },
+          ],
+        },
+      });
+
+      expect(result.success).toBe(false);
+    });
+
+    it('rejects a non-array value for a shadow variable', () => {
+      const result = schema.safeParse({
+        light: { shadow: '0 2px 4px rgba(0,0,0,0.1)' },
       });
 
       expect(result.success).toBe(false);
@@ -279,7 +386,7 @@ describe('createThemeOverridesSchema', () => {
       expect(lightProperties['opacity'].type).toBe('number');
     });
 
-    it('maps text variables to string type', () => {
+    it('maps shadow variables to array type', () => {
       const jsonSchema = schema.toJsonSchema();
       const lightProperties = (
         jsonSchema as {
@@ -290,7 +397,7 @@ describe('createThemeOverridesSchema', () => {
         }
       ).properties.light.properties;
 
-      expect(lightProperties['shadow'].type).toBe('string');
+      expect(lightProperties['shadow'].type).toBe('array');
     });
   });
 });

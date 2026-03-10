@@ -30,8 +30,17 @@ const variables: ThemeVariable[] = [
   {
     key: 'shadow',
     label: 'Shadow',
-    type: 'text',
-    default: '0 2px 4px rgba(0,0,0,0.1)',
+    type: 'shadow',
+    default: [
+      {
+        offsetX: 0,
+        offsetY: 2,
+        blur: 4,
+        spread: 0,
+        color: '0, 0, 0',
+        opacity: 0.1,
+      },
+    ],
     description: 'Box shadow value.',
   },
 ];
@@ -57,14 +66,24 @@ describe('generateThemeCss', () => {
     expect(darkBlock).toContain('--ais-brand-color: 110, 160, 255;');
   });
 
-  it('uses the same default for both modes when default is a string', () => {
+  it('serializes shadow layers to CSS box-shadow syntax', () => {
+    const css = generateThemeCss(variables);
+
+    expect(css).toContain('--ais-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.1);');
+  });
+
+  it('uses the same shadow default for both modes when default is a flat array', () => {
     const css = generateThemeCss(variables);
     const [lightBlock, darkBlock] = css.split(
       ":root[data-theme='dark'], .dark {"
     );
 
-    expect(lightBlock).toContain('--ais-shadow: 0 2px 4px rgba(0,0,0,0.1);');
-    expect(darkBlock).toContain('--ais-shadow: 0 2px 4px rgba(0,0,0,0.1);');
+    expect(lightBlock).toContain(
+      '--ais-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.1);'
+    );
+    expect(darkBlock).toContain(
+      '--ais-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.1);'
+    );
   });
 
   it('appends the unit to numeric variables', () => {
@@ -123,6 +142,51 @@ describe('generateThemeCss', () => {
     });
 
     expect(css).toContain('--ais-border-radius: 8px;');
-    expect(css).toContain('--ais-shadow: 0 2px 4px rgba(0,0,0,0.1);');
+    expect(css).toContain('--ais-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.1);');
+  });
+
+  it('serializes multi-layer shadows with comma separation', () => {
+    const css = generateThemeCss(variables, {
+      shadow: [
+        {
+          offsetX: 0,
+          offsetY: 0,
+          blur: 0,
+          spread: 1,
+          color: '23, 23, 23',
+          opacity: 0.05,
+        },
+        {
+          offsetX: 0,
+          offsetY: 6,
+          blur: 16,
+          spread: -4,
+          color: '23, 23, 23',
+          opacity: 0.15,
+        },
+      ],
+    });
+
+    expect(css).toContain(
+      '--ais-shadow: 0px 0px 0px 1px rgba(23, 23, 23, 0.05), 0px 6px 16px -4px rgba(23, 23, 23, 0.15);'
+    );
+  });
+
+  it('overrides replace default shadow layers', () => {
+    const css = generateThemeCss(variables, {
+      shadow: [
+        {
+          offsetX: 4,
+          offsetY: 4,
+          blur: 0,
+          spread: 0,
+          color: '10, 10, 10',
+          opacity: 1,
+        },
+      ],
+    });
+
+    expect(css).toContain('--ais-shadow: 4px 4px 0px 0px rgba(10, 10, 10, 1);');
+    expect(css).not.toContain('0px 2px 4px 0px');
   });
 });

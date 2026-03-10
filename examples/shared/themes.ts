@@ -5,7 +5,19 @@
  * or `{ light, dark }` with per-mode overrides.
  */
 
-import type { ThemeOverrides } from '../../packages/theme/src';
+import type { ShadowLayer, ThemeOverrides } from '../../packages/theme/src';
+
+// Helper to keep shadow layer declarations concise.
+function shadow(
+  offsetX: number,
+  offsetY: number,
+  blur: number,
+  spread: number,
+  color: string,
+  opacity: number
+): ShadowLayer {
+  return { offsetX, offsetY, blur, spread, color, opacity };
+}
 
 // Non-color overrides shared across light and dark for a given theme.
 const modernShape = {
@@ -51,16 +63,20 @@ export const modern: ThemeOverrides = {
     'autocomplete-clear-button-color': '161, 161, 170',
     'autocomplete-form-border-opacity': '0.6',
     'autocomplete-form-focus-ring-opacity': '0.2',
-    'autocomplete-panel-shadow':
-      '0 0 0 1px rgba(109,40,217,0.08), 0 12px 32px -8px rgba(0,0,0,0.15)',
+    'autocomplete-panel-shadow': [
+      shadow(0, 0, 0, 1, '109, 40, 217', 0.08),
+      shadow(0, 12, 32, -8, '0, 0, 0', 0.15),
+    ],
     'autocomplete-panel-border-opacity': '0.15',
     'autocomplete-item-selected-opacity': '0.08',
     'autocomplete-item-icon-color': '161, 161, 170',
     'autocomplete-item-action-color': '109, 40, 217',
     'autocomplete-header-color': '109, 40, 217',
     'autocomplete-header-line-opacity': '0.2',
-    'autocomplete-detached-modal-shadow':
-      '0 0 0 1px rgba(109,40,217,0.1), 0 24px 48px -12px rgba(0,0,0,0.2)',
+    'autocomplete-detached-modal-shadow': [
+      shadow(0, 0, 0, 1, '109, 40, 217', 0.1),
+      shadow(0, 24, 48, -12, '0, 0, 0', 0.2),
+    ],
   },
   dark: {
     ...modernShape,
@@ -75,16 +91,20 @@ export const modern: ThemeOverrides = {
     'autocomplete-clear-button-color': '161, 161, 170',
     'autocomplete-form-border-opacity': '0.4',
     'autocomplete-form-focus-ring-opacity': '0.35',
-    'autocomplete-panel-shadow':
-      '0 0 0 1px rgba(139,92,246,0.1), 0 12px 32px -8px rgba(0,0,0,0.5)',
+    'autocomplete-panel-shadow': [
+      shadow(0, 0, 0, 1, '139, 92, 246', 0.1),
+      shadow(0, 12, 32, -8, '0, 0, 0', 0.5),
+    ],
     'autocomplete-panel-border-opacity': '0.15',
     'autocomplete-item-selected-opacity': '0.15',
     'autocomplete-item-icon-color': '161, 161, 170',
     'autocomplete-item-action-color': '139, 92, 246',
     'autocomplete-header-color': '139, 92, 246',
     'autocomplete-header-line-opacity': '0.2',
-    'autocomplete-detached-modal-shadow':
-      '0 0 0 1px rgba(139,92,246,0.15), 0 24px 48px -12px rgba(0,0,0,0.6)',
+    'autocomplete-detached-modal-shadow': [
+      shadow(0, 0, 0, 1, '139, 92, 246', 0.15),
+      shadow(0, 24, 48, -12, '0, 0, 0', 0.6),
+    ],
   },
 };
 
@@ -130,8 +150,10 @@ export const warmMinimal: ThemeOverrides = {
     'autocomplete-clear-button-color': '158, 148, 136',
     'autocomplete-form-border-opacity': '0.4',
     'autocomplete-form-focus-ring-opacity': '0.15',
-    'autocomplete-panel-shadow':
-      '0 1px 3px rgba(58,50,43,0.06), 0 4px 12px rgba(58,50,43,0.04)',
+    'autocomplete-panel-shadow': [
+      shadow(0, 1, 3, 0, '58, 50, 43', 0.06),
+      shadow(0, 4, 12, 0, '58, 50, 43', 0.04),
+    ],
     'autocomplete-panel-border-opacity': '0.2',
     'autocomplete-item-selected-opacity': '0.06',
     'autocomplete-item-icon-color': '158, 148, 136',
@@ -152,8 +174,10 @@ export const warmMinimal: ThemeOverrides = {
     'autocomplete-clear-button-color': '140, 130, 118',
     'autocomplete-form-border-opacity': '0.35',
     'autocomplete-form-focus-ring-opacity': '0.2',
-    'autocomplete-panel-shadow':
-      '0 1px 3px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.1)',
+    'autocomplete-panel-shadow': [
+      shadow(0, 1, 3, 0, '0, 0, 0', 0.15),
+      shadow(0, 4, 12, 0, '0, 0, 0', 0.1),
+    ],
     'autocomplete-panel-border-opacity': '0.2',
     'autocomplete-item-selected-opacity': '0.1',
     'autocomplete-item-icon-color': '140, 130, 118',
@@ -208,14 +232,14 @@ export const boldBrand: ThemeOverrides = {
     'autocomplete-clear-button-color': '100, 100, 100',
     'autocomplete-form-border-opacity': '1',
     'autocomplete-form-focus-ring-opacity': '0.3',
-    'autocomplete-panel-shadow': '4px 4px 0 rgba(10,10,10,1)',
+    'autocomplete-panel-shadow': [shadow(4, 4, 0, 0, '10, 10, 10', 1)],
     'autocomplete-panel-border-opacity': '1',
     'autocomplete-item-selected-opacity': '0.08',
     'autocomplete-item-icon-color': '80, 80, 80',
     'autocomplete-item-action-color': '230, 30, 40',
     'autocomplete-header-color': '230, 30, 40',
     'autocomplete-header-line-opacity': '0.4',
-    'autocomplete-detached-modal-shadow': '6px 6px 0 rgba(10,10,10,1)',
+    'autocomplete-detached-modal-shadow': [shadow(6, 6, 0, 0, '10, 10, 10', 1)],
     'autocomplete-detached-form-border-opacity': '1',
   },
   dark: {
@@ -231,14 +255,16 @@ export const boldBrand: ThemeOverrides = {
     'autocomplete-clear-button-color': '160, 160, 160',
     'autocomplete-form-border-opacity': '1',
     'autocomplete-form-focus-ring-opacity': '0.4',
-    'autocomplete-panel-shadow': '4px 4px 0 rgba(245,245,245,1)',
+    'autocomplete-panel-shadow': [shadow(4, 4, 0, 0, '245, 245, 245', 1)],
     'autocomplete-panel-border-opacity': '1',
     'autocomplete-item-selected-opacity': '0.12',
     'autocomplete-item-icon-color': '180, 180, 180',
     'autocomplete-item-action-color': '255, 60, 70',
     'autocomplete-header-color': '255, 60, 70',
     'autocomplete-header-line-opacity': '0.4',
-    'autocomplete-detached-modal-shadow': '6px 6px 0 rgba(245,245,245,1)',
+    'autocomplete-detached-modal-shadow': [
+      shadow(6, 6, 0, 0, '245, 245, 245', 1),
+    ],
     'autocomplete-detached-form-border-opacity': '1',
   },
 };
@@ -292,16 +318,20 @@ export const softPastel: ThemeOverrides = {
     'autocomplete-clear-button-color': '148, 163, 184',
     'autocomplete-form-border-opacity': '0.5',
     'autocomplete-form-focus-ring-opacity': '0.25',
-    'autocomplete-panel-shadow':
-      '0 0 0 1px rgba(20,184,166,0.08), 0 8px 24px -4px rgba(100,116,139,0.12)',
+    'autocomplete-panel-shadow': [
+      shadow(0, 0, 0, 1, '20, 184, 166', 0.08),
+      shadow(0, 8, 24, -4, '100, 116, 139', 0.12),
+    ],
     'autocomplete-panel-border-opacity': '0.25',
     'autocomplete-item-selected-opacity': '0.08',
     'autocomplete-item-icon-color': '148, 163, 184',
     'autocomplete-item-action-color': '20, 184, 166',
     'autocomplete-header-color': '20, 184, 166',
     'autocomplete-header-line-opacity': '0.2',
-    'autocomplete-detached-modal-shadow':
-      '0 0 0 1px rgba(20,184,166,0.1), 0 16px 40px -8px rgba(100,116,139,0.15)',
+    'autocomplete-detached-modal-shadow': [
+      shadow(0, 0, 0, 1, '20, 184, 166', 0.1),
+      shadow(0, 16, 40, -8, '100, 116, 139', 0.15),
+    ],
     'autocomplete-detached-form-border-opacity': '0.25',
   },
   dark: {
@@ -317,16 +347,20 @@ export const softPastel: ThemeOverrides = {
     'autocomplete-clear-button-color': '100, 116, 139',
     'autocomplete-form-border-opacity': '0.4',
     'autocomplete-form-focus-ring-opacity': '0.3',
-    'autocomplete-panel-shadow':
-      '0 0 0 1px rgba(45,212,191,0.1), 0 8px 24px -4px rgba(0,0,0,0.3)',
+    'autocomplete-panel-shadow': [
+      shadow(0, 0, 0, 1, '45, 212, 191', 0.1),
+      shadow(0, 8, 24, -4, '0, 0, 0', 0.3),
+    ],
     'autocomplete-panel-border-opacity': '0.2',
     'autocomplete-item-selected-opacity': '0.12',
     'autocomplete-item-icon-color': '100, 116, 139',
     'autocomplete-item-action-color': '45, 212, 191',
     'autocomplete-header-color': '45, 212, 191',
     'autocomplete-header-line-opacity': '0.25',
-    'autocomplete-detached-modal-shadow':
-      '0 0 0 1px rgba(45,212,191,0.12), 0 16px 40px -8px rgba(0,0,0,0.4)',
+    'autocomplete-detached-modal-shadow': [
+      shadow(0, 0, 0, 1, '45, 212, 191', 0.12),
+      shadow(0, 16, 40, -8, '0, 0, 0', 0.4),
+    ],
     'autocomplete-detached-form-border-opacity': '0.3',
   },
 };
