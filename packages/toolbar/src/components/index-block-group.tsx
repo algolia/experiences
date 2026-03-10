@@ -25,6 +25,7 @@ type IndexBlockGroupProps = {
   onDeleteBlock: (path: BlockPath) => void;
   onChangeWidgetIndex: (widgetPath: BlockPath, targetIndexName: string) => void;
   onPickElement: (callback: (selector: string) => void) => void;
+  onNavigateToTheme?: () => void;
 };
 
 export function IndexBlockGroup({
@@ -39,6 +40,7 @@ export function IndexBlockGroup({
   onDeleteBlock,
   onChangeWidgetIndex,
   onPickElement,
+  onNavigateToTheme,
 }: IndexBlockGroupProps) {
   const indexName = (block.parameters.indexName as string) || '';
   const indexId = block.parameters.indexId as string | undefined;
@@ -193,6 +195,9 @@ export function IndexBlockGroup({
               return onDeleteBlock([parentIndex, childIndex]);
             }}
             onPickElement={onPickElement}
+            onNavigateToTheme={
+              child.type === 'ais.autocomplete' ? onNavigateToTheme : undefined
+            }
             indexBlocks={indexBlocks}
             parentIndex={parentIndex}
             onChangeIndex={(targetIndexName) => {

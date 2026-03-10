@@ -377,6 +377,9 @@ export function Panel({
                     onDeleteBlock={onDeleteBlock}
                     onChangeWidgetIndex={onChangeWidgetIndex}
                     onPickElement={onPickElement}
+                    onNavigateToTheme={() => {
+                      return setTab('theme');
+                    }}
                   />
                 );
               }
@@ -403,6 +406,13 @@ export function Panel({
                     return onDeleteBlock([index]);
                   }}
                   onPickElement={onPickElement}
+                  onNavigateToTheme={
+                    block.type === 'ais.autocomplete'
+                      ? () => {
+                          return setTab('theme');
+                        }
+                      : undefined
+                  }
                   suggestLists={suggestLists}
                 />
               );
