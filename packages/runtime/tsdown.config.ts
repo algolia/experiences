@@ -14,7 +14,10 @@ const chatCssPath = resolve(
   '../../node_modules/instantsearch.css/components/chat.css'
 );
 const chatCss = readFileSync(chatCssPath, 'utf-8');
-const autocompleteCssPath = resolve(__dirname, 'src/styles/autocomplete.css');
+const autocompleteCssPath = resolve(
+  __dirname,
+  '../theme/src/widgets/autocomplete.css'
+);
 const autocompleteCss = readFileSync(autocompleteCssPath, 'utf-8');
 
 export default defineConfig({
