@@ -97,13 +97,15 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     type: 'number',
     default: '16',
     description: 'Base font size unit in pixels.',
+    constraints: { min: 8, max: 32, step: 1, unit: 'px' },
   },
   {
     key: 'autocomplete-font-weight-medium',
     label: 'Medium font weight',
-    type: 'text',
+    type: 'number',
     default: '500',
     description: 'Font weight for item titles.',
+    constraints: { min: 100, max: 900, step: 100 },
   },
 
   // --- Icons ---

@@ -14,13 +14,27 @@ import type { ThemeVariable } from '..';
  * Each field includes a `.describe()` with the variable's description, default, and unit.
  */
 export function createThemeOverridesSchema(variables: ThemeVariable[]) {
-  const schema = z.object(
-    Object.fromEntries(
-      variables.map((variable) => {
-        return [variable.key, variableToZodField(variable)];
-      })
-    )
+  const flatShape = Object.fromEntries(
+    variables.map((variable) => {
+      return [variable.key, variableToZodField(variable)];
+    })
   );
+
+  const modeSchema = z.object(flatShape);
+
+  const schema = z
+    .object({
+      light: modeSchema.optional(),
+      dark: modeSchema.optional(),
+    })
+    .refine(
+      (data) => {
+        return data.light !== undefined || data.dark !== undefined;
+      },
+      {
+        message: 'At least one of "light" or "dark" must be provided.',
+      }
+    );
 
   return Object.assign(schema, {
     toJsonSchema() {
