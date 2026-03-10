@@ -130,9 +130,10 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
   {
     key: 'autocomplete-transition-duration',
     label: 'Transition duration',
-    type: 'text',
-    default: '0.3s',
+    type: 'number',
+    default: '0.3',
     description: 'Duration for hover and state transitions.',
+    constraints: { min: 0, max: 2, step: 0.1, unit: 's' },
   },
   {
     key: 'autocomplete-transition-timing-function',
@@ -332,9 +333,10 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
   {
     key: 'autocomplete-item-line-height',
     label: 'Item line height',
-    type: 'text',
-    default: '1.25em',
+    type: 'number',
+    default: '1.25',
     description: 'Line height of item text.',
+    constraints: { min: 1, max: 2.5, step: 0.05, unit: 'em' },
   },
   {
     key: 'autocomplete-item-icon-color',
@@ -353,9 +355,10 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
   {
     key: 'autocomplete-highlight-weight',
     label: 'Highlight weight',
-    type: 'text',
+    type: 'number',
     default: '700',
     description: 'Font weight for highlighted/matched text.',
+    constraints: { min: 100, max: 900, step: 100 },
   },
 
   // --- Headers ---
@@ -369,16 +372,18 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
   {
     key: 'autocomplete-header-font-size',
     label: 'Header font size',
-    type: 'text',
-    default: '0.8em',
+    type: 'number',
+    default: '0.8',
     description: 'Font size of section headers.',
+    constraints: { min: 0.5, max: 2, step: 0.1, unit: 'em' },
   },
   {
     key: 'autocomplete-header-font-weight',
     label: 'Header font weight',
-    type: 'text',
+    type: 'number',
     default: '600',
     description: 'Font weight of section headers.',
+    constraints: { min: 100, max: 900, step: 100 },
   },
   {
     key: 'autocomplete-header-line-opacity',
@@ -417,9 +422,10 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
   {
     key: 'autocomplete-detached-modal-top',
     label: 'Detached modal top offset',
-    type: 'text',
-    default: '3%',
+    type: 'number',
+    default: '3',
     description: 'Top offset of the detached modal from viewport.',
+    constraints: { min: 0, max: 20, step: 1, unit: '%' },
   },
   {
     key: 'autocomplete-detached-modal-shadow',
@@ -450,10 +456,11 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
   {
     key: 'autocomplete-scrollbar-color-mix',
     label: 'Scrollbar color mix',
-    type: 'text',
-    default: '40%',
+    type: 'number',
+    default: '40',
     description:
       'How much of the text color to mix into the scrollbar track color.',
+    constraints: { min: 0, max: 100, step: 5, unit: '%' },
   },
 ];
 
