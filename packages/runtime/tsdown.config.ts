@@ -9,11 +9,6 @@ import { defineConfig } from 'tsdown';
 // __CHAT_CSS__ define and the <style> injection in widget.tsx once we have a
 // proper CDN setup.
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const chatCssPath = resolve(
-  __dirname,
-  '../../node_modules/instantsearch.css/components/chat.css'
-);
-const chatCss = readFileSync(chatCssPath, 'utf-8');
 const autocompleteCssPath = resolve(
   __dirname,
   '../theme/src/widgets/autocomplete.css'
@@ -31,7 +26,6 @@ export default defineConfig({
   sourcemap: true,
   noExternal: [/.*/],
   define: {
-    __CHAT_CSS__: JSON.stringify(chatCss),
     __AUTOCOMPLETE_CSS__: JSON.stringify(autocompleteCss),
   },
 });

@@ -40,11 +40,10 @@ import type { ExperienceWidgetParams } from './types';
 // application/octet-stream which browsers reject for stylesheets. Remove the
 // __CHAT_CSS__ define in tsdown.config.ts and this <style> injection once we
 // have a proper CDN setup.
-declare const __CHAT_CSS__: string;
 declare const __AUTOCOMPLETE_CSS__: string;
 (() => {
   const style = document.createElement('style');
-  style.textContent = __CHAT_CSS__ + __AUTOCOMPLETE_CSS__ + SKELETON_CSS;
+  style.textContent = __AUTOCOMPLETE_CSS__ + SKELETON_CSS;
   document.head.appendChild(style);
 })();
 
