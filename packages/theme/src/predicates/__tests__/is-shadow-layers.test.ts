@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { isShadowLayers } from '../src/predicates/is-shadow-layers';
+import { isShadowLayers } from '../is-shadow-layers';
 
 describe('isShadowLayers', () => {
   it('returns true for a valid single-layer shadow array', () => {

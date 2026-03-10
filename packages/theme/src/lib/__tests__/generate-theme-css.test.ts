@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 
-import { generateThemeCss } from '../src/lib/generate-theme-css';
+import { generateThemeCss } from '../generate-theme-css';
 
-import type { ThemeVariable } from '../src/types';
+import type { ThemeVariable } from '../../types';
 
 const variables: ThemeVariable[] = [
   {

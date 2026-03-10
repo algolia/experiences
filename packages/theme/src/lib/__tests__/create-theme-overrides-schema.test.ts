@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 
-import { createThemeOverridesSchema } from '../src/lib/create-theme-overrides-schema';
+import { createThemeOverridesSchema } from '../create-theme-overrides-schema';
 
-import type { ThemeVariable } from '../src/types';
+import type { ThemeVariable } from '../../types';
 
 const variables: ThemeVariable[] = [
   {
