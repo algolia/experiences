@@ -585,7 +585,6 @@ describe('toolbar', () => {
         expect(savedBody).toEqual({
           blocks: [MOCK_EXPERIENCE.blocks[1]],
           cssVariables: { light: {}, dark: {} },
-          themeMode: 'adaptive',
         });
       });
 

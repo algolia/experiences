@@ -33,7 +33,6 @@ export type ExperienceApiResponse = {
   blocks: ExperienceApiBlock[];
   indexName: string;
   cssVariables?: ThemeOverrides;
-  themeMode?: ThemeModeConfig;
 };
 
 export type ToolbarConfig = {

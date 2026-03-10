@@ -174,7 +174,12 @@ export function App({ config, initialExperience }: AppProps) {
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [themeModeConfig, setThemeModeConfig] = useState<'adaptive' | 'fixed'>(
     () => {
-      return initialExperience.themeMode ?? 'adaptive';
+      const css = initialExperience.cssVariables;
+      // Flat overrides (no light/dark keys) means fixed mode
+      if (css && typeof css === 'object' && !('light' in css)) {
+        return 'fixed';
+      }
+      return 'adaptive';
     }
   );
   const [themeOverrides, setThemeOverrides] = useState<{
@@ -783,7 +788,6 @@ export function App({ config, initialExperience }: AppProps) {
     const sanitized = sanitizeExperience({
       ...experience,
       cssVariables,
-      themeMode: themeModeConfig,
     });
 
     try {
