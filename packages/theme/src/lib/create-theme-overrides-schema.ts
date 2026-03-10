@@ -70,9 +70,9 @@ function variableToZodField(variable: ThemeVariable) {
       if (variable.constraints?.max != null) {
         schema = schema.max(variable.constraints.max);
       }
-      if (variable.constraints?.step != null) {
-        schema = schema.multipleOf(variable.constraints.step);
-      }
+      // `step` is a UI hint for slider increments, not a validation constraint.
+      // Floating point arithmetic makes `multipleOf` unreliable for fractional
+      // steps (e.g. 0.15 fails `multipleOf(0.1)` due to IEEE 754 rounding).
       return schema.optional().describe(description);
     }
     case 'shadow': {

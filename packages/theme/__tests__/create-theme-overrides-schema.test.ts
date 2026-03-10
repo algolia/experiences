@@ -149,12 +149,12 @@ describe('createThemeOverridesSchema', () => {
       expect(result.success).toBe(false);
     });
 
-    it('rejects a number that does not match the step', () => {
+    it('accepts a number between steps (step is a UI hint, not a validation constraint)', () => {
       const result = schema.safeParse({
         light: { 'border-radius': 4.5 },
       });
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBe(true);
     });
 
     it('accepts any number when there are no constraints', () => {
@@ -354,7 +354,6 @@ describe('createThemeOverridesSchema', () => {
 
       expect(borderRadius.minimum).toBe(0);
       expect(borderRadius.maximum).toBe(32);
-      expect(borderRadius.multipleOf).toBe(1);
     });
 
     it('maps color variables to string type', () => {
