@@ -18,6 +18,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     type: 'number',
     default: '1',
     description: 'Opacity of the primary color.',
+    constraints: { min: 0, max: 1 },
   },
   {
     key: 'autocomplete-text-color',
@@ -32,6 +33,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     type: 'number',
     default: '1',
     description: 'Opacity of the text color.',
+    constraints: { min: 0, max: 1 },
   },
   {
     key: 'autocomplete-muted-color-alpha',
@@ -40,6 +42,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     default: '1',
     description:
       'Opacity for secondary elements (placeholder, clear button, item icons).',
+    constraints: { min: 0, max: 1 },
   },
   {
     key: 'autocomplete-background-color',
@@ -54,6 +57,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     type: 'number',
     default: '1',
     description: 'Opacity of the background color.',
+    constraints: { min: 0, max: 1 },
   },
   {
     key: 'autocomplete-border-color',
@@ -83,6 +87,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     type: 'number',
     default: '0.4',
     description: 'Opacity of the detached mode backdrop overlay.',
+    constraints: { min: 0, max: 1 },
   },
 
   // --- Typography ---
@@ -174,6 +179,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     type: 'number',
     default: '0.8',
     description: 'Opacity of the search form border.',
+    constraints: { min: 0, max: 1 },
   },
   {
     key: 'autocomplete-form-focus-ring-opacity',
@@ -181,6 +187,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     type: 'number',
     default: '0.2',
     description: 'Opacity of the focus ring around the search form.',
+    constraints: { min: 0, max: 1 },
   },
   {
     key: 'autocomplete-form-focus-ring-width',
@@ -251,6 +258,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     type: 'number',
     default: '0.2',
     description: 'Opacity of the panel border.',
+    constraints: { min: 0, max: 1 },
   },
   {
     key: 'autocomplete-panel-gap',
@@ -293,6 +301,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     type: 'number',
     default: '0.1',
     description: 'Background opacity of the selected/hovered item.',
+    constraints: { min: 0, max: 1 },
   },
   {
     key: 'autocomplete-item-min-height',
@@ -375,6 +384,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     type: 'number',
     default: '0.3',
     description: 'Opacity of the decorative line after section headers.',
+    constraints: { min: 0, max: 1 },
   },
 
   // --- Detached ---
@@ -423,6 +433,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     type: 'number',
     default: '0.3',
     description: 'Opacity of the form border in detached mode.',
+    constraints: { min: 0, max: 1 },
   },
 
   // --- Scrollbar ---

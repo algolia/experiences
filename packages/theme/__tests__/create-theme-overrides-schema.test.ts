@@ -134,6 +134,15 @@ describe('createThemeOverridesSchema', () => {
       expect(brandColor.description).toContain('Default: 30, 89, 255.');
     });
 
+    it('includes RGB format hint for color variables', () => {
+      const jsonSchema = schema.toJsonSchema();
+      const properties = (jsonSchema as { properties: Record<string, unknown> })
+        .properties;
+      const brandColor = properties['brand-color'] as { description: string };
+
+      expect(brandColor.description).toContain('Format: R, G, B.');
+    });
+
     it('includes unit in descriptions for constrained numbers', () => {
       const jsonSchema = schema.toJsonSchema();
       const properties = (jsonSchema as { properties: Record<string, unknown> })

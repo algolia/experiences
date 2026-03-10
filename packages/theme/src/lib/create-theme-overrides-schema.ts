@@ -58,6 +58,10 @@ function variableToZodField(variable: ThemeVariable) {
 function buildDescription(variable: ThemeVariable): string {
   const parts = [variable.description];
 
+  if (variable.type === 'color') {
+    parts.push('Format: R, G, B.');
+  }
+
   const defaultValue =
     typeof variable.default === 'string'
       ? variable.default
