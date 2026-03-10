@@ -9,6 +9,7 @@ const variables: ThemeVariable[] = [
     key: 'brand-color',
     label: 'Brand color',
     type: 'color',
+    group: 'colors',
     default: { light: '30, 89, 255', dark: '110, 160, 255' },
     description: 'Primary brand color.',
   },
@@ -16,6 +17,7 @@ const variables: ThemeVariable[] = [
     key: 'border-radius',
     label: 'Border radius',
     type: 'number',
+    group: 'layout',
     default: '8',
     description: 'Corner rounding.',
     constraints: { min: 0, max: 32, step: 1, unit: 'px' },
@@ -24,6 +26,7 @@ const variables: ThemeVariable[] = [
     key: 'opacity',
     label: 'Opacity',
     type: 'number',
+    group: 'colors',
     default: '0.8',
     description: 'Global opacity.',
   },
@@ -31,6 +34,7 @@ const variables: ThemeVariable[] = [
     key: 'shadow',
     label: 'Shadow',
     type: 'shadow',
+    group: 'effects',
     default: [
       {
         offsetX: 0,

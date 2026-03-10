@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 
+import type { ThemeOverrideValue } from '@experiences/theme';
+import { generateThemeCss } from '@experiences/theme';
+import { AUTOCOMPLETE_VARIABLES } from '@experiences/theme/autocomplete';
+
 import { saveExperience } from '../api';
 import { useElementPicker } from '../hooks/use-element-picker';
 import { ToolbarProvider } from '../lib/toolbar-context';
@@ -168,6 +172,32 @@ export function App({ config, initialExperience }: AppProps) {
   const [experience, setExperience] = useState(initialExperience);
   const [isDirty, setIsDirty] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>('idle');
+  const [themeModeConfig, setThemeModeConfig] = useState<'adaptive' | 'fixed'>(
+    () => {
+      return initialExperience.themeMode ?? 'adaptive';
+    }
+  );
+  const [themeOverrides, setThemeOverrides] = useState<{
+    light: Record<string, ThemeOverrideValue>;
+    dark: Record<string, ThemeOverrideValue>;
+  }>(() => {
+    const initial = initialExperience.cssVariables;
+    if (initial && typeof (initial as { light?: unknown }).light === 'object') {
+      return initial as {
+        light: Record<string, ThemeOverrideValue>;
+        dark: Record<string, ThemeOverrideValue>;
+      };
+    }
+    // Flat overrides (fixed mode) — put them in light for editing
+    if (initial && typeof initial === 'object' && !('light' in initial)) {
+      return {
+        light: initial as Record<string, ThemeOverrideValue>,
+        dark: {},
+      };
+    }
+    return { light: {}, dark: {} };
+  });
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
   const [toast, setToast] = useState<string | null>(null);
   const [writeApiKey, setWriteApiKey] = useState<string | null>(() => {
     return sessionStorage.getItem(`experiences.${config.experienceId}.key`);
@@ -630,10 +660,131 @@ export function App({ config, initialExperience }: AppProps) {
     [scheduleRun]
   );
 
+  const applyThemePreview = useCallback(
+    (
+      overrides: {
+        light: Record<string, ThemeOverrideValue>;
+        dark: Record<string, ThemeOverrideValue>;
+      },
+      modeConfig: 'adaptive' | 'fixed' = themeModeConfig
+    ) => {
+      const cssOverrides = modeConfig === 'fixed' ? overrides.light : overrides;
+      const css = generateThemeCss(
+        AUTOCOMPLETE_VARIABLES,
+        cssOverrides,
+        modeConfig
+      );
+      let style = document.querySelector(
+        'style[data-algolia-experiences-theme]'
+      );
+      if (!style) {
+        style = document.createElement('style');
+        style.setAttribute('data-algolia-experiences-theme', '');
+        document.head.appendChild(style);
+      }
+      style.textContent = css;
+    },
+    [themeModeConfig]
+  );
+
+  const onThemeVariableChange = useCallback(
+    (key: string, value: ThemeOverrideValue) => {
+      setThemeOverrides((prev) => {
+        const updated = {
+          ...prev,
+          [themeMode]: { ...prev[themeMode], [key]: value },
+        };
+        applyThemePreview(updated);
+        return updated;
+      });
+      setIsDirty(true);
+    },
+    [themeMode, applyThemePreview]
+  );
+
+  const onThemeVariableReset = useCallback(
+    (key: string) => {
+      setThemeOverrides((prev) => {
+        const modeOverrides = { ...prev[themeMode] };
+        delete modeOverrides[key];
+        const updated = { ...prev, [themeMode]: modeOverrides };
+        applyThemePreview(updated);
+        return updated;
+      });
+      setIsDirty(true);
+    },
+    [themeMode, applyThemePreview]
+  );
+
+  const onThemeResetAll = useCallback(() => {
+    const empty = { light: {}, dark: {} };
+    setThemeOverrides(empty);
+    const style = document.querySelector(
+      'style[data-algolia-experiences-theme]'
+    );
+    if (style) {
+      style.remove();
+    }
+    document.documentElement.removeAttribute('data-theme');
+    document.documentElement.classList.remove('dark');
+    setThemeMode('light');
+    setIsDirty(true);
+  }, []);
+
+  const onThemeModeConfigChange = useCallback(
+    (modeConfig: 'adaptive' | 'fixed') => {
+      setThemeModeConfig(modeConfig);
+      if (modeConfig === 'fixed') {
+        // Switch back to light editing view and remove dark mode attrs
+        setThemeMode('light');
+        document.documentElement.removeAttribute('data-theme');
+        document.documentElement.classList.remove('dark');
+      }
+      applyThemePreview(themeOverrides, modeConfig);
+      setIsDirty(true);
+    },
+    [themeOverrides, applyThemePreview]
+  );
+
+  const onThemeModeChange = useCallback(
+    (mode: 'light' | 'dark') => {
+      setThemeMode(mode);
+      if (mode === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        document.documentElement.classList.remove('dark');
+      }
+      applyThemePreview(themeOverrides);
+    },
+    [themeOverrides, applyThemePreview]
+  );
+
+  const onPresetApply = useCallback(
+    (preset: {
+      overrides: {
+        light: Record<string, ThemeOverrideValue>;
+        dark: Record<string, ThemeOverrideValue>;
+      };
+    }) => {
+      setThemeOverrides(preset.overrides);
+      applyThemePreview(preset.overrides);
+      setIsDirty(true);
+    },
+    [applyThemePreview]
+  );
+
   const onSave = useCallback(async () => {
     setSaveState('saving');
 
-    const sanitized = sanitizeExperience(experience);
+    const cssVariables =
+      themeModeConfig === 'fixed' ? themeOverrides.light : themeOverrides;
+    const sanitized = sanitizeExperience({
+      ...experience,
+      cssVariables,
+      themeMode: themeModeConfig,
+    });
 
     try {
       await saveExperience({
@@ -652,7 +803,7 @@ export function App({ config, initialExperience }: AppProps) {
       setSaveState('idle');
       setToast(err instanceof Error ? err.message : 'Failed to save.');
     }
-  }, [writeApiKey, config, experience]);
+  }, [writeApiKey, config, experience, themeOverrides, themeModeConfig]);
 
   useEffect(() => {
     if (!panelRef.current) {
@@ -727,6 +878,15 @@ export function App({ config, initialExperience }: AppProps) {
         onChangeWidgetIndex={onChangeWidgetIndex}
         onMoveBlock={onMoveBlock}
         onPickElement={picker.startPicking}
+        themeOverrides={themeOverrides}
+        themeMode={themeMode}
+        onThemeVariableChange={onThemeVariableChange}
+        onThemeVariableReset={onThemeVariableReset}
+        onThemeResetAll={onThemeResetAll}
+        onThemeModeChange={onThemeModeChange}
+        themeModeConfig={themeModeConfig}
+        onThemeModeConfigChange={onThemeModeConfigChange}
+        onPresetApply={onPresetApply}
       />
       <Pill
         visible={!isExpanded}

@@ -11,7 +11,7 @@ import { defineConfig } from 'tsdown';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const autocompleteCssPath = resolve(
   __dirname,
-  '../theme/src/widgets/autocomplete.css'
+  '../theme/src/widgets/autocomplete/autocomplete.css'
 );
 const autocompleteCss = readFileSync(autocompleteCssPath, 'utf-8');
 

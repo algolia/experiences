@@ -36,12 +36,12 @@ export function hexToRgbTriplet(hex: string): string {
   const result = HEX_RGB_RE.exec(hex);
 
   if (!result) {
-    return '0,0,0';
+    return '0, 0, 0';
   }
 
   return [
     parseInt(result[1]!, 16),
     parseInt(result[2]!, 16),
     parseInt(result[3]!, 16),
-  ].join(',');
+  ].join(', ');
 }

@@ -1,5 +1,8 @@
 import type { Ref } from 'preact';
 import { useMemo, useEffect, useRef, useState } from 'preact/hooks';
+
+import type { ThemeOverrideValue, ThemePreset } from '@experiences/theme';
+
 import type {
   AddBlockResult,
   BlockPath,
@@ -18,6 +21,7 @@ import { AddWidgetPopover } from './add-widget-popover';
 import { AiChat } from './ai-chat';
 import { BlockCard } from './block-card';
 import { IndexBlockGroup } from './index-block-group';
+import { ThemeEditor } from './theme-editor';
 import { Button } from './ui/button';
 import type { Suggestion } from './ui/combobox';
 import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
@@ -41,9 +45,21 @@ type PanelProps = {
   onMoveBlock: (fromPath: BlockPath, toParentIndex: number) => void;
   onPickElement: (callback: (selector: string) => void) => void;
   panelRef?: Ref<HTMLDivElement>;
+  themeOverrides: {
+    light: Record<string, ThemeOverrideValue>;
+    dark: Record<string, ThemeOverrideValue>;
+  };
+  themeMode: 'light' | 'dark';
+  onThemeVariableChange: (key: string, value: ThemeOverrideValue) => void;
+  onThemeVariableReset: (key: string) => void;
+  onThemeResetAll: () => void;
+  onThemeModeChange: (mode: 'light' | 'dark') => void;
+  themeModeConfig: 'adaptive' | 'fixed';
+  onThemeModeConfigChange: (modeConfig: 'adaptive' | 'fixed') => void;
+  onPresetApply: (preset: ThemePreset) => void;
 };
 
-type Tab = 'manual' | 'ai';
+type Tab = 'manual' | 'ai' | 'theme';
 
 export function Panel({
   env,
@@ -62,6 +78,15 @@ export function Panel({
   onMoveBlock,
   onPickElement,
   panelRef,
+  themeOverrides,
+  themeMode,
+  onThemeVariableChange,
+  onThemeVariableReset,
+  onThemeResetAll,
+  onThemeModeChange,
+  themeModeConfig,
+  onThemeModeConfigChange,
+  onPresetApply,
 }: PanelProps) {
   const [tab, setTab] = useState<Tab>('manual');
   const [aiMounted, setAiMounted] = useState(false);
@@ -298,6 +323,26 @@ export function Panel({
             </svg>
             AI
           </TabsTrigger>
+          <TabsTrigger
+            active={tab === 'theme'}
+            onClick={() => {
+              return setTab('theme');
+            }}
+          >
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08" />
+              <path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z" />
+            </svg>
+            Theme
+          </TabsTrigger>
         </TabsList>
       </div>
 
@@ -366,6 +411,26 @@ export function Panel({
               }}
             />
           </div>
+        </div>
+      </TabsContent>
+
+      {/* Theme tab */}
+      <TabsContent
+        active={tab === 'theme'}
+        class="flex flex-1 flex-col overflow-hidden"
+      >
+        <div class="flex-1 overflow-y-auto p-4 pb-40">
+          <ThemeEditor
+            themeOverrides={themeOverrides}
+            themeMode={themeMode}
+            onThemeVariableChange={onThemeVariableChange}
+            onThemeVariableReset={onThemeVariableReset}
+            onThemeResetAll={onThemeResetAll}
+            onThemeModeChange={onThemeModeChange}
+            themeModeConfig={themeModeConfig}
+            onThemeModeConfigChange={onThemeModeConfigChange}
+            onPresetApply={onPresetApply}
+          />
         </div>
       </TabsContent>
 

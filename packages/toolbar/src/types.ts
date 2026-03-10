@@ -1,3 +1,5 @@
+import type { ThemeOverrides } from '@experiences/theme';
+
 export type Environment = 'prod' | 'beta';
 
 export type Placement = 'inside' | 'before' | 'after' | 'replace' | 'body';
@@ -25,9 +27,13 @@ export type AddBlockResult = {
   indexCreated: boolean;
 };
 
+export type ThemeModeConfig = 'adaptive' | 'fixed';
+
 export type ExperienceApiResponse = {
   blocks: ExperienceApiBlock[];
   indexName: string;
+  cssVariables?: ThemeOverrides;
+  themeMode?: ThemeModeConfig;
 };
 
 export type ToolbarConfig = {

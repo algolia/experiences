@@ -1,7 +1,7 @@
 import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom';
 
 import { Link } from './components/Link';
-import { ThemeSwitcher } from './components/ThemeSwitcher';
+
 import { HomePage } from './pages/HomePage';
 import { ProductPage } from './pages/ProductPage';
 import { SearchPage } from './pages/SearchPage';
@@ -206,8 +206,6 @@ function Layout({ preview = false }: { preview?: boolean }) {
           <div id="chat"></div>
         </div>
       </div>
-
-      <ThemeSwitcher />
     </PreviewProvider>
   );
 }
