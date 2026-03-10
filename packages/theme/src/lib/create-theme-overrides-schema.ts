@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 
-import { isShadowLayers } from '..';
+import { isShadowLayers } from '../predicates/is-shadow-layers';
 
 import type { ThemeVariable } from '..';
 

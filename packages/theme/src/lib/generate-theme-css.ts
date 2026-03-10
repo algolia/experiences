@@ -1,8 +1,11 @@
-import { isShadowLayers } from '..';
+import { isShadowLayers } from '../predicates/is-shadow-layers';
 
-import type { ShadowLayer, ThemeVariable, ThemeOverrides } from '..';
-
-type ThemeOverrideValue = string | number | ShadowLayer[];
+import type {
+  ShadowLayer,
+  ThemeOverrideValue,
+  ThemeVariable,
+  ThemeOverrides,
+} from '..';
 
 /**
  * Generates a complete theme CSS string with `:root` (light) and dark mode blocks.

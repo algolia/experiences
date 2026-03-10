@@ -31,7 +31,7 @@ export type ThemeVariable = {
   constraints?: { min?: number; max?: number; step?: number; unit?: string };
 };
 
-type ThemeOverrideValue = string | number | ShadowLayer[];
+export type ThemeOverrideValue = string | number | ShadowLayer[];
 
 /**
  * Theme overrides, either a flat record (applied to both modes) or per-mode.
@@ -42,16 +42,3 @@ export type ThemeOverrides =
       light: Record<string, ThemeOverrideValue>;
       dark: Record<string, ThemeOverrideValue>;
     };
-
-/**
- * Type predicate to check if a value is a ShadowLayer array.
- */
-export function isShadowLayers(value: unknown): value is ShadowLayer[] {
-  return (
-    Array.isArray(value) &&
-    value.length > 0 &&
-    typeof value[0] === 'object' &&
-    value[0] !== null &&
-    'blur' in value[0]
-  );
-}
