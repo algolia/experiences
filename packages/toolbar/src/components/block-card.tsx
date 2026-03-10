@@ -25,7 +25,6 @@ type BlockCardProps = {
   open: boolean;
   onToggle: () => void;
   onParameterChange: (key: string, value: unknown) => void;
-  onCssVariableChange: (key: string, value: string) => void;
   onLocate: () => void;
   onDeleteBlock: () => void;
   onPickElement: (callback: (selector: string) => void) => void;
@@ -73,7 +72,6 @@ export function BlockCard({
   open,
   onToggle,
   onParameterChange,
-  onCssVariableChange,
   onLocate,
   onDeleteBlock,
   onPickElement,
@@ -250,7 +248,6 @@ export function BlockCard({
                 type={type}
                 parameters={parameters}
                 onParameterChange={onParameterChange}
-                onCssVariableChange={onCssVariableChange}
                 onPickElement={onPickElement}
                 parentIndexName={parentIndexName}
                 suggestLists={suggestLists}

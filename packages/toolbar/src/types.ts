@@ -9,7 +9,6 @@ export type SaveState = 'idle' | 'saving' | 'saved';
 export type ExperienceApiBlockParameters = {
   container?: string;
   placement?: Placement;
-  cssVariables?: Record<string, string>;
   indexName?: string;
   indexId?: string;
 } & Record<string, unknown>;

@@ -65,7 +65,6 @@ const MOCK_EXPERIENCE = {
       type: 'ais.chat',
       parameters: {
         container: '#chat',
-        cssVariables: { primaryColor: '#003dff' },
         indexName: 'products',
       },
     },
@@ -73,7 +72,6 @@ const MOCK_EXPERIENCE = {
       type: 'ais.autocomplete',
       parameters: {
         container: '#autocomplete',
-        cssVariables: {},
       },
     },
   ],

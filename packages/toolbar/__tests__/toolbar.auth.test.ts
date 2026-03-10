@@ -39,7 +39,6 @@ const MOCK_EXPERIENCE = {
       type: 'ais.chat',
       parameters: {
         container: '#chat',
-        cssVariables: {},
       },
     },
   ],

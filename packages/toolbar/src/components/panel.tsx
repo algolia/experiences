@@ -37,7 +37,6 @@ type PanelProps = {
   onClose: () => void;
   onSave: () => void;
   onParameterChange: (path: BlockPath, key: string, value: unknown) => void;
-  onCssVariableChange: (path: BlockPath, key: string, value: string) => void;
   onLocate: (container: string, placement: string | undefined) => void;
   onDeleteBlock: (path: BlockPath) => void;
   onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
@@ -70,7 +69,6 @@ export function Panel({
   onClose,
   onSave,
   onParameterChange,
-  onCssVariableChange,
   onLocate,
   onDeleteBlock,
   onAddBlock,
@@ -366,7 +364,6 @@ export function Panel({
                     suggestLists={suggestLists}
                     onToggleExpand={handleToggleExpand}
                     onParameterChange={onParameterChange}
-                    onCssVariableChange={onCssVariableChange}
                     onLocate={onLocate}
                     onDeleteBlock={onDeleteBlock}
                     onChangeWidgetIndex={onChangeWidgetIndex}
@@ -386,9 +383,6 @@ export function Panel({
                   }}
                   onParameterChange={(key, value) => {
                     return onParameterChange([index], key, value);
-                  }}
-                  onCssVariableChange={(key, value) => {
-                    return onCssVariableChange([index], key, value);
                   }}
                   onLocate={() => {
                     return onLocate(
@@ -446,7 +440,6 @@ export function Panel({
             experience={experience}
             onAddBlock={onAddBlock}
             onParameterChange={onParameterChange}
-            onCssVariableChange={onCssVariableChange}
             onDeleteBlock={onDeleteBlock}
             onMoveBlock={onMoveBlock}
           />

@@ -18,13 +18,9 @@ export type Environment = 'prod' | 'beta';
 type ExperienceApiBlockParameters = {
   container: string;
   placement?: 'inside' | 'before' | 'after' | 'replace' | 'body';
-  cssVariables?: Record<string, string>;
   indexName?: string;
   indexId?: string;
-} & Record<
-  'container' | 'cssVariables' | 'indexName' | 'indexId' | (string & {}),
-  unknown
->;
+} & Record<'container' | 'indexName' | 'indexId' | (string & {}), unknown>;
 
 type ExperienceApiBlock = {
   type: string;
@@ -34,6 +30,7 @@ type ExperienceApiBlock = {
 
 export type ExperienceApiResponse = {
   blocks: ExperienceApiBlock[];
+  cssVariables?: Record<string, string>;
 };
 
 export type ExperienceWidgetParams = {

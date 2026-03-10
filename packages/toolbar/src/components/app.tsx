@@ -219,61 +219,6 @@ export function App({ config, initialExperience }: AppProps) {
     }, 300);
   }, []);
 
-  const updateCssVariablesOnPage = useCallback(
-    (
-      blocks: ExperienceApiBlock[],
-      path: BlockPath,
-      key: string,
-      value: string
-    ) => {
-      const existingStyle = document.querySelector(
-        'style[data-algolia-experiences-toolbar]'
-      );
-      const style = existingStyle ?? document.createElement('style');
-
-      if (!existingStyle) {
-        style.setAttribute('data-algolia-experiences-toolbar', '');
-        document.head.appendChild(style);
-      }
-
-      const allVars: Record<string, string> = {};
-
-      const collectVars = (items: ExperienceApiBlock[], parentIdx?: number) => {
-        items.forEach((block, i) => {
-          const currentPath: BlockPath =
-            parentIdx !== undefined ? [parentIdx, i] : [i];
-          const vars = block.parameters.cssVariables ?? {};
-          const isTarget =
-            currentPath.length === path.length &&
-            currentPath.every((val, idx) => {
-              return val === path[idx];
-            });
-
-          Object.entries(vars).forEach(([varName, varValue]) => {
-            if (isTarget && varName === key) {
-              allVars[`--ais-${varName}`] = value;
-            } else {
-              allVars[`--ais-${varName}`] = varValue;
-            }
-          });
-
-          if (block.children) {
-            collectVars(block.children, i);
-          }
-        });
-      };
-
-      collectVars(blocks);
-
-      style.textContent = `:root { ${Object.entries(allVars)
-        .map(([prop, val]) => {
-          return `${prop}: ${val}`;
-        })
-        .join('; ')} }`;
-    },
-    []
-  );
-
   const handlePillClick = () => {
     if (writeApiKey) {
       setIsExpanded(true);
@@ -357,33 +302,6 @@ export function App({ config, initialExperience }: AppProps) {
       setIsDirty(true);
     },
     [scheduleRun]
-  );
-
-  const onCssVariableChange = useCallback(
-    (path: BlockPath, key: string, value: string) => {
-      setExperience((prev) => {
-        updateCssVariablesOnPage(prev.blocks, path, key, value);
-
-        return {
-          ...prev,
-          blocks: updateBlockAtPath(prev.blocks, path, (block) => {
-            return {
-              ...block,
-              parameters: {
-                ...block.parameters,
-                cssVariables: {
-                  ...block.parameters.cssVariables,
-                  [key]: value,
-                },
-              },
-            };
-          }),
-        };
-      });
-
-      setIsDirty(true);
-    },
-    [updateCssVariablesOnPage]
   );
 
   const onLocate = useCallback(
@@ -875,7 +793,6 @@ export function App({ config, initialExperience }: AppProps) {
         }}
         onSave={onSave}
         onParameterChange={onParameterChange}
-        onCssVariableChange={onCssVariableChange}
         onLocate={onLocate}
         onDeleteBlock={onDeleteBlock}
         onAddBlock={onAddBlock}
