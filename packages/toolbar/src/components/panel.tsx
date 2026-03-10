@@ -91,6 +91,15 @@ export function Panel({
   const [expandedBlock, setExpandedBlock] = useState<string | null>(null);
   const prevBlocksRef = useRef(experience.blocks);
 
+  const hasAutocomplete = experience.blocks.some((block) => {
+    return (
+      block.type === 'ais.autocomplete' ||
+      block.children?.some((child) => {
+        return child.type === 'ais.autocomplete';
+      })
+    );
+  });
+
   const allIndexNames = useIndices();
   const qsIndexNames = useIndices({
     type: 'querySuggestions',
@@ -413,19 +422,36 @@ export function Panel({
         active={tab === 'theme'}
         class="flex flex-1 flex-col overflow-hidden"
       >
-        <div class="flex-1 overflow-y-auto p-4 pb-40">
-          <ThemeEditor
-            themeOverrides={themeOverrides}
-            themeMode={themeMode}
-            onThemeVariableChange={onThemeVariableChange}
-            onThemeVariableReset={onThemeVariableReset}
-            onThemeResetAll={onThemeResetAll}
-            onThemeModeChange={onThemeModeChange}
-            themeModeConfig={themeModeConfig}
-            onThemeModeConfigChange={onThemeModeConfigChange}
-            onPresetApply={onPresetApply}
-          />
-        </div>
+        {hasAutocomplete ? (
+          <div class="flex-1 overflow-y-auto p-4 pb-40">
+            <ThemeEditor
+              themeOverrides={themeOverrides}
+              themeMode={themeMode}
+              onThemeVariableChange={onThemeVariableChange}
+              onThemeVariableReset={onThemeVariableReset}
+              onThemeResetAll={onThemeResetAll}
+              onThemeModeChange={onThemeModeChange}
+              themeModeConfig={themeModeConfig}
+              onThemeModeConfigChange={onThemeModeConfigChange}
+              onPresetApply={onPresetApply}
+            />
+          </div>
+        ) : (
+          <div class="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+            <p class="text-sm text-muted-foreground">
+              Add an Autocomplete widget to start customizing the theme.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                return setTab('manual');
+              }}
+            >
+              Go to widgets
+            </Button>
+          </div>
+        )}
       </TabsContent>
 
       {/* AI tab — lazy-mounted on first tab click, then kept alive (hidden) to preserve state */}
