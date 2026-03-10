@@ -41,7 +41,7 @@ function setDarkClass(isDark: boolean) {
 
 export function ThemeSwitcher() {
   const [themeName, setThemeName] = useState('default');
-  const [mode, setMode] = useState<Mode>('system');
+  const [mode, setMode] = useState<Mode>('light');
   const styleRef = useRef<HTMLStyleElement | null>(null);
 
   // Inject/update the theme style element
@@ -99,9 +99,9 @@ export function ThemeSwitcher() {
     };
   }, [mode]);
 
-  // Apply system mode on mount
+  // Apply light mode on mount
   useEffect(() => {
-    applyMode('system');
+    applyMode('light');
   }, [applyMode]);
 
   return (

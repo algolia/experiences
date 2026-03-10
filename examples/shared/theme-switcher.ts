@@ -43,7 +43,7 @@ new MutationObserver(() => {
 
 // --- Color mode ---
 
-let currentMode = 'system';
+let currentMode = 'light';
 const darkMq = window.matchMedia('(prefers-color-scheme: dark)');
 
 function setDarkClass(isDark: boolean) {
@@ -181,5 +181,5 @@ document.querySelectorAll('.theme-switcher-mode').forEach((btn) => {
   });
 });
 
-applyMode('system');
+applyMode('light');
 applyTheme('default');
