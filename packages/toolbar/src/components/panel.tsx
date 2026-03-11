@@ -6,7 +6,6 @@ import type { ThemeOverrideValue, ThemePreset } from '@experiences/theme';
 import type {
   AddBlockResult,
   BlockPath,
-  Environment,
   ExperienceApiResponse,
   SaveState,
 } from '../types';
@@ -18,7 +17,6 @@ import {
 } from '../hooks/use-indices';
 import type { IndexSuggestKind } from '../widget-types';
 import { AddWidgetPopover } from './add-widget-popover';
-import { AiChat } from './ai-chat';
 import { BlockCard } from './block-card';
 import { IndexBlockGroup } from './index-block-group';
 import { ThemeEditor } from './theme-editor';
@@ -29,7 +27,6 @@ import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 export type SuggestLists = Partial<Record<IndexSuggestKind, Suggestion[]>>;
 
 type PanelProps = {
-  env: Environment;
   experience: ExperienceApiResponse;
   dirty: boolean;
   saveState: SaveState;
@@ -41,7 +38,6 @@ type PanelProps = {
   onDeleteBlock: (path: BlockPath) => void;
   onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
   onChangeWidgetIndex: (widgetPath: BlockPath, targetIndexName: string) => void;
-  onMoveBlock: (fromPath: BlockPath, toParentIndex: number) => void;
   onPickElement: (callback: (selector: string) => void) => void;
   panelRef?: Ref<HTMLDivElement>;
   themeOverrides: {
@@ -62,10 +58,9 @@ type PanelProps = {
   onPresetApply: (preset: ThemePreset) => void;
 };
 
-type Tab = 'manual' | 'ai' | 'theme';
+type Tab = 'blocks' | 'theme';
 
 export function Panel({
-  env,
   experience,
   dirty,
   saveState,
@@ -77,7 +72,6 @@ export function Panel({
   onDeleteBlock,
   onAddBlock,
   onChangeWidgetIndex,
-  onMoveBlock,
   onPickElement,
   panelRef,
   themeOverrides,
@@ -91,8 +85,7 @@ export function Panel({
   onThemeModeConfigChange,
   onPresetApply,
 }: PanelProps) {
-  const [tab, setTab] = useState<Tab>('manual');
-  const [aiMounted, setAiMounted] = useState(false);
+  const [tab, setTab] = useState<Tab>('blocks');
   const [expandedBlock, setExpandedBlock] = useState<string | null>(null);
   const prevBlocksRef = useRef(experience.blocks);
 
@@ -189,12 +182,6 @@ export function Panel({
       }
     }
   }, [experience.blocks]);
-
-  useEffect(() => {
-    if (tab === 'ai') {
-      setAiMounted(true);
-    }
-  }, [tab]);
 
   const handleToggleExpand = (key: string) => {
     setExpandedBlock(expandedBlock === key ? null : key);
@@ -296,9 +283,9 @@ export function Panel({
       <div class="px-4 pt-1.5 pb-3 border-b">
         <TabsList>
           <TabsTrigger
-            active={tab === 'manual'}
+            active={tab === 'blocks'}
             onClick={() => {
-              return setTab('manual');
+              return setTab('blocks');
             }}
           >
             <svg
@@ -310,30 +297,12 @@ export function Panel({
               stroke-linecap="round"
               stroke-linejoin="round"
             >
-              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-              <circle cx="12" cy="12" r="3" />
+              <rect width="7" height="7" x="3" y="3" rx="1" />
+              <rect width="7" height="7" x="14" y="3" rx="1" />
+              <rect width="7" height="7" x="14" y="14" rx="1" />
+              <rect width="7" height="7" x="3" y="14" rx="1" />
             </svg>
-            Manual
-          </TabsTrigger>
-          <TabsTrigger
-            active={tab === 'ai'}
-            onClick={() => {
-              return setTab('ai');
-            }}
-          >
-            <svg
-              class="size-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z" />
-              <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />
-            </svg>
-            AI
+            Blocks
           </TabsTrigger>
           <TabsTrigger
             active={tab === 'theme'}
@@ -358,9 +327,9 @@ export function Panel({
         </TabsList>
       </div>
 
-      {/* Manual tab */}
+      {/* Blocks tab */}
       <TabsContent
-        active={tab === 'manual'}
+        active={tab === 'blocks'}
         class="flex flex-1 flex-col overflow-hidden"
       >
         {/* Block list */}
@@ -438,20 +407,18 @@ export function Panel({
         class="flex flex-1 flex-col overflow-hidden"
       >
         {hasAutocomplete ? (
-          <div class="flex-1 overflow-y-auto p-4 pb-40">
-            <ThemeEditor
-              themeOverrides={themeOverrides}
-              baselineOverrides={baselineOverrides}
-              themeMode={themeMode}
-              onThemeVariableChange={onThemeVariableChange}
-              onThemeVariableReset={onThemeVariableReset}
-              onThemeResetAll={onThemeResetAll}
-              onThemeModeChange={onThemeModeChange}
-              themeModeConfig={themeModeConfig}
-              onThemeModeConfigChange={onThemeModeConfigChange}
-              onPresetApply={onPresetApply}
-            />
-          </div>
+          <ThemeEditor
+            themeOverrides={themeOverrides}
+            baselineOverrides={baselineOverrides}
+            themeMode={themeMode}
+            onThemeVariableChange={onThemeVariableChange}
+            onThemeVariableReset={onThemeVariableReset}
+            onThemeResetAll={onThemeResetAll}
+            onThemeModeChange={onThemeModeChange}
+            themeModeConfig={themeModeConfig}
+            onThemeModeConfigChange={onThemeModeConfigChange}
+            onPresetApply={onPresetApply}
+          />
         ) : (
           <div class="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
             <p class="text-sm text-muted-foreground">
@@ -461,7 +428,7 @@ export function Panel({
               variant="outline"
               size="sm"
               onClick={() => {
-                return setTab('manual');
+                return setTab('blocks');
               }}
             >
               Go to widgets
@@ -469,24 +436,6 @@ export function Panel({
           </div>
         )}
       </TabsContent>
-
-      {/* AI tab — lazy-mounted on first tab click, then kept alive (hidden) to preserve state */}
-      {aiMounted && (
-        <div
-          data-slot="tabs-content"
-          role="tabpanel"
-          class={`flex-1 outline-none flex flex-col overflow-hidden ${tab === 'ai' ? '' : 'hidden'}`}
-        >
-          <AiChat
-            env={env}
-            experience={experience}
-            onAddBlock={onAddBlock}
-            onParameterChange={onParameterChange}
-            onDeleteBlock={onDeleteBlock}
-            onMoveBlock={onMoveBlock}
-          />
-        </div>
-      )}
     </div>
   );
 }
