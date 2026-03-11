@@ -174,6 +174,35 @@ describe('preview loader', () => {
     );
   });
 
+  it('does not load toolbar when hideToolbar=true in script params', async () => {
+    script.src =
+      '../src/entries/preview.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID&hideToolbar=true';
+
+    Object.defineProperty(window, 'location', {
+      value: { search: '' },
+      configurable: true,
+    });
+
+    server.use(
+      http.get(`${RESOLVER_URL}/YOUR_EXPERIENCE_ID`, () => {
+        return HttpResponse.json({ bundleUrl: BUNDLE_URL });
+      })
+    );
+
+    const runSpy = vi.fn();
+    window.AlgoliaExperiences = { run: runSpy };
+
+    await (
+      await import('../src/entries/preview')
+    ).default;
+
+    const scripts = document.head.querySelectorAll('script');
+    const toolbarScript = Array.from(scripts).find((el) => {
+      return el.src.includes('toolbar.js');
+    });
+    expect(toolbarScript).toBeUndefined();
+  });
+
   it('logs error when algolia_experiences_config is valid base64 but invalid JSON', async () => {
     script.src =
       '../src/entries/preview.ts?appId=YOUR_APP_ID&apiKey=YOUR_API_KEY&experienceId=YOUR_EXPERIENCE_ID';
