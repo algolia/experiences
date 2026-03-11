@@ -1,0 +1,27 @@
+{
+  "name": "@experiences/theme",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Theme variable schemas and CSS generation for Algolia Experiences widgets",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./autocomplete": "./src/widgets/autocomplete.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "check-types": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@experiences/typescript-config": "*",
+    "typescript": "5.9.2",
+    "vitest": "3.0.5"
+  },
+  "dependencies": {
+    "zod": "^3.25.76",
+    "zod-to-json-schema": "^3.24.6"
+  }
+}

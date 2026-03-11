@@ -15,6 +15,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@experiences/theme": "^0.0.0",
     "algoliasearch": "5.48.0",
     "instantsearch.css": "8.10.0",
     "instantsearch.js": "4.87.1",

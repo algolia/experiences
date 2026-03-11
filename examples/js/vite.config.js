@@ -54,10 +54,18 @@ function resolveFile(urlPath) {
 const pages = ['index.html', 'search.html', 'product.html'];
 
 export default {
+  resolve: {
+    alias: {
+      '/@shared': resolve(__dirname, '../shared'),
+    },
+  },
   server: {
     host: '127.0.0.1',
     port: process.env.PORT ? Number(process.env.PORT) : undefined,
     strictPort: Boolean(process.env.PORT),
+    fs: {
+      allow: [resolve(__dirname, '../..')],
+    },
   },
   build: {
     rollupOptions: {

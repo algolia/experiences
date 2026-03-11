@@ -21,7 +21,7 @@ export function useAlgoliaExperiences({
 
   useEffect(() => {
     if (!loaderInjected.current) {
-      const url = new URL(src);
+      const url = new URL(src, window.location.origin);
       url.searchParams.set('appId', appId);
       url.searchParams.set('apiKey', apiKey);
       url.searchParams.set('experienceId', experienceId);
