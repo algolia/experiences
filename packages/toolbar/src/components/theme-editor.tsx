@@ -323,7 +323,7 @@ export function ThemeEditor({
 }: ThemeEditorProps) {
   const [autocompleteOpen, setAutocompleteOpen] = useState(true);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
-    return new Set(['colors']);
+    return new Set();
   });
 
   const currentOverrides = themeOverrides[themeMode];
