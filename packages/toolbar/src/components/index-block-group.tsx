@@ -21,11 +21,11 @@ type IndexBlockGroupProps = {
   suggestLists?: SuggestLists;
   onToggleExpand: (key: string) => void;
   onParameterChange: (path: BlockPath, key: string, value: unknown) => void;
-  onCssVariableChange: (path: BlockPath, key: string, value: string) => void;
   onLocate: (container: string, placement: string | undefined) => void;
   onDeleteBlock: (path: BlockPath) => void;
   onChangeWidgetIndex: (widgetPath: BlockPath, targetIndexName: string) => void;
   onPickElement: (callback: (selector: string) => void) => void;
+  onNavigateToTheme?: () => void;
 };
 
 export function IndexBlockGroup({
@@ -36,11 +36,11 @@ export function IndexBlockGroup({
   suggestLists,
   onToggleExpand,
   onParameterChange,
-  onCssVariableChange,
   onLocate,
   onDeleteBlock,
   onChangeWidgetIndex,
   onPickElement,
+  onNavigateToTheme,
 }: IndexBlockGroupProps) {
   const indexName = (block.parameters.indexName as string) || '';
   const indexId = block.parameters.indexId as string | undefined;
@@ -185,9 +185,6 @@ export function IndexBlockGroup({
             onParameterChange={(key, value) => {
               return onParameterChange([parentIndex, childIndex], key, value);
             }}
-            onCssVariableChange={(key, value) => {
-              return onCssVariableChange([parentIndex, childIndex], key, value);
-            }}
             onLocate={() => {
               return onLocate(
                 child.parameters.container ?? '',
@@ -198,6 +195,9 @@ export function IndexBlockGroup({
               return onDeleteBlock([parentIndex, childIndex]);
             }}
             onPickElement={onPickElement}
+            onNavigateToTheme={
+              child.type === 'ais.autocomplete' ? onNavigateToTheme : undefined
+            }
             indexBlocks={indexBlocks}
             parentIndex={parentIndex}
             onChangeIndex={(targetIndexName) => {

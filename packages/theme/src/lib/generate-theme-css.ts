@@ -8,20 +8,36 @@ import type {
 } from '..';
 
 /**
- * Generates a complete theme CSS string with `:root` (light) and dark mode blocks.
- * Merges catalog defaults with optional user overrides for both blocks.
+ * Generates a complete theme CSS string.
+ *
+ * - **adaptive** (default): outputs `:root` (light) and `:root[data-theme='dark']`
+ *   blocks, each with their own defaults and overrides.
+ * - **fixed**: outputs a single `:root` block using light defaults as baseline,
+ *   ignoring dark mode entirely.
  */
 export function generateThemeCss(
   variables: ThemeVariable[],
-  overrides: ThemeOverrides = {}
+  overrides: ThemeOverrides = {},
+  mode: 'adaptive' | 'fixed' = 'adaptive'
 ): string {
   const isPerMode =
     typeof (overrides as { light?: unknown }).light === 'object';
   const lightOverrides = isPerMode
-    ? (overrides as { light: Record<string, ThemeOverrideValue> }).light
+    ? ((overrides as { light?: Record<string, ThemeOverrideValue> }).light ??
+      {})
     : (overrides as Record<string, ThemeOverrideValue>);
+
+  if (mode === 'fixed') {
+    const declarations = generateDeclarations(
+      variables,
+      'light',
+      lightOverrides
+    );
+    return `:root {\n${declarations}\n}`;
+  }
+
   const darkOverrides = isPerMode
-    ? (overrides as { dark: Record<string, ThemeOverrideValue> }).dark
+    ? ((overrides as { dark?: Record<string, ThemeOverrideValue> }).dark ?? {})
     : (overrides as Record<string, ThemeOverrideValue>);
 
   const light = generateDeclarations(variables, 'light', lightOverrides);

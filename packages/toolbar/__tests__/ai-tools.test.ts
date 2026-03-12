@@ -20,7 +20,6 @@ function createCallbacks(
       return { path: addBlockPath, indexCreated };
     }),
     onParameterChange: vi.fn(),
-    onCssVariableChange: vi.fn(),
     onDeleteBlock: vi.fn(),
     onMoveBlock: vi.fn(),
     getExperience: vi.fn(() => {
@@ -1921,125 +1920,6 @@ describe('executeToolCall', () => {
         [0],
         'placement',
         'after'
-      );
-    });
-
-    it('handles cssVariables changes', async () => {
-      const experience: ExperienceApiResponse = {
-        blocks: [
-          {
-            type: 'ais.autocomplete',
-            parameters: {
-              container: '#search',
-              cssVariables: { 'primary-color-rgb': '#003dff' },
-            },
-          },
-        ],
-        indexName: '',
-      };
-      const callbacks = createCallbacks(experience);
-
-      const result = await executeToolCall(
-        'edit_widget',
-        {
-          path: '0',
-          parameters: {
-            cssVariables: { 'primary-color-rgb': '#ff0000' },
-          },
-        },
-        callbacks
-      );
-
-      expect(result).toMatchObject({ success: true });
-      expect(callbacks.onCssVariableChange).toHaveBeenCalledWith(
-        [0],
-        'primary-color-rgb',
-        '#ff0000'
-      );
-    });
-
-    it('handles multiple cssVariables in one call', async () => {
-      const experience: ExperienceApiResponse = {
-        blocks: [
-          {
-            type: 'ais.autocomplete',
-            parameters: {
-              container: '#search',
-              cssVariables: { 'primary-color-rgb': '#003dff' },
-            },
-          },
-        ],
-        indexName: '',
-      };
-      const callbacks = createCallbacks(experience);
-
-      const result = await executeToolCall(
-        'edit_widget',
-        {
-          path: '0',
-          parameters: {
-            cssVariables: {
-              'primary-color-rgb': '#ff0000',
-              'secondary-color': '#00ff00',
-            },
-          },
-        },
-        callbacks
-      );
-
-      expect(result).toMatchObject({
-        success: true,
-        applied: [
-          'cssVariables.primary-color-rgb',
-          'cssVariables.secondary-color',
-        ],
-      });
-      expect(callbacks.onCssVariableChange).toHaveBeenCalledTimes(2);
-    });
-
-    it('applies cssVariables and regular params in one call', async () => {
-      const experience: ExperienceApiResponse = {
-        blocks: [
-          {
-            type: 'ais.autocomplete',
-            parameters: {
-              container: '#search',
-              cssVariables: { 'primary-color-rgb': '#003dff' },
-            },
-          },
-        ],
-        indexName: '',
-      };
-      const callbacks = createCallbacks(experience);
-
-      const result = await executeToolCall(
-        'edit_widget',
-        {
-          path: '0',
-          parameters: {
-            showRecent: true,
-            cssVariables: { 'primary-color-rgb': '#ff0000' },
-          },
-        },
-        callbacks
-      );
-
-      expect(result).toMatchObject({
-        success: true,
-        applied: expect.arrayContaining([
-          'cssVariables.primary-color-rgb',
-          'showRecent',
-        ]),
-      });
-      expect(callbacks.onParameterChange).toHaveBeenCalledWith(
-        [0],
-        'showRecent',
-        true
-      );
-      expect(callbacks.onCssVariableChange).toHaveBeenCalledWith(
-        [0],
-        'primary-color-rgb',
-        '#ff0000'
       );
     });
 

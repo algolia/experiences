@@ -65,7 +65,6 @@ const MOCK_EXPERIENCE = {
       type: 'ais.chat',
       parameters: {
         container: '#chat',
-        cssVariables: { primaryColor: '#003dff' },
         indexName: 'products',
       },
     },
@@ -73,7 +72,6 @@ const MOCK_EXPERIENCE = {
       type: 'ais.autocomplete',
       parameters: {
         container: '#autocomplete',
-        cssVariables: {},
       },
     },
   ],
@@ -584,6 +582,7 @@ describe('toolbar', () => {
         // Should have sent only the remaining block
         expect(savedBody).toEqual({
           blocks: [MOCK_EXPERIENCE.blocks[1]],
+          cssVariables: { light: {}, dark: {} },
         });
       });
 

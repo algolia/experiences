@@ -33,6 +33,13 @@ export function createExperienceMiddleware(
       $$internal: true,
       onStateChange: () => {},
       subscribe() {
+        const cssVariables = config.cssVariables ?? {};
+        const themeCss = generateThemeCss(AUTOCOMPLETE_VARIABLES, cssVariables);
+        const themeStyle = injectStyleElement(themeCss);
+        cleanups.push(() => {
+          return themeStyle.remove();
+        });
+
         const experienceWidgets: ExperienceWidget[] = [];
         walkIndex(instantSearchInstance.mainIndex, (index) => {
           const widgets = index.getWidgets();
@@ -185,14 +192,6 @@ function processBlocks({
 
       return;
     }
-
-    const cssVariables =
-      (parameters.cssVariables as Record<string, string>) ?? {};
-    const themeCss = generateThemeCss(AUTOCOMPLETE_VARIABLES, cssVariables);
-    const themeStyle = injectStyleElement(themeCss);
-    cleanups.push(() => {
-      return themeStyle.remove();
-    });
 
     const supportedWidget = widget.$$supportedWidgets[type];
 

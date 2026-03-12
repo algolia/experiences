@@ -38,8 +38,8 @@ import type { ExperienceWidgetParams } from './types';
 // TODO: Serve CSS from a CDN with proper MIME type and load via <link> from the
 // loader instead of inlining it in JS. GitHub release downloads serve as
 // application/octet-stream which browsers reject for stylesheets. Remove the
-// __CHAT_CSS__ define in tsdown.config.ts and this <style> injection once we
-// have a proper CDN setup.
+// __AUTOCOMPLETE_CSS__ define in tsdown.config.ts and this <style> injection
+// once we have a proper CDN setup.
 declare const __AUTOCOMPLETE_CSS__: string;
 (() => {
   const style = document.createElement('style');

@@ -30,7 +30,7 @@ describe('fetchExperience', () => {
       blocks: [
         {
           type: 'ais.chat',
-          parameters: { container: '#chat', cssVariables: {} },
+          parameters: { container: '#chat' },
         },
       ],
     };
@@ -140,7 +140,7 @@ describe('saveExperience', () => {
         blocks: [
           {
             type: 'ais.chat',
-            parameters: { container: '#chat', cssVariables: {} },
+            parameters: { container: '#chat' },
           },
         ],
       },
@@ -151,7 +151,7 @@ describe('saveExperience', () => {
       blocks: [
         {
           type: 'ais.chat',
-          parameters: { container: '#chat', cssVariables: {} },
+          parameters: { container: '#chat' },
         },
       ],
     });
