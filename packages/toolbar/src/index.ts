@@ -39,6 +39,12 @@ async function mount() {
   host.id = 'algolia-experiences-toolbar';
   document.body.appendChild(host);
 
+  // Prevent toolbar clicks from reaching document.body where the
+  // autocomplete's "close on outside click" handler lives.
+  host.addEventListener('click', (event) => {
+    event.stopPropagation();
+  });
+
   const shadow = host.attachShadow({ mode: 'open' });
 
   // Inject compiled Tailwind CSS into the shadow root
