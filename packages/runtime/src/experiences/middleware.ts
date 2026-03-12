@@ -109,7 +109,14 @@ function resolveContainer(
   }
 
   if (placement === 'inside') {
-    return { container: target as HTMLElement, cleanup: () => {} };
+    const div = document.createElement('div');
+    (target as HTMLElement).appendChild(div);
+    return {
+      container: div,
+      cleanup: () => {
+        return div.remove();
+      },
+    };
   }
 
   const div = document.createElement('div');
