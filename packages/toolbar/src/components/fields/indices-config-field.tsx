@@ -186,11 +186,6 @@ export function IndicesConfigField({
                 )}
               </span>
               <span class="flex items-center gap-1.5">
-                {entry.hitsPerPage != null && (
-                  <span class="text-xs text-muted-foreground">
-                    {entry.hitsPerPage} hits
-                  </span>
-                )}
                 <button
                   type="button"
                   class="inline-flex size-6 items-center justify-center rounded hover:bg-accent"
