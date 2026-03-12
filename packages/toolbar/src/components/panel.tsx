@@ -438,20 +438,18 @@ export function Panel({
         class="flex flex-1 flex-col overflow-hidden"
       >
         {hasAutocomplete ? (
-          <div class="flex-1 overflow-y-auto p-4 pb-40">
-            <ThemeEditor
-              themeOverrides={themeOverrides}
-              baselineOverrides={baselineOverrides}
-              themeMode={themeMode}
-              onThemeVariableChange={onThemeVariableChange}
-              onThemeVariableReset={onThemeVariableReset}
-              onThemeResetAll={onThemeResetAll}
-              onThemeModeChange={onThemeModeChange}
-              themeModeConfig={themeModeConfig}
-              onThemeModeConfigChange={onThemeModeConfigChange}
-              onPresetApply={onPresetApply}
-            />
-          </div>
+          <ThemeEditor
+            themeOverrides={themeOverrides}
+            baselineOverrides={baselineOverrides}
+            themeMode={themeMode}
+            onThemeVariableChange={onThemeVariableChange}
+            onThemeVariableReset={onThemeVariableReset}
+            onThemeResetAll={onThemeResetAll}
+            onThemeModeChange={onThemeModeChange}
+            themeModeConfig={themeModeConfig}
+            onThemeModeConfigChange={onThemeModeConfigChange}
+            onPresetApply={onPresetApply}
+          />
         ) : (
           <div class="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
             <p class="text-sm text-muted-foreground">
