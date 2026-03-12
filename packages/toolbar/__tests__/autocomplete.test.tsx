@@ -124,4 +124,95 @@ describe('ais.autocomplete field behavior', () => {
       expect(onParameterChange).toHaveBeenCalledWith('showSuggestions', false);
     });
   });
+
+  describe('indices-config field', () => {
+    it('renders empty state when indices is an empty array', () => {
+      const { container } = render({ indices: [] });
+
+      expect(container.textContent).toContain(
+        'No additional indices configured.'
+      );
+    });
+
+    it('renders the "Add Index" button', () => {
+      const { container } = render({ indices: [] });
+
+      const addButton = Array.from(container.querySelectorAll('button')).find(
+        (btn) => {
+          return btn.textContent?.includes('Add Index');
+        }
+      );
+
+      expect(addButton).toBeDefined();
+    });
+
+    it('calls onParameterChange with a new entry when adding an index', () => {
+      const { onParameterChange, container } = render({ indices: [] });
+
+      const addButton = Array.from(container.querySelectorAll('button')).find(
+        (btn) => {
+          return btn.textContent?.includes('Add Index');
+        }
+      );
+
+      addButton!.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith('indices', [
+        { indexName: '', hitsPerPage: 5 },
+      ]);
+    });
+
+    it('renders entry cards for populated indices', () => {
+      const { container } = render({
+        indices: [
+          {
+            indexName: 'products',
+            hitsPerPage: 5,
+            templates: { header: 'Products' },
+          },
+          {
+            indexName: 'articles',
+            hitsPerPage: 3,
+            templates: { header: 'Articles' },
+          },
+        ],
+      });
+
+      expect(container.textContent).toContain('Products');
+      expect(container.textContent).toContain('Articles');
+      expect(container.textContent).toContain('5 hits');
+      expect(container.textContent).toContain('3 hits');
+    });
+
+    it('calls onParameterChange without the removed entry when deleting', () => {
+      const { onParameterChange, container } = render({
+        indices: [
+          {
+            indexName: 'products',
+            hitsPerPage: 5,
+            templates: { header: 'Products' },
+          },
+          {
+            indexName: 'articles',
+            hitsPerPage: 3,
+            templates: { header: 'Articles' },
+          },
+        ],
+      });
+
+      const removeButtons = Array.from(
+        container.querySelectorAll('button[aria-label="Remove index"]')
+      );
+
+      removeButtons[0]!.click();
+
+      expect(onParameterChange).toHaveBeenCalledWith('indices', [
+        {
+          indexName: 'articles',
+          hitsPerPage: 3,
+          templates: { header: 'Articles' },
+        },
+      ]);
+    });
+  });
 });
