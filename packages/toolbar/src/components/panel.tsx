@@ -21,7 +21,7 @@ import { AddWidgetPopover } from './add-widget-popover';
 import { AiChat } from './ai-chat';
 import { BlockCard } from './block-card';
 import { IndexBlockGroup } from './index-block-group';
-import { ThemeEditor } from './theme-editor';
+import { ThemeEditor } from './theme-editor/index';
 import { Button } from './ui/button';
 import type { Suggestion } from './ui/combobox';
 import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
