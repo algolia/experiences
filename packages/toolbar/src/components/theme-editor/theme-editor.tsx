@@ -24,6 +24,10 @@ type ThemeEditorProps = {
     light: Record<string, ThemeOverrideValue>;
     dark: Record<string, ThemeOverrideValue>;
   };
+  baselineOverrides: {
+    light: Record<string, ThemeOverrideValue>;
+    dark: Record<string, ThemeOverrideValue>;
+  };
   themeMode: ThemeMode;
   onThemeVariableChange: (key: string, value: ThemeOverrideValue) => void;
   onThemeVariableReset: (key: string) => void;
@@ -36,6 +40,7 @@ type ThemeEditorProps = {
 
 export function ThemeEditor({
   themeOverrides,
+  baselineOverrides,
   themeMode,
   onThemeVariableChange,
   onThemeVariableReset,
@@ -51,10 +56,16 @@ export function ThemeEditor({
   });
 
   const currentOverrides = themeOverrides[themeMode];
+  const currentBaseline = baselineOverrides[themeMode];
 
-  const hasAnyOverrides =
-    Object.keys(themeOverrides.light).length > 0 ||
-    Object.keys(themeOverrides.dark).length > 0;
+  const hasAnyOverrides = useMemo(() => {
+    return (
+      JSON.stringify(themeOverrides.light) !==
+        JSON.stringify(baselineOverrides.light) ||
+      JSON.stringify(themeOverrides.dark) !==
+        JSON.stringify(baselineOverrides.dark)
+    );
+  }, [themeOverrides, baselineOverrides]);
 
   const groups = useMemo(() => {
     const grouped = new Map<string, typeof AUTOCOMPLETE_VARIABLES>();
@@ -217,7 +228,7 @@ export function ThemeEditor({
             {groups.map(({ key, label, variables }) => {
               const isOpen = expandedGroups.has(key);
               const groupOverrideCount = variables.filter((variable) => {
-                return hasOverride(variable, currentOverrides);
+                return hasOverride(variable, currentOverrides, currentBaseline);
               }).length;
 
               return (

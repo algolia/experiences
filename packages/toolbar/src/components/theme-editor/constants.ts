@@ -126,7 +126,14 @@ export function getCurrentValue(
 
 export function hasOverride(
   variable: ThemeVariable,
-  overrides: Record<string, ThemeOverrideValue>
+  overrides: Record<string, ThemeOverrideValue>,
+  baselineOverrides?: Record<string, ThemeOverrideValue>
 ): boolean {
+  if (baselineOverrides) {
+    const current = overrides[variable.key];
+    const baseline = baselineOverrides[variable.key];
+    if (current === undefined && baseline === undefined) return false;
+    return JSON.stringify(current) !== JSON.stringify(baseline);
+  }
   return variable.key in overrides;
 }

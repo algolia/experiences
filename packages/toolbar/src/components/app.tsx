@@ -182,7 +182,7 @@ export function App({ config, initialExperience }: AppProps) {
       return 'adaptive';
     }
   );
-  const [themeOverrides, setThemeOverrides] = useState<{
+  const [baselineOverrides] = useState<{
     light: Record<string, ThemeOverrideValue>;
     dark: Record<string, ThemeOverrideValue>;
   }>(() => {
@@ -193,7 +193,6 @@ export function App({ config, initialExperience }: AppProps) {
         dark: Record<string, ThemeOverrideValue>;
       };
     }
-    // Flat overrides (fixed mode) — put them in light for editing
     if (initial && typeof initial === 'object' && !('light' in initial)) {
       return {
         light: initial as Record<string, ThemeOverrideValue>,
@@ -201,6 +200,15 @@ export function App({ config, initialExperience }: AppProps) {
       };
     }
     return { light: {}, dark: {} };
+  });
+  const [themeOverrides, setThemeOverrides] = useState<{
+    light: Record<string, ThemeOverrideValue>;
+    dark: Record<string, ThemeOverrideValue>;
+  }>(() => {
+    return {
+      light: { ...baselineOverrides.light },
+      dark: { ...baselineOverrides.dark },
+    };
   });
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
   const [toast, setToast] = useState<string | null>(null);
@@ -629,30 +637,30 @@ export function App({ config, initialExperience }: AppProps) {
     (key: string) => {
       setThemeOverrides((prev) => {
         const modeOverrides = { ...prev[themeMode] };
-        delete modeOverrides[key];
+        const baselineValue = baselineOverrides[themeMode][key];
+        if (baselineValue !== undefined) {
+          modeOverrides[key] = baselineValue;
+        } else {
+          delete modeOverrides[key];
+        }
         const updated = { ...prev, [themeMode]: modeOverrides };
         applyThemePreview(updated);
         return updated;
       });
       setIsDirty(true);
     },
-    [themeMode, applyThemePreview]
+    [themeMode, baselineOverrides, applyThemePreview]
   );
 
   const onThemeResetAll = useCallback(() => {
-    const empty = { light: {}, dark: {} };
-    setThemeOverrides(empty);
-    const style = document.querySelector(
-      'style[data-algolia-experiences-theme]'
-    );
-    if (style) {
-      style.remove();
-    }
-    document.documentElement.removeAttribute('data-theme');
-    document.documentElement.classList.remove('dark');
-    setThemeMode('light');
+    const reset = {
+      light: { ...baselineOverrides.light },
+      dark: { ...baselineOverrides.dark },
+    };
+    setThemeOverrides(reset);
+    applyThemePreview(reset);
     setIsDirty(true);
-  }, []);
+  }, [baselineOverrides, applyThemePreview]);
 
   const onThemeModeConfigChange = useCallback(
     (modeConfig: 'adaptive' | 'fixed') => {
@@ -800,6 +808,7 @@ export function App({ config, initialExperience }: AppProps) {
         onMoveBlock={onMoveBlock}
         onPickElement={picker.startPicking}
         themeOverrides={themeOverrides}
+        baselineOverrides={baselineOverrides}
         themeMode={themeMode}
         onThemeVariableChange={onThemeVariableChange}
         onThemeVariableReset={onThemeVariableReset}

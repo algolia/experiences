@@ -21,7 +21,7 @@ import { AddWidgetPopover } from './add-widget-popover';
 import { AiChat } from './ai-chat';
 import { BlockCard } from './block-card';
 import { IndexBlockGroup } from './index-block-group';
-import { ThemeEditor } from './theme-editor/index';
+import { ThemeEditor } from './theme-editor';
 import { Button } from './ui/button';
 import type { Suggestion } from './ui/combobox';
 import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
@@ -45,6 +45,10 @@ type PanelProps = {
   onPickElement: (callback: (selector: string) => void) => void;
   panelRef?: Ref<HTMLDivElement>;
   themeOverrides: {
+    light: Record<string, ThemeOverrideValue>;
+    dark: Record<string, ThemeOverrideValue>;
+  };
+  baselineOverrides: {
     light: Record<string, ThemeOverrideValue>;
     dark: Record<string, ThemeOverrideValue>;
   };
@@ -77,6 +81,7 @@ export function Panel({
   onPickElement,
   panelRef,
   themeOverrides,
+  baselineOverrides,
   themeMode,
   onThemeVariableChange,
   onThemeVariableReset,
@@ -436,6 +441,7 @@ export function Panel({
           <div class="flex-1 overflow-y-auto p-4 pb-40">
             <ThemeEditor
               themeOverrides={themeOverrides}
+              baselineOverrides={baselineOverrides}
               themeMode={themeMode}
               onThemeVariableChange={onThemeVariableChange}
               onThemeVariableReset={onThemeVariableReset}
