@@ -42,6 +42,7 @@ export function getConfig(): LoaderConfiguration {
     appId: config.appId,
     apiKey: config.apiKey,
     experienceId: config.experienceId,
+    hideToolbar: params.get('hideToolbar') === 'true',
     env,
   } as LoaderConfiguration;
 }
