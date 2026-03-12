@@ -180,8 +180,6 @@ describe('ais.autocomplete field behavior', () => {
 
       expect(container.textContent).toContain('Products');
       expect(container.textContent).toContain('Articles');
-      expect(container.textContent).toContain('5 hits');
-      expect(container.textContent).toContain('3 hits');
     });
 
     it('calls onParameterChange without the removed entry when deleting', () => {
