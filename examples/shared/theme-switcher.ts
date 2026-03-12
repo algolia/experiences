@@ -1,5 +1,5 @@
 import { generateThemeCss } from '../../packages/theme/src/index';
-import { AUTOCOMPLETE_VARIABLES } from '../../packages/theme/src/widgets/autocomplete';
+import { AUTOCOMPLETE_VARIABLES } from '../../packages/theme/src/widgets/autocomplete/variables';
 
 import { modern, warmMinimal, boldBrand, softPastel } from './themes';
 
