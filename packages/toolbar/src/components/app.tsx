@@ -544,6 +544,53 @@ export function App({ config, initialExperience }: AppProps) {
     [scheduleRun]
   );
 
+  const onMoveBlock = useCallback(
+    (fromPath: BlockPath, toParentIndex: number) => {
+      setExperience((prev) => {
+        if (fromPath.length !== 2) return prev;
+        const [srcParent, srcChild] = fromPath;
+        if (srcParent === toParentIndex) return prev;
+
+        const block = prev.blocks[srcParent]?.children?.[srcChild];
+        if (!block) return prev;
+
+        let withRemoved = deleteBlockAtPath(prev.blocks, fromPath);
+
+        // Auto-remove empty source index
+        const sourceBlock = withRemoved[srcParent];
+        const sourceEmpty =
+          sourceBlock?.type === 'ais.index' &&
+          (sourceBlock.children?.length ?? 0) === 0;
+        if (sourceEmpty) {
+          withRemoved = withRemoved.filter((_, idx) => {
+            return idx !== srcParent;
+          });
+        }
+
+        // Adjust target index after potential source removal
+        const adjustedTarget =
+          sourceEmpty && toParentIndex > srcParent
+            ? toParentIndex - 1
+            : toParentIndex;
+
+        const updated = {
+          ...prev,
+          blocks: withRemoved.map((bl, idx) => {
+            return idx === adjustedTarget
+              ? { ...bl, children: [...(bl.children ?? []), block] }
+              : bl;
+          }),
+        };
+
+        scheduleRun(updated);
+
+        return updated;
+      });
+      setIsDirty(true);
+    },
+    [scheduleRun]
+  );
+
   const applyThemePreview = useCallback(
     (
       overrides: {
@@ -744,6 +791,7 @@ export function App({ config, initialExperience }: AppProps) {
     <ToolbarProvider value={{ config, experience }}>
       <Panel
         panelRef={panelRef}
+        env={config.env ?? 'prod'}
         experience={experience}
         dirty={isDirty}
         saveState={saveState}
@@ -757,6 +805,7 @@ export function App({ config, initialExperience }: AppProps) {
         onDeleteBlock={onDeleteBlock}
         onAddBlock={onAddBlock}
         onChangeWidgetIndex={onChangeWidgetIndex}
+        onMoveBlock={onMoveBlock}
         onPickElement={picker.startPicking}
         themeOverrides={themeOverrides}
         baselineOverrides={baselineOverrides}
