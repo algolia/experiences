@@ -61,6 +61,7 @@ export type FieldConfig =
       defaultValue: Record<string, unknown>;
       fields: Array<{ key: string; label: string }>;
     }
+  | { type: 'indices-config' }
   | { type: 'suggestions-config' }
   | { type: 'recent-config' };
 
@@ -400,6 +401,14 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
           'When enabled, shows query suggestions from a dedicated suggestions index. Requires an indexName, a searchPageUrl, and a query parameter name.',
         default: false,
         field: { type: 'suggestions-config' },
+      },
+      {
+        key: 'indices',
+        label: 'Indices',
+        description:
+          'Additional indices to search, each rendered as a separate section in the dropdown.',
+        default: [],
+        field: { type: 'indices-config' },
       },
     ],
   },
