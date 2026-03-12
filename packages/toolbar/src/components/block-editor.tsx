@@ -16,6 +16,8 @@ import { TextField } from './fields/text-field';
 import { TextPickerField } from './fields/text-picker-field';
 import { ItemsListField } from './fields/items-list-field';
 import { ItemTemplateField } from './fields/item-template-field';
+import { RecentConfigField } from './fields/recent-config-field';
+import { SuggestionsConfigField } from './fields/suggestions-config-field';
 import { ToggleableTextField } from './fields/toggleable-text-field';
 
 type BlockEditorProps = {
@@ -365,6 +367,41 @@ export function BlockEditor({
                   });
                 }}
                 indexName={parentIndexName}
+              />
+            );
+          }
+          case 'recent-config': {
+            return (
+              <RecentConfigField
+                key={key}
+                label={label}
+                description={description}
+                value={
+                  typeof value === 'object' && value !== null
+                    ? (value as Record<string, unknown>)
+                    : Boolean(value)
+                }
+                onChange={(newValue) => {
+                  return onParameterChange(key, newValue);
+                }}
+              />
+            );
+          }
+          case 'suggestions-config': {
+            return (
+              <SuggestionsConfigField
+                key={key}
+                label={label}
+                description={description}
+                value={
+                  typeof value === 'object' && value !== null
+                    ? (value as Record<string, unknown>)
+                    : false
+                }
+                onChange={(newValue) => {
+                  return onParameterChange(key, newValue);
+                }}
+                suggestLists={suggestLists}
               />
             );
           }
