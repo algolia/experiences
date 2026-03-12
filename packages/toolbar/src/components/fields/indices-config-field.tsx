@@ -46,6 +46,12 @@ export function IndicesConfigField({
   const [dragSourceIndex, setDragSourceIndex] = useState<number | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
   const newEntryRef = useRef<HTMLDivElement>(null);
+  const keyCounterRef = useRef(entries.length);
+  const [entryKeys, setEntryKeys] = useState<number[]>(() => {
+    return entries.map((_, i) => {
+      return i;
+    });
+  });
 
   const qsIndices = useIndices({ type: 'querySuggestions' });
   const indexSuggestions = suggestLists?.indices ?? [];
@@ -63,15 +69,24 @@ export function IndicesConfigField({
         return idx !== index;
       })
     );
-    if (expandedIndex === index) {
-      setExpandedIndex(null);
-    } else if (expandedIndex !== null && expandedIndex > index) {
-      setExpandedIndex(expandedIndex - 1);
-    }
+    setEntryKeys((prev) => {
+      return prev.filter((_, idx) => {
+        return idx !== index;
+      });
+    });
+    setExpandedIndex((prev) => {
+      if (prev === index) return null;
+      if (prev !== null && prev > index) return prev - 1;
+      return prev;
+    });
   }
 
   function addEntry() {
     onChange([...entries, { indexName: '', hitsPerPage: 5 }]);
+    const newKey = keyCounterRef.current++;
+    setEntryKeys((prev) => {
+      return [...prev, newKey];
+    });
     setExpandedIndex(entries.length);
     requestAnimationFrame(() => {
       const combobox = newEntryRef.current?.querySelector<HTMLInputElement>(
@@ -81,7 +96,8 @@ export function IndicesConfigField({
     });
   }
 
-  function onDragStart(index: number) {
+  function onDragStart(index: number, event: DragEvent) {
+    event.dataTransfer?.setData('text/plain', '');
     setDragSourceIndex(index);
   }
 
@@ -101,6 +117,13 @@ export function IndicesConfigField({
     const moved = reordered.splice(dragSourceIndex, 1)[0];
     reordered.splice(index, 0, moved!);
     onChange(reordered);
+
+    setEntryKeys((prev) => {
+      const reorderedKeys = [...prev];
+      const movedKey = reorderedKeys.splice(dragSourceIndex, 1)[0];
+      reorderedKeys.splice(index, 0, movedKey!);
+      return reorderedKeys;
+    });
 
     if (expandedIndex === dragSourceIndex) {
       setExpandedIndex(index);
@@ -141,13 +164,9 @@ export function IndicesConfigField({
 
         return (
           <div
-            key={index}
+            key={entryKeys[index]}
             ref={index === entries.length - 1 ? newEntryRef : undefined}
             class={`rounded-md border border-border ${isDragOver ? 'border-primary' : ''} ${dragSourceIndex === index ? 'opacity-50' : ''}`}
-            draggable
-            onDragStart={() => {
-              return onDragStart(index);
-            }}
             onDragOver={(event: DragEvent) => {
               return onDragOver(event, index);
             }}
@@ -168,6 +187,10 @@ export function IndicesConfigField({
                   class="size-3.5 shrink-0 text-muted-foreground cursor-grab"
                   viewBox="0 0 24 24"
                   fill="currentColor"
+                  draggable
+                  onDragStart={(event: DragEvent) => {
+                    return onDragStart(index, event);
+                  }}
                 >
                   <circle cx="9" cy="5" r="1.5" />
                   <circle cx="15" cy="5" r="1.5" />
@@ -275,15 +298,21 @@ export function IndicesConfigField({
                   </Label>
                   <Input
                     type="number"
+                    min="1"
                     value={
                       entry.hitsPerPage != null ? String(entry.hitsPerPage) : ''
                     }
                     placeholder="5"
                     onInput={(event) => {
                       const raw = (event.target as HTMLInputElement).value;
-                      updateEntry(index, {
-                        hitsPerPage: raw === '' ? undefined : Number(raw),
-                      });
+                      if (raw === '') {
+                        updateEntry(index, { hitsPerPage: undefined });
+                        return;
+                      }
+                      const parsed = Math.max(1, Math.round(Number(raw)));
+                      if (!Number.isNaN(parsed)) {
+                        updateEntry(index, { hitsPerPage: parsed });
+                      }
                     }}
                   />
                 </div>
