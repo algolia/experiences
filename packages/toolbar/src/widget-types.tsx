@@ -410,6 +410,21 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         default: [],
         field: { type: 'indices-config' },
       },
+      {
+        key: 'panelLayout',
+        label: 'Panel layout',
+        description:
+          'Controls the panel layout. Two columns puts suggestions and recent searches on the left, and indices on the right.',
+        default: 'one-column',
+        field: {
+          type: 'select',
+          options: [
+            { value: 'one-column', label: 'One column' },
+            { value: 'two-columns', label: 'Two columns' },
+          ],
+          defaultValue: 'one-column',
+        },
+      },
     ],
   },
   'ais.chat': {

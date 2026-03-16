@@ -33,7 +33,7 @@ export function generateThemeCss(
       'light',
       lightOverrides
     );
-    return `:root {\n${declarations}\n}`;
+    return `:root {\n${declarations}\n}${generateResponsiveRules(variables, lightOverrides)}`;
   }
 
   const darkOverrides = isPerMode
@@ -43,8 +43,34 @@ export function generateThemeCss(
   const light = generateDeclarations(variables, 'light', lightOverrides);
   const dark = generateDeclarations(variables, 'dark', darkOverrides);
 
-  return `:root {\n${light}\n}\n\n:root[data-theme='dark'], .dark {\n${dark}\n}`;
+  return `:root {\n${light}\n}\n\n:root[data-theme='dark'], .dark {\n${dark}\n}${generateResponsiveRules(variables, lightOverrides)}`;
 }
+
+function generateResponsiveRules(
+  variables: ThemeVariable[],
+  overrides: Record<string, ThemeOverrideValue>
+): string {
+  const breakpointVariable = variables.find((variable) => {
+    return variable.key === 'autocomplete-panel-columns-breakpoint';
+  });
+
+  if (!breakpointVariable) {
+    return '';
+  }
+
+  const raw =
+    overrides[breakpointVariable.key] ??
+    getDefault(breakpointVariable, 'light');
+  const breakpoint = parseFloat(String(raw));
+
+  return `\n\n@media (max-width: ${breakpoint}px) {
+  .ais-AutocompletePanelTwoColumns { grid-template-columns: 1fr; }
+}`;
+}
+
+const DECLARATION_EXCLUDED_KEYS = new Set([
+  'autocomplete-panel-columns-breakpoint',
+]);
 
 function generateDeclarations(
   variables: ThemeVariable[],
@@ -52,6 +78,9 @@ function generateDeclarations(
   overrides: Record<string, ThemeOverrideValue>
 ): string {
   return variables
+    .filter((variable) => {
+      return !DECLARATION_EXCLUDED_KEYS.has(variable.key);
+    })
     .map((variable) => {
       const raw = overrides[variable.key] ?? getDefault(variable, mode);
 
