@@ -7,7 +7,7 @@ import { AUTOCOMPLETE_VARIABLES } from '@experiences/theme/autocomplete';
 import { saveExperience } from '../api';
 import { useElementPicker } from '../hooks/use-element-picker';
 import { ToolbarProvider } from '../lib/toolbar-context';
-import { sanitizeExperience } from '../lib/utils';
+import { sanitizeExperience, withAutocompleteFocus } from '../lib/utils';
 import type {
   AddBlockResult,
   BlockPath,
@@ -223,7 +223,7 @@ export function App({ config, initialExperience }: AppProps) {
     clearTimeout(debounceRef.current);
 
     debounceRef.current = setTimeout(() => {
-      window.AlgoliaExperiences?.run(newExperience);
+      window.AlgoliaExperiences?.run(withAutocompleteFocus(newExperience));
     }, 300);
   }, []);
 
