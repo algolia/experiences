@@ -76,7 +76,6 @@ type AiChatProps = {
   experience: ExperienceApiResponse;
   onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
   onParameterChange: (path: BlockPath, key: string, value: unknown) => void;
-  onCssVariableChange: (path: BlockPath, key: string, value: string) => void;
   onDeleteBlock: (path: BlockPath) => void;
   onMoveBlock: (fromPath: BlockPath, toParentIndex: number) => void;
 };
@@ -86,7 +85,6 @@ export function AiChat({
   experience,
   onAddBlock,
   onParameterChange,
-  onCssVariableChange,
   onDeleteBlock,
   onMoveBlock,
 }: AiChatProps) {
@@ -103,8 +101,6 @@ export function AiChat({
   onAddBlockRef.current = onAddBlock;
   const onParameterChangeRef = useRef(onParameterChange);
   onParameterChangeRef.current = onParameterChange;
-  const onCssVariableChangeRef = useRef(onCssVariableChange);
-  onCssVariableChangeRef.current = onCssVariableChange;
   const onDeleteBlockRef = useRef(onDeleteBlock);
   onDeleteBlockRef.current = onDeleteBlock;
   const onMoveBlockRef = useRef(onMoveBlock);
@@ -117,9 +113,6 @@ export function AiChat({
       },
       onParameterChange: (...args) => {
         return onParameterChangeRef.current(...args);
-      },
-      onCssVariableChange: (...args) => {
-        return onCssVariableChangeRef.current(...args);
       },
       onDeleteBlock: (...args) => {
         return onDeleteBlockRef.current(...args);

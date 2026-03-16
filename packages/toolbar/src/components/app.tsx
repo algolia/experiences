@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 
+import type { ThemeOverrideValue } from '@experiences/theme';
+import { generateThemeCss } from '@experiences/theme';
+import { AUTOCOMPLETE_VARIABLES } from '@experiences/theme/autocomplete';
+
 import { saveExperience } from '../api';
 import { useElementPicker } from '../hooks/use-element-picker';
 import { ToolbarProvider } from '../lib/toolbar-context';
@@ -168,6 +172,45 @@ export function App({ config, initialExperience }: AppProps) {
   const [experience, setExperience] = useState(initialExperience);
   const [isDirty, setIsDirty] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>('idle');
+  const [themeModeConfig, setThemeModeConfig] = useState<'adaptive' | 'fixed'>(
+    () => {
+      const css = initialExperience.cssVariables;
+      // Flat overrides (no light/dark keys) means fixed mode
+      if (css && typeof css === 'object' && !('light' in css)) {
+        return 'fixed';
+      }
+      return 'adaptive';
+    }
+  );
+  const [baselineOverrides] = useState<{
+    light: Record<string, ThemeOverrideValue>;
+    dark: Record<string, ThemeOverrideValue>;
+  }>(() => {
+    const initial = initialExperience.cssVariables;
+    if (initial && typeof (initial as { light?: unknown }).light === 'object') {
+      return initial as {
+        light: Record<string, ThemeOverrideValue>;
+        dark: Record<string, ThemeOverrideValue>;
+      };
+    }
+    if (initial && typeof initial === 'object' && !('light' in initial)) {
+      return {
+        light: initial as Record<string, ThemeOverrideValue>,
+        dark: {},
+      };
+    }
+    return { light: {}, dark: {} };
+  });
+  const [themeOverrides, setThemeOverrides] = useState<{
+    light: Record<string, ThemeOverrideValue>;
+    dark: Record<string, ThemeOverrideValue>;
+  }>(() => {
+    return {
+      light: { ...baselineOverrides.light },
+      dark: { ...baselineOverrides.dark },
+    };
+  });
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
   const [toast, setToast] = useState<string | null>(null);
   const [writeApiKey, setWriteApiKey] = useState<string | null>(() => {
     return sessionStorage.getItem(`experiences.${config.experienceId}.key`);
@@ -183,61 +226,6 @@ export function App({ config, initialExperience }: AppProps) {
       window.AlgoliaExperiences?.run(newExperience);
     }, 300);
   }, []);
-
-  const updateCssVariablesOnPage = useCallback(
-    (
-      blocks: ExperienceApiBlock[],
-      path: BlockPath,
-      key: string,
-      value: string
-    ) => {
-      const existingStyle = document.querySelector(
-        'style[data-algolia-experiences-toolbar]'
-      );
-      const style = existingStyle ?? document.createElement('style');
-
-      if (!existingStyle) {
-        style.setAttribute('data-algolia-experiences-toolbar', '');
-        document.head.appendChild(style);
-      }
-
-      const allVars: Record<string, string> = {};
-
-      const collectVars = (items: ExperienceApiBlock[], parentIdx?: number) => {
-        items.forEach((block, i) => {
-          const currentPath: BlockPath =
-            parentIdx !== undefined ? [parentIdx, i] : [i];
-          const vars = block.parameters.cssVariables ?? {};
-          const isTarget =
-            currentPath.length === path.length &&
-            currentPath.every((val, idx) => {
-              return val === path[idx];
-            });
-
-          Object.entries(vars).forEach(([varName, varValue]) => {
-            if (isTarget && varName === key) {
-              allVars[`--ais-${varName}`] = value;
-            } else {
-              allVars[`--ais-${varName}`] = varValue;
-            }
-          });
-
-          if (block.children) {
-            collectVars(block.children, i);
-          }
-        });
-      };
-
-      collectVars(blocks);
-
-      style.textContent = `:root { ${Object.entries(allVars)
-        .map(([prop, val]) => {
-          return `${prop}: ${val}`;
-        })
-        .join('; ')} }`;
-    },
-    []
-  );
 
   const handlePillClick = () => {
     if (writeApiKey) {
@@ -322,33 +310,6 @@ export function App({ config, initialExperience }: AppProps) {
       setIsDirty(true);
     },
     [scheduleRun]
-  );
-
-  const onCssVariableChange = useCallback(
-    (path: BlockPath, key: string, value: string) => {
-      setExperience((prev) => {
-        updateCssVariablesOnPage(prev.blocks, path, key, value);
-
-        return {
-          ...prev,
-          blocks: updateBlockAtPath(prev.blocks, path, (block) => {
-            return {
-              ...block,
-              parameters: {
-                ...block.parameters,
-                cssVariables: {
-                  ...block.parameters.cssVariables,
-                  [key]: value,
-                },
-              },
-            };
-          }),
-        };
-      });
-
-      setIsDirty(true);
-    },
-    [updateCssVariablesOnPage]
   );
 
   const onLocate = useCallback(
@@ -630,10 +591,130 @@ export function App({ config, initialExperience }: AppProps) {
     [scheduleRun]
   );
 
+  const applyThemePreview = useCallback(
+    (
+      overrides: {
+        light: Record<string, ThemeOverrideValue>;
+        dark: Record<string, ThemeOverrideValue>;
+      },
+      modeConfig: 'adaptive' | 'fixed' = themeModeConfig
+    ) => {
+      const cssOverrides = modeConfig === 'fixed' ? overrides.light : overrides;
+      const css = generateThemeCss(
+        AUTOCOMPLETE_VARIABLES,
+        cssOverrides,
+        modeConfig
+      );
+      let style = document.querySelector(
+        'style[data-algolia-experiences-theme]'
+      );
+      if (!style) {
+        style = document.createElement('style');
+        style.setAttribute('data-algolia-experiences-theme', '');
+        document.head.appendChild(style);
+      }
+      style.textContent = css;
+    },
+    [themeModeConfig]
+  );
+
+  const onThemeVariableChange = useCallback(
+    (key: string, value: ThemeOverrideValue) => {
+      setThemeOverrides((prev) => {
+        const updated = {
+          ...prev,
+          [themeMode]: { ...prev[themeMode], [key]: value },
+        };
+        applyThemePreview(updated);
+        return updated;
+      });
+      setIsDirty(true);
+    },
+    [themeMode, applyThemePreview]
+  );
+
+  const onThemeVariableReset = useCallback(
+    (key: string) => {
+      setThemeOverrides((prev) => {
+        const modeOverrides = { ...prev[themeMode] };
+        const baselineValue = baselineOverrides[themeMode][key];
+        if (baselineValue !== undefined) {
+          modeOverrides[key] = baselineValue;
+        } else {
+          delete modeOverrides[key];
+        }
+        const updated = { ...prev, [themeMode]: modeOverrides };
+        applyThemePreview(updated);
+        return updated;
+      });
+      setIsDirty(true);
+    },
+    [themeMode, baselineOverrides, applyThemePreview]
+  );
+
+  const onThemeResetAll = useCallback(() => {
+    const reset = {
+      light: { ...baselineOverrides.light },
+      dark: { ...baselineOverrides.dark },
+    };
+    setThemeOverrides(reset);
+    applyThemePreview(reset);
+    setIsDirty(true);
+  }, [baselineOverrides, applyThemePreview]);
+
+  const onThemeModeConfigChange = useCallback(
+    (modeConfig: 'adaptive' | 'fixed') => {
+      setThemeModeConfig(modeConfig);
+      if (modeConfig === 'fixed') {
+        // Switch back to light editing view and remove dark mode attrs
+        setThemeMode('light');
+        document.documentElement.removeAttribute('data-theme');
+        document.documentElement.classList.remove('dark');
+      }
+      applyThemePreview(themeOverrides, modeConfig);
+      setIsDirty(true);
+    },
+    [themeOverrides, applyThemePreview]
+  );
+
+  const onThemeModeChange = useCallback(
+    (mode: 'light' | 'dark') => {
+      setThemeMode(mode);
+      if (mode === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        document.documentElement.classList.remove('dark');
+      }
+      applyThemePreview(themeOverrides);
+    },
+    [themeOverrides, applyThemePreview]
+  );
+
+  const onPresetApply = useCallback(
+    (preset: {
+      overrides: {
+        light: Record<string, ThemeOverrideValue>;
+        dark: Record<string, ThemeOverrideValue>;
+      };
+    }) => {
+      setThemeOverrides(preset.overrides);
+      applyThemePreview(preset.overrides);
+      setIsDirty(true);
+    },
+    [applyThemePreview]
+  );
+
   const onSave = useCallback(async () => {
     setSaveState('saving');
 
-    const sanitized = sanitizeExperience(experience);
+    const cssVariables =
+      themeModeConfig === 'fixed' ? themeOverrides.light : themeOverrides;
+    const sanitized = sanitizeExperience({
+      ...experience,
+      cssVariables,
+    });
 
     try {
       await saveExperience({
@@ -652,7 +733,7 @@ export function App({ config, initialExperience }: AppProps) {
       setSaveState('idle');
       setToast(err instanceof Error ? err.message : 'Failed to save.');
     }
-  }, [writeApiKey, config, experience]);
+  }, [writeApiKey, config, experience, themeOverrides, themeModeConfig]);
 
   useEffect(() => {
     if (!panelRef.current) {
@@ -720,13 +801,22 @@ export function App({ config, initialExperience }: AppProps) {
         }}
         onSave={onSave}
         onParameterChange={onParameterChange}
-        onCssVariableChange={onCssVariableChange}
         onLocate={onLocate}
         onDeleteBlock={onDeleteBlock}
         onAddBlock={onAddBlock}
         onChangeWidgetIndex={onChangeWidgetIndex}
         onMoveBlock={onMoveBlock}
         onPickElement={picker.startPicking}
+        themeOverrides={themeOverrides}
+        baselineOverrides={baselineOverrides}
+        themeMode={themeMode}
+        onThemeVariableChange={onThemeVariableChange}
+        onThemeVariableReset={onThemeVariableReset}
+        onThemeResetAll={onThemeResetAll}
+        onThemeModeChange={onThemeModeChange}
+        themeModeConfig={themeModeConfig}
+        onThemeModeConfigChange={onThemeModeConfigChange}
+        onPresetApply={onPresetApply}
       />
       <Pill
         visible={!isExpanded}

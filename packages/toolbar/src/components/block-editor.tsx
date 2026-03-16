@@ -3,7 +3,6 @@ import type { IndexSuggestKind } from '../widget-types';
 import { WIDGET_TYPES } from '../widget-types';
 import type { SuggestLists } from './panel';
 import type { Suggestion } from './ui/combobox';
-import { CssVariablesEditor } from './fields/css-variables-editor';
 import { FacetValueField } from './fields/facet-value-field';
 import { JsonField } from './fields/json-field';
 import { ListField } from './fields/list-field';
@@ -23,7 +22,6 @@ type BlockEditorProps = {
   type: string;
   parameters: ExperienceApiBlockParameters;
   onParameterChange: (key: string, value: unknown) => void;
-  onCssVariableChange: (key: string, value: string) => void;
   onPickElement: (callback: (selector: string) => void) => void;
   parentIndexName?: string;
   suggestLists?: SuggestLists;
@@ -58,7 +56,6 @@ export function BlockEditor({
   type,
   parameters,
   onParameterChange,
-  onCssVariableChange,
   onPickElement,
   parentIndexName,
   suggestLists,
@@ -86,20 +83,6 @@ export function BlockEditor({
 
         if (key === 'placement') {
           return null;
-        }
-
-        if (key === 'cssVariables') {
-          const vars = parameters.cssVariables;
-          if (!vars || Object.keys(vars).length === 0) return null;
-          return (
-            <div key={key} class="space-y-1.5">
-              <p class="text-xs font-medium text-foreground">CSS Variables</p>
-              <CssVariablesEditor
-                variables={vars}
-                onChange={onCssVariableChange}
-              />
-            </div>
-          );
         }
 
         if (key === 'container') {

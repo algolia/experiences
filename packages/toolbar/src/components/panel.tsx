@@ -1,5 +1,8 @@
 import type { Ref } from 'preact';
 import { useMemo, useEffect, useRef, useState } from 'preact/hooks';
+
+import type { ThemeOverrideValue, ThemePreset } from '@experiences/theme';
+
 import type {
   AddBlockResult,
   BlockPath,
@@ -18,6 +21,7 @@ import { AddWidgetPopover } from './add-widget-popover';
 import { AiChat } from './ai-chat';
 import { BlockCard } from './block-card';
 import { IndexBlockGroup } from './index-block-group';
+import { ThemeEditor } from './theme-editor';
 import { Button } from './ui/button';
 import type { Suggestion } from './ui/combobox';
 import { TabsList, TabsTrigger, TabsContent } from './ui/tabs';
@@ -33,7 +37,6 @@ type PanelProps = {
   onClose: () => void;
   onSave: () => void;
   onParameterChange: (path: BlockPath, key: string, value: unknown) => void;
-  onCssVariableChange: (path: BlockPath, key: string, value: string) => void;
   onLocate: (container: string, placement: string | undefined) => void;
   onDeleteBlock: (path: BlockPath) => void;
   onAddBlock: (type: string, targetParentIndex?: number) => AddBlockResult;
@@ -41,9 +44,25 @@ type PanelProps = {
   onMoveBlock: (fromPath: BlockPath, toParentIndex: number) => void;
   onPickElement: (callback: (selector: string) => void) => void;
   panelRef?: Ref<HTMLDivElement>;
+  themeOverrides: {
+    light: Record<string, ThemeOverrideValue>;
+    dark: Record<string, ThemeOverrideValue>;
+  };
+  baselineOverrides: {
+    light: Record<string, ThemeOverrideValue>;
+    dark: Record<string, ThemeOverrideValue>;
+  };
+  themeMode: 'light' | 'dark';
+  onThemeVariableChange: (key: string, value: ThemeOverrideValue) => void;
+  onThemeVariableReset: (key: string) => void;
+  onThemeResetAll: () => void;
+  onThemeModeChange: (mode: 'light' | 'dark') => void;
+  themeModeConfig: 'adaptive' | 'fixed';
+  onThemeModeConfigChange: (modeConfig: 'adaptive' | 'fixed') => void;
+  onPresetApply: (preset: ThemePreset) => void;
 };
 
-type Tab = 'manual' | 'ai';
+type Tab = 'manual' | 'ai' | 'theme';
 
 export function Panel({
   env,
@@ -54,7 +73,6 @@ export function Panel({
   onClose,
   onSave,
   onParameterChange,
-  onCssVariableChange,
   onLocate,
   onDeleteBlock,
   onAddBlock,
@@ -62,11 +80,30 @@ export function Panel({
   onMoveBlock,
   onPickElement,
   panelRef,
+  themeOverrides,
+  baselineOverrides,
+  themeMode,
+  onThemeVariableChange,
+  onThemeVariableReset,
+  onThemeResetAll,
+  onThemeModeChange,
+  themeModeConfig,
+  onThemeModeConfigChange,
+  onPresetApply,
 }: PanelProps) {
   const [tab, setTab] = useState<Tab>('manual');
   const [aiMounted, setAiMounted] = useState(false);
   const [expandedBlock, setExpandedBlock] = useState<string | null>(null);
   const prevBlocksRef = useRef(experience.blocks);
+
+  const hasAutocomplete = experience.blocks.some((block) => {
+    return (
+      block.type === 'ais.autocomplete' ||
+      block.children?.some((child) => {
+        return child.type === 'ais.autocomplete';
+      })
+    );
+  });
 
   const allIndexNames = useIndices();
   const qsIndexNames = useIndices({
@@ -298,6 +335,26 @@ export function Panel({
             </svg>
             AI
           </TabsTrigger>
+          <TabsTrigger
+            active={tab === 'theme'}
+            onClick={() => {
+              return setTab('theme');
+            }}
+          >
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08" />
+              <path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z" />
+            </svg>
+            Theme
+          </TabsTrigger>
         </TabsList>
       </div>
 
@@ -321,11 +378,13 @@ export function Panel({
                     suggestLists={suggestLists}
                     onToggleExpand={handleToggleExpand}
                     onParameterChange={onParameterChange}
-                    onCssVariableChange={onCssVariableChange}
                     onLocate={onLocate}
                     onDeleteBlock={onDeleteBlock}
                     onChangeWidgetIndex={onChangeWidgetIndex}
                     onPickElement={onPickElement}
+                    onNavigateToTheme={() => {
+                      return setTab('theme');
+                    }}
                   />
                 );
               }
@@ -342,9 +401,6 @@ export function Panel({
                   onParameterChange={(key, value) => {
                     return onParameterChange([index], key, value);
                   }}
-                  onCssVariableChange={(key, value) => {
-                    return onCssVariableChange([index], key, value);
-                  }}
                   onLocate={() => {
                     return onLocate(
                       block.parameters.container ?? '',
@@ -355,6 +411,13 @@ export function Panel({
                     return onDeleteBlock([index]);
                   }}
                   onPickElement={onPickElement}
+                  onNavigateToTheme={
+                    block.type === 'ais.autocomplete'
+                      ? () => {
+                          return setTab('theme');
+                        }
+                      : undefined
+                  }
                   suggestLists={suggestLists}
                 />
               );
@@ -369,6 +432,42 @@ export function Panel({
         </div>
       </TabsContent>
 
+      {/* Theme tab */}
+      <TabsContent
+        active={tab === 'theme'}
+        class="flex flex-1 flex-col overflow-hidden"
+      >
+        {hasAutocomplete ? (
+          <ThemeEditor
+            themeOverrides={themeOverrides}
+            baselineOverrides={baselineOverrides}
+            themeMode={themeMode}
+            onThemeVariableChange={onThemeVariableChange}
+            onThemeVariableReset={onThemeVariableReset}
+            onThemeResetAll={onThemeResetAll}
+            onThemeModeChange={onThemeModeChange}
+            themeModeConfig={themeModeConfig}
+            onThemeModeConfigChange={onThemeModeConfigChange}
+            onPresetApply={onPresetApply}
+          />
+        ) : (
+          <div class="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+            <p class="text-sm text-muted-foreground">
+              Add an Autocomplete widget to start customizing the theme.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                return setTab('manual');
+              }}
+            >
+              Go to widgets
+            </Button>
+          </div>
+        )}
+      </TabsContent>
+
       {/* AI tab — lazy-mounted on first tab click, then kept alive (hidden) to preserve state */}
       {aiMounted && (
         <div
@@ -381,7 +480,6 @@ export function Panel({
             experience={experience}
             onAddBlock={onAddBlock}
             onParameterChange={onParameterChange}
-            onCssVariableChange={onCssVariableChange}
             onDeleteBlock={onDeleteBlock}
             onMoveBlock={onMoveBlock}
           />

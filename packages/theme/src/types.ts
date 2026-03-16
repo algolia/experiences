@@ -22,6 +22,7 @@ export type ThemeVariable = {
   key: string;
   label: string;
   type: ThemeVariableType;
+  group: string;
   default:
     | string
     | ShadowLayer[]
@@ -32,6 +33,17 @@ export type ThemeVariable = {
 };
 
 export type ThemeOverrideValue = string | number | ShadowLayer[];
+
+/**
+ * A curated theme preset with per-mode overrides.
+ */
+export type ThemePreset = {
+  name: string;
+  overrides: {
+    light: Record<string, ThemeOverrideValue>;
+    dark: Record<string, ThemeOverrideValue>;
+  };
+};
 
 /**
  * Theme overrides, either a flat record (applied to both modes) or per-mode.

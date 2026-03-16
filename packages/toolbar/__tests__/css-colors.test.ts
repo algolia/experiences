@@ -109,29 +109,29 @@ describe('rgbTripletToHex', () => {
 
 describe('hexToRgbTriplet', () => {
   it('converts basic colors', () => {
-    expect(hexToRgbTriplet('#ff0000')).toBe('255,0,0');
-    expect(hexToRgbTriplet('#00ff00')).toBe('0,255,0');
-    expect(hexToRgbTriplet('#0000ff')).toBe('0,0,255');
+    expect(hexToRgbTriplet('#ff0000')).toBe('255, 0, 0');
+    expect(hexToRgbTriplet('#00ff00')).toBe('0, 255, 0');
+    expect(hexToRgbTriplet('#0000ff')).toBe('0, 0, 255');
   });
 
   it('converts black and white', () => {
-    expect(hexToRgbTriplet('#000000')).toBe('0,0,0');
-    expect(hexToRgbTriplet('#ffffff')).toBe('255,255,255');
+    expect(hexToRgbTriplet('#000000')).toBe('0, 0, 0');
+    expect(hexToRgbTriplet('#ffffff')).toBe('255, 255, 255');
   });
 
   it('is case-insensitive', () => {
-    expect(hexToRgbTriplet('#FF8000')).toBe('255,128,0');
+    expect(hexToRgbTriplet('#FF8000')).toBe('255, 128, 0');
   });
 
-  it('returns 0,0,0 for invalid hex', () => {
-    expect(hexToRgbTriplet('not-a-color')).toBe('0,0,0');
+  it('returns 0, 0, 0 for invalid hex', () => {
+    expect(hexToRgbTriplet('not-a-color')).toBe('0, 0, 0');
   });
 
-  it('returns 0,0,0 for 3-digit hex (not supported)', () => {
-    expect(hexToRgbTriplet('#f00')).toBe('0,0,0');
+  it('returns 0, 0, 0 for 3-digit hex (not supported)', () => {
+    expect(hexToRgbTriplet('#f00')).toBe('0, 0, 0');
   });
 
-  it('returns 0,0,0 for 8-digit hex (alpha not supported)', () => {
-    expect(hexToRgbTriplet('#ff000080')).toBe('0,0,0');
+  it('returns 0, 0, 0 for 8-digit hex (alpha not supported)', () => {
+    expect(hexToRgbTriplet('#ff000080')).toBe('0, 0, 0');
   });
 });
