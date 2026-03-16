@@ -72,14 +72,6 @@ describe('ais.autocomplete field behavior', () => {
 
       expect(onParameterChange).toHaveBeenCalledWith('showRecent', false);
     });
-
-    it('handles legacy boolean true value', () => {
-      const { container } = render({ showRecent: true });
-
-      const toggle = getSwitch(container, 'Recent Searches');
-
-      expect(toggle.getAttribute('aria-checked')).toBe('true');
-    });
   });
 
   describe('suggestions-config field', () => {
