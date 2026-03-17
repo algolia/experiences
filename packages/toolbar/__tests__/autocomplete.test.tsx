@@ -1,9 +1,24 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { http, HttpResponse } from 'msw';
+import { setupServer } from 'msw/node';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { getSwitch, renderEditor } from './widget-test-utils';
 
+const server = setupServer(
+  http.get('https://TEST_APP-dsn.algolia.net/1/indexes', () => {
+    return HttpResponse.json({ items: [] });
+  })
+);
+
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'bypass' });
+});
 afterEach(() => {
+  server.resetHandlers();
   document.body.innerHTML = '';
+});
+afterAll(() => {
+  server.close();
 });
 
 function render(params: Record<string, unknown> = {}) {
