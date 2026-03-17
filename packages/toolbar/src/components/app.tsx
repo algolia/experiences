@@ -712,6 +712,9 @@ export function App({ config, initialExperience }: AppProps) {
       .algolia-experiences-toolbar--open {
         padding-left: calc(${currentPadding} + ${panelWidth}px);
       }
+      .algolia-experiences-toolbar--open .ais-AutocompleteDetachedOverlay {
+        margin-left: calc(${currentPadding} + ${panelWidth}px);
+      }
     `;
     document.head.appendChild(style);
     document.body.classList.add('algolia-experiences-toolbar');
