@@ -381,7 +381,6 @@ export function BlockEditor({
                 onChange={(newEntries) => {
                   return onParameterChange(key, newEntries);
                 }}
-                suggestLists={suggestLists}
               />
             );
           }

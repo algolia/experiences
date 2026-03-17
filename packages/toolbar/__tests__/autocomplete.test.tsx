@@ -7,6 +7,9 @@ import { getSwitch, renderEditor } from './widget-test-utils';
 const server = setupServer(
   http.get('https://TEST_APP-dsn.algolia.net/1/indexes', () => {
     return HttpResponse.json({ items: [] });
+  }),
+  http.get('https://query-suggestions.*.algolia.com/1/configs', () => {
+    return HttpResponse.json([]);
   })
 );
 

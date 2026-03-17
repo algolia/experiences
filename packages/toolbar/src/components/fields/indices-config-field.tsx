@@ -5,7 +5,7 @@ import { InfoTooltip } from './info-tooltip';
 import { ItemTemplateField } from './item-template-field';
 import { JsonField } from './json-field';
 import { Button } from '../ui/button';
-import { Combobox, type Suggestion } from '../ui/combobox';
+import { Combobox } from '../ui/combobox';
 import { CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -24,7 +24,6 @@ type IndicesConfigFieldProps = {
   label: string;
   entries: StoredIndexEntry[];
   onChange: (entries: StoredIndexEntry[]) => void;
-  suggestLists?: Partial<Record<string, Suggestion[]>>;
 };
 
 const ITEM_TEMPLATE_FIELDS = [
@@ -40,7 +39,6 @@ export function IndicesConfigField({
   label,
   entries,
   onChange,
-  suggestLists,
 }: IndicesConfigFieldProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [dragSourceIndex, setDragSourceIndex] = useState<number | null>(null);
@@ -53,8 +51,8 @@ export function IndicesConfigField({
     });
   });
 
-  const qsIndices = useIndices({ type: 'querySuggestions' });
-  const indexSuggestions = suggestLists?.indices ?? [];
+  const nonQsIndices = useIndices({ type: 'indices' });
+  const indexSuggestions = nonQsIndices;
 
   function updateEntry(index: number, patch: Partial<StoredIndexEntry>) {
     const updated = entries.map((entry, idx) => {
@@ -158,7 +156,6 @@ export function IndicesConfigField({
 
       {entries.map((entry, index) => {
         const isExpanded = expandedIndex === index;
-        const isQs = qsIndices.includes(entry.indexName);
         const isDragOver =
           dropTargetIndex === index && dragSourceIndex !== index;
 
@@ -202,11 +199,6 @@ export function IndicesConfigField({
                 <span class="font-medium truncate">
                   {entry.templates?.header || entry.indexName || 'New index'}
                 </span>
-                {isQs && (
-                  <span class="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                    Suggestions
-                  </span>
-                )}
               </span>
               <span class="flex items-center gap-1.5">
                 <button
@@ -254,20 +246,7 @@ export function IndicesConfigField({
                     label="Index Name"
                     placeholder="Select an index"
                     onInput={(value) => {
-                      const patch: Partial<StoredIndexEntry> = {
-                        indexName: value,
-                      };
-                      if (
-                        qsIndices.includes(value) &&
-                        (!entry.templates?.header ||
-                          entry.templates.header === '')
-                      ) {
-                        patch.templates = {
-                          ...entry.templates,
-                          header: 'Suggestions',
-                        };
-                      }
-                      updateEntry(index, patch);
+                      updateEntry(index, { indexName: value });
                     }}
                   />
                 </div>
@@ -317,26 +296,24 @@ export function IndicesConfigField({
                   />
                 </div>
 
-                {!isQs && (
-                  <ItemTemplateField
-                    label="Item Template"
-                    description="Maps Algolia record attributes to display roles for rendering items."
-                    value={entry.templates?.item ?? {}}
-                    fields={ITEM_TEMPLATE_FIELDS}
-                    onFieldChange={(subKey, subValue) => {
-                      updateEntry(index, {
-                        templates: {
-                          ...entry.templates,
-                          item: {
-                            ...entry.templates?.item,
-                            [subKey]: subValue,
-                          },
+                <ItemTemplateField
+                  label="Item Template"
+                  description="Maps Algolia record attributes to display roles for rendering items."
+                  value={entry.templates?.item ?? {}}
+                  fields={ITEM_TEMPLATE_FIELDS}
+                  onFieldChange={(subKey, subValue) => {
+                    updateEntry(index, {
+                      templates: {
+                        ...entry.templates,
+                        item: {
+                          ...entry.templates?.item,
+                          [subKey]: subValue,
                         },
-                      });
-                    }}
-                    indexName={entry.indexName || undefined}
-                  />
-                )}
+                      },
+                    });
+                  }}
+                  indexName={entry.indexName || undefined}
+                />
 
                 <JsonField
                   label="Search Parameters"
