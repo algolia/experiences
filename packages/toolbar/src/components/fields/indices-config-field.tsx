@@ -196,8 +196,10 @@ export function IndicesConfigField({
                   <circle cx="9" cy="19" r="1.5" />
                   <circle cx="15" cy="19" r="1.5" />
                 </svg>
-                <span class="font-medium truncate">
-                  {entry.templates?.header || entry.indexName || 'New index'}
+                <span class="font-medium">
+                  {truncate(
+                    entry.templates?.header || entry.indexName || 'New index'
+                  )}
                 </span>
               </span>
               <span class="flex items-center gap-1.5">
@@ -355,4 +357,14 @@ export function IndicesConfigField({
       </Button>
     </div>
   );
+}
+
+const MAX_LABEL_LENGTH = 30;
+
+function truncate(text: string): string {
+  if (text.length <= MAX_LABEL_LENGTH) {
+    return text;
+  }
+
+  return text.slice(0, MAX_LABEL_LENGTH) + '…';
 }
