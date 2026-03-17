@@ -82,7 +82,8 @@ describe('describeWidgetTypes', () => {
     expect(result).toMatch(/includedAttributes.*\[suggests: facetAttributes\]/);
     expect(result).toMatch(/excludedAttributes.*\[suggests: facetAttributes\]/);
     expect(result).toMatch(/indexName.*\[suggests: indices\]/);
-    expect(result).toMatch(/\(indexName \[suggests: indices:qs\]\)/);
+    // indices:qs suggestions are now handled inside the suggestions-config
+    // field type rather than being exposed as a sub-field of an object param.
     expect(result).toMatch(/\(value \[suggests: indices:replicas\]\)/);
   });
 
