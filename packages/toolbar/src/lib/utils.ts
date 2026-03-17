@@ -56,3 +56,27 @@ export function sanitizeExperience(experience: ExperienceApiResponse) {
     }),
   };
 }
+
+export function withAutocompleteFocus(
+  experience: ExperienceApiResponse
+): ExperienceApiResponse {
+  const input = document.querySelector('.ais-AutocompleteInput');
+  const isOpen = input?.getAttribute('aria-expanded') === 'true';
+
+  const hasAutocomplete = experience.blocks.some((block) => {
+    return block.type === 'ais.autocomplete';
+  });
+
+  if (!hasAutocomplete) return experience;
+
+  return {
+    ...experience,
+    blocks: experience.blocks.map((block) => {
+      if (block.type !== 'ais.autocomplete') return block;
+      return {
+        ...block,
+        parameters: { ...block.parameters, autofocus: isOpen },
+      };
+    }),
+  };
+}
