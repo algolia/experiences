@@ -138,31 +138,39 @@ export default (function experience(
       'ais.autocomplete': {
         widget: EXPERIMENTAL_autocomplete,
         async transformParams(params) {
-          const { showRecent, showSuggestions, indices, panelLayout, ...rest } =
-            params as typeof params & {
-              showRecent?: false | { templates: { header: string } };
-              showSuggestions?: {
-                searchPageUrl?: string;
-                queryParam?: string;
-                // oxlint-disable-next-line id-length -- backward compat for old configs
-                q?: string;
-                indexName?: string;
-                templates?: { header?: string };
-              };
-              indices?: Array<{
-                indexName: string;
-                hitsPerPage?: number;
-                templates?: {
-                  header?: string;
-                  item?: Record<string, string>;
-                };
-                searchParameters?: Record<string, unknown>;
-              }>;
-              panelLayout?: 'one-column' | 'two-columns';
+          const {
+            showRecent,
+            showQuerySuggestions,
+            indices,
+            detachedMediaQuery,
+            panelLayout,
+            ...rest
+          } = params as typeof params & {
+            showRecent?: false | { templates: { header: string } };
+            showQuerySuggestions?: {
+              searchPageUrl?: string;
+              queryParam?: string;
+              // oxlint-disable-next-line id-length -- backward compat for old configs
+              q?: string;
+              indexName?: string;
+              templates?: { header?: string };
             };
+            indices?: Array<{
+              indexName: string;
+              hitsPerPage?: number;
+              templates?: {
+                header?: string;
+                item?: Record<string, string>;
+              };
+              searchParameters?: Record<string, unknown>;
+            }>;
+            detachedMediaQuery?: string;
+            panelLayout?: 'one-column' | 'two-columns';
+          };
 
           return Promise.resolve({
             ...rest,
+            ...(detachedMediaQuery ? { detachedMediaQuery } : {}),
             ...(panelLayout === 'two-columns'
               ? { templates: { panel: renderTwoColumnsPanel() } }
               : {}),
@@ -179,29 +187,29 @@ export default (function experience(
                     : {},
                 }
               : {}),
-            ...(showSuggestions
+            ...(showQuerySuggestions
               ? {
-                  showSuggestions: {
-                    indexName: showSuggestions.indexName,
-                    ...(showSuggestions.templates?.header
+                  showQuerySuggestions: {
+                    indexName: showQuerySuggestions.indexName,
+                    ...(showQuerySuggestions.templates?.header
                       ? {
                           templates: {
                             header: renderSectionHeader(
-                              showSuggestions.templates.header
+                              showQuerySuggestions.templates.header
                             ),
                           },
                         }
                       : {}),
-                    ...(showSuggestions.searchPageUrl
+                    ...(showQuerySuggestions.searchPageUrl
                       ? {
                           getURL: (item: { query: string }) => {
                             const url = new URL(
-                              showSuggestions.searchPageUrl!,
+                              showQuerySuggestions.searchPageUrl!,
                               window.location.origin
                             );
                             url.searchParams.set(
-                              showSuggestions.queryParam ??
-                                showSuggestions.q ??
+                              showQuerySuggestions.queryParam ??
+                                showQuerySuggestions.q ??
                                 'q',
                               item.query
                             );

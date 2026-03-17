@@ -219,11 +219,19 @@ export function App({ config, initialExperience }: AppProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const picker = useElementPicker();
 
+  const themeOverridesRef = useRef(themeOverrides);
+  themeOverridesRef.current = themeOverrides;
+
   const scheduleRun = useCallback((newExperience: ExperienceApiResponse) => {
     clearTimeout(debounceRef.current);
 
     debounceRef.current = setTimeout(() => {
-      window.AlgoliaExperiences?.run(withAutocompleteFocus(newExperience));
+      window.AlgoliaExperiences?.run(
+        withAutocompleteFocus({
+          ...newExperience,
+          cssVariables: themeOverridesRef.current,
+        })
+      );
     }, 300);
   }, []);
 

@@ -532,6 +532,18 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     constraints: { min: -0.05, max: 0.3, step: 0.01, unit: 'em' },
   },
 
+  // --- Z-index ---
+  {
+    key: 'autocomplete-z-index',
+    label: 'Z-index',
+    type: 'number',
+    group: 'detached',
+    default: '10000',
+    description:
+      'Z-index of the autocomplete panel and detached modal. Increase if it appears behind other elements on the page.',
+    constraints: { min: 1, max: 2147483647, step: 1 },
+  },
+
   // --- Detached ---
   {
     key: 'autocomplete-detached-modal-max-width',
@@ -561,13 +573,31 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     constraints: { min: 0, max: 32, step: 1, unit: 'px' },
   },
   {
+    key: 'autocomplete-detached-modal-border-width',
+    label: 'Detached modal border width',
+    type: 'number',
+    group: 'detached',
+    default: '0',
+    description: 'Border width of the detached modal container.',
+    constraints: { min: 0, max: 4, step: 1, unit: 'px' },
+  },
+  {
+    key: 'autocomplete-detached-modal-border-opacity',
+    label: 'Detached modal border opacity',
+    type: 'number',
+    group: 'detached',
+    default: '1',
+    description: 'Opacity of the detached modal border.',
+    constraints: { min: 0, max: 1 },
+  },
+  {
     key: 'autocomplete-detached-modal-top',
     label: 'Detached modal top offset',
     type: 'number',
     group: 'detached',
-    default: '3',
+    default: '40',
     description: 'Top offset of the detached modal from viewport.',
-    constraints: { min: 0, max: 20, step: 1, unit: '%' },
+    constraints: { min: 0, max: 200, step: 4, unit: 'px' },
   },
   {
     key: 'autocomplete-detached-modal-shadow',
@@ -602,6 +632,24 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     default: '0.3',
     description: 'Opacity of the form border in detached mode.',
     constraints: { min: 0, max: 1 },
+  },
+  {
+    key: 'autocomplete-detached-form-border-width',
+    label: 'Detached form border width',
+    type: 'number',
+    group: 'detached',
+    default: '1',
+    description: 'Width of the bottom border on the detached form container.',
+    constraints: { min: 0, max: 4, step: 1, unit: 'px' },
+  },
+  {
+    key: 'autocomplete-detached-form-padding',
+    label: 'Detached form padding',
+    type: 'number',
+    group: 'detached',
+    default: '6',
+    description: 'Padding around the form inside the detached container.',
+    constraints: { min: 0, max: 24, step: 1, unit: 'px' },
   },
 
   // --- Scrollbar ---

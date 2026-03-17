@@ -8,8 +8,7 @@
 
 /* --- Root elements --- */
 .ais-AutocompletePanel,
-.ais-Autocomplete,
-.ais-DetachedFormContainer {
+.ais-Autocomplete {
   color: rgba(
     var(--ais-autocomplete-text-color),
     var(--ais-autocomplete-text-color-alpha)
@@ -240,7 +239,7 @@
   margin: var(--ais-autocomplete-panel-margin-top) 0 0;
   position: absolute;
   width: 100%;
-  z-index: var(--ais-z-index-autocomplete, 10000);
+  z-index: var(--ais-autocomplete-z-index);
   overflow: hidden;
   opacity: 0;
   pointer-events: none;
@@ -492,139 +491,258 @@
 }
 
 /* --- Detached mode --- */
-@keyframes ais-fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+
+/* Lock body scroll when detached modal is open */
+body.ais-Autocomplete--detached {
+  height: 100vh;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
 }
 
-.ais-DetachedOverlay {
+/* Backdrop overlay */
+.ais-AutocompleteDetachedOverlay {
   background: rgba(
     var(--ais-autocomplete-overlay-color),
     var(--ais-autocomplete-overlay-color-alpha)
   );
+  height: 100vh;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: calc(var(--ais-autocomplete-z-index) - 1);
 }
 
-.ais-DetachedContainer {
+/* Container — full-screen by default (mobile) */
+.ais-AutocompleteDetachedContainer {
   background: rgba(
     var(--ais-autocomplete-background-color),
     var(--ais-autocomplete-background-color-alpha)
   );
-  border-radius: var(--ais-autocomplete-detached-modal-border-radius);
+  bottom: 0;
   box-shadow: var(--ais-autocomplete-detached-modal-shadow);
-  max-width: var(--ais-autocomplete-detached-modal-max-width);
-  max-height: var(--ais-autocomplete-detached-modal-max-height);
-  margin-top: var(--ais-autocomplete-detached-modal-top);
-}
-
-.ais-DetachedContainer .ais-AutocompleteForm {
-  border-bottom-color: rgba(
-    var(--ais-autocomplete-border-color),
-    var(--ais-autocomplete-detached-form-border-opacity)
-  );
-  border-radius: 0;
-}
-
-/* --- Filter suggestions --- */
-.ais-FilterSuggestions {
   display: flex;
   flex-direction: column;
-  gap: var(--ais-autocomplete-item-gap);
+  height: 100vh;
+  left: 0;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: var(--ais-autocomplete-z-index);
 }
 
-.ais-FilterSuggestions-header {
+/* Container — modal variant (desktop) */
+.ais-AutocompleteDetachedContainer--modal {
+  border: var(--ais-autocomplete-detached-modal-border-width) solid
+    rgba(
+      var(--ais-autocomplete-border-color),
+      var(--ais-autocomplete-detached-modal-border-opacity)
+    );
+  border-radius: var(--ais-autocomplete-detached-modal-border-radius);
+  bottom: inherit;
+  height: auto;
+  margin: 0 auto;
+  max-width: var(--ais-autocomplete-detached-modal-max-width);
+  position: absolute;
+  top: var(--ais-autocomplete-detached-modal-top);
+}
+
+/* Panel resets inside detached container */
+.ais-AutocompleteDetachedContainer .ais-AutocompletePanel {
+  background-color: rgba(
+    var(--ais-autocomplete-background-color),
+    var(--ais-autocomplete-background-color-alpha)
+  );
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  flex-grow: 1;
+  margin: 0;
+  opacity: 1;
+  padding: 0;
+  pointer-events: auto;
+  position: relative;
+  transform: none;
+}
+
+/* Panel layout — full-screen (mobile) */
+.ais-AutocompleteDetachedContainer .ais-AutocompletePanelLayout {
+  bottom: 0;
+  box-shadow: none;
+  left: 0;
+  margin: 0;
+  max-height: none;
+  overflow-y: auto;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+}
+
+/* Panel layout — modal (desktop) */
+.ais-AutocompleteDetachedContainer--modal .ais-AutocompletePanelLayout {
+  max-height: var(--ais-autocomplete-detached-modal-max-height);
+  position: static;
+}
+
+.ais-AutocompleteDetachedContainer--modal .ais-AutocompletePanelLayout:empty {
+  display: none;
+}
+
+/* Form container with cancel button */
+.ais-AutocompleteDetachedFormContainer {
+  border-bottom: solid var(--ais-autocomplete-detached-form-border-width)
+    rgba(
+      var(--ais-autocomplete-border-color),
+      var(--ais-autocomplete-detached-form-border-opacity)
+    );
+  color: rgba(
+    var(--ais-autocomplete-text-color),
+    var(--ais-autocomplete-text-color-alpha)
+  );
   display: flex;
+  flex-direction: row;
+  font-family: inherit;
+  font-size: calc(var(--ais-autocomplete-base-unit) * 1px);
+  font-weight: normal;
+  justify-content: space-between;
+  line-height: 1em;
+  margin: 0;
+  padding: var(--ais-autocomplete-detached-form-padding);
+  position: relative;
+  text-align: left;
+}
+
+.ais-AutocompleteDetachedFormContainer .ais-AutocompleteForm {
+  border-radius: 0;
+  border: 0;
+  flex: 1;
+}
+
+.ais-AutocompleteDetachedFormContainer .ais-AutocompleteForm:focus-within {
+  box-shadow: none;
+}
+
+/* Cancel button */
+.ais-AutocompleteDetachedCancelButton {
   align-items: center;
-  gap: var(--ais-autocomplete-item-gap);
+  background: none;
+  border: 0;
+  color: rgba(
+    var(--ais-autocomplete-text-color),
+    var(--ais-autocomplete-text-color-alpha)
+  );
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  padding: 0 var(--ais-autocomplete-form-padding-right);
 }
 
-.ais-FilterSuggestions-headerIcon {
+/* Detached search button (trigger) */
+.ais-AutocompleteDetachedSearchButton {
+  align-items: center;
+  background-color: rgba(
+    var(--ais-autocomplete-background-color),
+    var(--ais-autocomplete-background-color-alpha)
+  );
+  border: var(--ais-autocomplete-border-width) solid
+    rgba(
+      var(--ais-autocomplete-border-color),
+      var(--ais-autocomplete-form-border-opacity)
+    );
+  border-radius: var(--ais-autocomplete-form-border-radius);
+  color: rgba(
+    var(--ais-autocomplete-placeholder-color),
+    var(--ais-autocomplete-muted-color-alpha)
+  );
+  cursor: pointer;
   display: flex;
+  font: inherit;
+  font-size: calc(var(--ais-autocomplete-base-unit) * 1px);
+  height: var(--ais-autocomplete-search-input-height);
+  margin: 0;
+  position: relative;
+  text-align: left;
+  width: 100%;
+  transition:
+    border-color var(--ais-autocomplete-transition-duration)
+      var(--ais-autocomplete-transition-timing-function),
+    box-shadow var(--ais-autocomplete-transition-duration)
+      var(--ais-autocomplete-transition-timing-function);
+}
+
+.ais-AutocompleteDetachedSearchButtonIcon {
   align-items: center;
   color: rgba(
-    var(--ais-autocomplete-primary-color),
+    var(--ais-autocomplete-search-icon-color),
     var(--ais-autocomplete-primary-color-alpha)
   );
+  cursor: initial;
+  display: flex;
+  flex-shrink: 0;
+  height: 100%;
+  justify-content: center;
+  padding-left: var(--ais-autocomplete-form-padding-left);
+  padding-right: var(--ais-autocomplete-form-padding-right);
 }
 
-.ais-FilterSuggestions-headerIcon svg {
-  width: var(--ais-autocomplete-icon-size);
+.ais-AutocompleteDetachedSearchButtonIcon svg {
   height: var(--ais-autocomplete-icon-size);
+  stroke-width: var(--ais-autocomplete-icon-stroke-width);
+  width: var(--ais-autocomplete-icon-size);
 }
 
-.ais-FilterSuggestions-headerTitle {
-  font-size: 0.875em;
-  font-weight: var(--ais-autocomplete-font-weight-medium);
+.ais-AutocompleteDetachedSearchButtonPlaceholder[hidden] {
+  display: none;
+}
+
+.ais-AutocompleteDetachedSearchButtonQuery {
+  color: rgba(
+    var(--ais-autocomplete-text-color),
+    var(--ais-autocomplete-text-color-alpha)
+  );
+  line-height: 1.25em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ais-AutocompleteDetachedSearchButtonClear {
+  align-items: center;
+  background: none;
+  border: 0;
+  color: rgba(
+    var(--ais-autocomplete-clear-button-color),
+    var(--ais-autocomplete-muted-color-alpha)
+  );
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  height: 100%;
+  justify-content: center;
+  margin: 0;
+  margin-left: auto;
+  padding: 0 calc(var(--ais-autocomplete-form-padding-right) / 2);
+  transition: color var(--ais-autocomplete-transition-duration)
+    var(--ais-autocomplete-transition-timing-function);
+}
+
+.ais-AutocompleteDetachedSearchButtonClear:hover,
+.ais-AutocompleteDetachedSearchButtonClear:focus {
   color: rgba(
     var(--ais-autocomplete-text-color),
     var(--ais-autocomplete-text-color-alpha)
   );
 }
 
-.ais-FilterSuggestions-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ais-autocomplete-item-gap);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.ais-FilterSuggestions-item {
-  display: inline-flex;
-  white-space: nowrap;
-}
-
-.ais-FilterSuggestions-count {
-  font-size: 0.8em;
-  color: rgba(
-    var(--ais-autocomplete-text-color),
-    var(--ais-autocomplete-muted-color-alpha)
-  );
-  background-color: rgba(var(--ais-autocomplete-text-color), 0.1);
-  padding: 2px 6px;
-  border-radius: var(--ais-autocomplete-item-border-radius);
-}
-
-.ais-FilterSuggestions-item--refined .ais-FilterSuggestions-count {
-  color: rgba(255, 255, 255, 1);
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.ais-FilterSuggestions-skeleton {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ais-autocomplete-item-gap);
-}
-
-.ais-FilterSuggestions-skeletonItem {
-  height: 30px;
-  background-color: rgba(var(--ais-autocomplete-text-color), 0.15);
-  border-radius: var(--ais-autocomplete-item-border-radius);
-  animation: ais-filter-suggestions-skeleton 1.5s ease-in-out infinite;
-}
-
-.ais-FilterSuggestions-skeletonItem:nth-child(1) {
-  width: 25%;
-}
-
-.ais-FilterSuggestions-skeletonItem:nth-child(2) {
-  width: 35%;
-}
-
-.ais-FilterSuggestions-skeletonItem:nth-child(3) {
-  width: 20%;
-}
-
-@keyframes ais-filter-suggestions-skeleton {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+.ais-AutocompleteDetachedSearchButtonClear svg {
+  height: var(--ais-autocomplete-icon-size);
+  stroke-width: var(--ais-autocomplete-icon-stroke-width);
+  width: var(--ais-autocomplete-icon-size);
 }
