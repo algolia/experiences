@@ -6,7 +6,7 @@ import type {
   InternalMiddleware,
   InstantSearch,
 } from 'instantsearch.js/es/types';
-import { generateThemeCss } from '@experiences/theme';
+import { generateThemeCss, THEME_STYLE_ATTR } from '@experiences/theme';
 import { AUTOCOMPLETE_VARIABLES } from '@experiences/theme/autocomplete';
 
 import type {
@@ -244,9 +244,7 @@ export function injectStyleElement(textContent: string) {
 
   style.textContent = textContent;
 
-  const themePreview = document.querySelector(
-    'style[data-algolia-experiences-theme]'
-  );
+  const themePreview = document.querySelector(`style[${THEME_STYLE_ATTR}]`);
   if (themePreview) {
     document.head.insertBefore(style, themePreview);
   } else {
