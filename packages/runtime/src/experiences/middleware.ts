@@ -251,7 +251,14 @@ export function injectStyleElement(textContent: string) {
 
   style.textContent = textContent;
 
-  document.head.appendChild(style);
+  const themePreview = document.querySelector(
+    'style[data-algolia-experiences-theme]'
+  );
+  if (themePreview) {
+    document.head.insertBefore(style, themePreview);
+  } else {
+    document.head.appendChild(style);
+  }
 
   return style;
 }
