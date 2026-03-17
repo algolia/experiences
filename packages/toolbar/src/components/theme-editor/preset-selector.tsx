@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'preact/hooks';
 
 import type { ThemeOverrideValue, ThemePreset } from '@experiences/theme';
 import { AUTOCOMPLETE_PRESETS } from '@experiences/theme/autocomplete-presets';
@@ -21,7 +27,9 @@ export function PresetSelector({
   onPresetApply,
 }: PresetSelectorProps) {
   const [open, setOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const activePresetName = useMemo(() => {
     return findMatchingPreset(themeOverrides);
@@ -30,6 +38,60 @@ export function PresetSelector({
   const currentSwatches = useMemo(() => {
     return getSwatchColors(themeOverrides[themeMode], themeMode);
   }, [themeOverrides, themeMode]);
+
+  useEffect(() => {
+    if (!open) {
+      setHighlightedIndex(-1);
+    }
+  }, [open]);
+
+  const scrollHighlightedIntoView = useCallback((index: number) => {
+    const list = listRef.current;
+    if (!list) return;
+    const items = list.children;
+    if (index >= 0 && index < items.length) {
+      (items[index] as HTMLElement).scrollIntoView({ block: 'nearest' });
+    }
+  }, []);
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (!open) return;
+
+      const count = AUTOCOMPLETE_PRESETS.length;
+
+      switch (event.key) {
+        case 'ArrowDown': {
+          event.preventDefault();
+          const next = highlightedIndex < count - 1 ? highlightedIndex + 1 : 0;
+          setHighlightedIndex(next);
+          scrollHighlightedIntoView(next);
+          break;
+        }
+        case 'ArrowUp': {
+          event.preventDefault();
+          const prev = highlightedIndex > 0 ? highlightedIndex - 1 : count - 1;
+          setHighlightedIndex(prev);
+          scrollHighlightedIntoView(prev);
+          break;
+        }
+        case 'Enter': {
+          event.preventDefault();
+          const preset = AUTOCOMPLETE_PRESETS[highlightedIndex];
+          if (preset) {
+            onPresetApply(preset);
+          }
+          break;
+        }
+        case 'Escape': {
+          event.preventDefault();
+          setOpen(false);
+          break;
+        }
+      }
+    },
+    [open, highlightedIndex, onPresetApply, scrollHighlightedIntoView]
+  );
 
   useEffect(() => {
     if (!open) {
@@ -62,7 +124,7 @@ export function PresetSelector({
   }, [open]);
 
   return (
-    <div class="relative" ref={containerRef}>
+    <div class="relative" ref={containerRef} onKeyDown={handleKeyDown}>
       <button
         type="button"
         class="flex w-full items-center gap-2.5 rounded-md border px-3 py-2 text-sm hover:bg-accent transition-colors"
@@ -98,21 +160,28 @@ export function PresetSelector({
         </svg>
       </button>
       {open && (
-        <div class="absolute left-0 right-0 top-full z-10 mt-1 max-h-80 overflow-y-auto rounded-md border bg-background shadow-lg">
-          {AUTOCOMPLETE_PRESETS.map((preset) => {
+        <div
+          ref={listRef}
+          class="absolute left-0 right-0 top-full z-10 mt-1 max-h-80 overflow-y-auto rounded-md border bg-background shadow-lg"
+        >
+          {AUTOCOMPLETE_PRESETS.map((preset, presetIndex) => {
             const swatches = getSwatchColors(
               preset.overrides[themeMode],
               themeMode
             );
             const isActive = activePresetName === preset.name;
+            const isHighlighted = presetIndex === highlightedIndex;
 
             return (
               <button
                 key={preset.name}
                 type="button"
                 class={`flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-accent ${
-                  isActive ? 'bg-accent/50' : ''
+                  isHighlighted ? 'bg-accent' : isActive ? 'bg-accent/50' : ''
                 }`}
+                onMouseEnter={() => {
+                  setHighlightedIndex(presetIndex);
+                }}
                 onClick={() => {
                   onPresetApply(preset);
                   setOpen(false);
