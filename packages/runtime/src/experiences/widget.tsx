@@ -28,7 +28,12 @@ import hierarchicalMenu from 'instantsearch.js/es/widgets/hierarchical-menu/hier
 import numericMenu from 'instantsearch.js/es/widgets/numeric-menu/numeric-menu';
 
 import { renderTool } from './renderer';
-import { renderCarouselItem, renderListItem, SKELETON_CSS } from './templates';
+import {
+  renderCarouselItem,
+  renderListItem,
+  renderSectionHeader,
+  SKELETON_CSS,
+} from './templates';
 import type { ExperienceWidget } from './types';
 
 import type { ChatTransport } from 'instantsearch.js/es/connectors/chat/connectChat';
@@ -131,20 +136,45 @@ export default (function experience(
       'ais.autocomplete': {
         widget: EXPERIMENTAL_autocomplete,
         async transformParams(params) {
-          const { showSuggestions, ...rest } = params as typeof params & {
-            showSuggestions?: {
-              searchPageUrl?: string;
-              queryParam?: string;
-              indexName?: string;
+          const { showRecent, showSuggestions, ...rest } =
+            params as typeof params & {
+              showRecent?: boolean | { templates?: { header?: string } };
+              showSuggestions?: {
+                searchPageUrl?: string;
+                queryParam?: string;
+                // oxlint-disable-next-line id-length -- backward compat for old configs
+                q?: string;
+                indexName?: string;
+                templates?: { header?: string };
+              };
             };
-          };
+
+          const showRecentTransformed = showRecent
+            ? typeof showRecent === 'object' && showRecent.templates?.header
+              ? {
+                  templates: {
+                    header: renderSectionHeader(showRecent.templates.header),
+                  },
+                }
+              : {}
+            : undefined;
 
           return Promise.resolve({
             ...rest,
+            ...(showRecent ? { showRecent: showRecentTransformed } : {}),
             ...(showSuggestions
               ? {
                   showSuggestions: {
                     indexName: showSuggestions.indexName,
+                    ...(showSuggestions.templates?.header
+                      ? {
+                          templates: {
+                            header: renderSectionHeader(
+                              showSuggestions.templates.header
+                            ),
+                          },
+                        }
+                      : {}),
                     ...(showSuggestions.searchPageUrl
                       ? {
                           getURL: (item: { query: string }) => {
@@ -153,7 +183,9 @@ export default (function experience(
                               window.location.origin
                             );
                             url.searchParams.set(
-                              showSuggestions.queryParam ?? 'q',
+                              showSuggestions.queryParam ??
+                                showSuggestions.q ??
+                                'q',
                               item.query
                             );
                             return url.toString();

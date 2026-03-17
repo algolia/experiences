@@ -60,7 +60,9 @@ export type FieldConfig =
       type: 'item-template';
       defaultValue: Record<string, unknown>;
       fields: Array<{ key: string; label: string }>;
-    };
+    }
+  | { type: 'suggestions-config' }
+  | { type: 'recent-config' };
 
 export type ParamConfig = {
   key: string;
@@ -389,7 +391,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         description:
           "When enabled, shows the user's recent searches below the input.",
         default: false,
-        field: { type: 'switch' },
+        field: { type: 'recent-config' },
       },
       {
         key: 'showSuggestions',
@@ -397,16 +399,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         description:
           'When enabled, shows query suggestions from a dedicated suggestions index. Requires an indexName, a searchPageUrl, and a query parameter name.',
         default: false,
-        field: {
-          type: 'object',
-          // oxlint-disable-next-line id-length
-          defaultValue: { indexName: '', searchPageUrl: '', q: 'q' },
-          fields: [
-            { key: 'indexName', label: 'Index Name', suggest: 'indices:qs' },
-            { key: 'searchPageUrl', label: 'Search Page URL' },
-            { key: 'q', label: 'Query Parameter' },
-          ],
-        },
+        field: { type: 'suggestions-config' },
       },
     ],
   },
