@@ -15,6 +15,7 @@ import { SwitchField } from './fields/switch-field';
 import { TextField } from './fields/text-field';
 import { TextPickerField } from './fields/text-picker-field';
 import { ItemsListField } from './fields/items-list-field';
+import { IndicesConfigField } from './fields/indices-config-field';
 import { ItemTemplateField } from './fields/item-template-field';
 import { RecentConfigField } from './fields/recent-config-field';
 import { SuggestionsConfigField } from './fields/suggestions-config-field';
@@ -367,6 +368,19 @@ export function BlockEditor({
                   });
                 }}
                 indexName={parentIndexName}
+              />
+            );
+          }
+          case 'indices-config': {
+            const entries = Array.isArray(value) ? value : [];
+            return (
+              <IndicesConfigField
+                key={key}
+                label={label}
+                entries={entries}
+                onChange={(newEntries) => {
+                  return onParameterChange(key, newEntries);
+                }}
               />
             );
           }

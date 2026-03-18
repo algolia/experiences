@@ -29,6 +29,7 @@ import numericMenu from 'instantsearch.js/es/widgets/numeric-menu/numeric-menu';
 
 import { renderTool } from './renderer';
 import {
+  renderAutocompleteItem,
   renderCarouselItem,
   renderListItem,
   renderSectionHeader,
@@ -136,7 +137,7 @@ export default (function experience(
       'ais.autocomplete': {
         widget: EXPERIMENTAL_autocomplete,
         async transformParams(params) {
-          const { showRecent, showSuggestions, ...rest } =
+          const { showRecent, showSuggestions, indices, ...rest } =
             params as typeof params & {
               showRecent?: boolean | { templates?: { header?: string } };
               showSuggestions?: {
@@ -147,6 +148,15 @@ export default (function experience(
                 indexName?: string;
                 templates?: { header?: string };
               };
+              indices?: Array<{
+                indexName: string;
+                hitsPerPage?: number;
+                templates?: {
+                  header?: string;
+                  item?: Record<string, string>;
+                };
+                searchParameters?: Record<string, unknown>;
+              }>;
             };
 
           const showRecentTransformed = showRecent
@@ -193,6 +203,42 @@ export default (function experience(
                         }
                       : {}),
                   },
+                }
+              : {}),
+            ...(indices?.length
+              ? {
+                  indices: indices.map(
+                    ({
+                      indexName,
+                      hitsPerPage,
+                      templates: entryTemplates,
+                      searchParameters,
+                    }) => {
+                      return {
+                        indexName,
+                        searchParameters: {
+                          ...searchParameters,
+                          ...(hitsPerPage != null ? { hitsPerPage } : {}),
+                        },
+                        templates: {
+                          ...(entryTemplates?.header
+                            ? {
+                                header: renderSectionHeader(
+                                  entryTemplates.header
+                                ),
+                              }
+                            : {}),
+                          ...(entryTemplates?.item
+                            ? {
+                                item: renderAutocompleteItem(
+                                  entryTemplates.item
+                                ),
+                              }
+                            : {}),
+                        },
+                      };
+                    }
+                  ),
                 }
               : {}),
           });
