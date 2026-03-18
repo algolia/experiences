@@ -37,6 +37,7 @@ type ThemeEditorProps = {
   themeModeConfig: 'adaptive' | 'fixed';
   onThemeModeConfigChange: (modeConfig: 'adaptive' | 'fixed') => void;
   onPresetApply: (preset: ThemePreset) => void;
+  hasTwoColumnLayout: boolean;
 };
 
 type ThemeView = 'generate' | 'customize';
@@ -52,6 +53,7 @@ export function ThemeEditor({
   themeModeConfig,
   onThemeModeConfigChange,
   onPresetApply,
+  hasTwoColumnLayout,
 }: ThemeEditorProps) {
   const [view, setView] = useState<ThemeView>('customize');
   const [autocompleteOpen, setAutocompleteOpen] = useState(true);
@@ -72,8 +74,18 @@ export function ThemeEditor({
   }, [themeOverrides, baselineOverrides]);
 
   const groups = useMemo(() => {
+    const hiddenKeys = new Set<string>();
+    if (!hasTwoColumnLayout) {
+      hiddenKeys.add('autocomplete-panel-columns');
+      hiddenKeys.add('autocomplete-panel-columns-breakpoint');
+    }
+
+    const filtered = AUTOCOMPLETE_VARIABLES.filter((variable) => {
+      return !hiddenKeys.has(variable.key);
+    });
+
     const grouped = new Map<string, typeof AUTOCOMPLETE_VARIABLES>();
-    for (const variable of AUTOCOMPLETE_VARIABLES) {
+    for (const variable of filtered) {
       const existing = grouped.get(variable.group) ?? [];
       existing.push(variable);
       grouped.set(variable.group, existing);
@@ -87,7 +99,7 @@ export function ThemeEditor({
         variables: grouped.get(key)!,
       };
     });
-  }, []);
+  }, [hasTwoColumnLayout]);
 
   const toggleGroup = (key: string) => {
     setExpandedGroups((prev) => {

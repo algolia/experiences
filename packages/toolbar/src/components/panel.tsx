@@ -89,13 +89,17 @@ export function Panel({
   const [expandedBlock, setExpandedBlock] = useState<string | null>(null);
   const prevBlocksRef = useRef(experience.blocks);
 
-  const hasAutocomplete = experience.blocks.some((block) => {
+  const autocompleteBlocks = experience.blocks.flatMap((block) => {
+    if (block.type === 'ais.autocomplete') return [block];
     return (
-      block.type === 'ais.autocomplete' ||
-      block.children?.some((child) => {
+      block.children?.filter((child) => {
         return child.type === 'ais.autocomplete';
-      })
+      }) ?? []
     );
+  });
+  const hasAutocomplete = autocompleteBlocks.length > 0;
+  const hasTwoColumnLayout = autocompleteBlocks.some((block) => {
+    return block.parameters.panelLayout === 'two-columns';
   });
 
   const allIndexNames = useIndices();
@@ -418,6 +422,7 @@ export function Panel({
             themeModeConfig={themeModeConfig}
             onThemeModeConfigChange={onThemeModeConfigChange}
             onPresetApply={onPresetApply}
+            hasTwoColumnLayout={hasTwoColumnLayout}
           />
         ) : (
           <div class="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">

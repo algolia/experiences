@@ -8,19 +8,38 @@ const server = setupServer(
   http.get('https://TEST_APP-dsn.algolia.net/1/indexes', () => {
     return HttpResponse.json({ items: [] });
   }),
+  http.post(
+    'https://TEST_APP-dsn.algolia.net/1/indexes/:indexName/query',
+    () => {
+      return HttpResponse.json({ hits: [] });
+    }
+  ),
+  http.get(
+    'https://TEST_APP-dsn.algolia.net/1/indexes/:indexName/settings',
+    () => {
+      return HttpResponse.json({});
+    }
+  ),
   http.get('https://query-suggestions.*.algolia.com/1/configs', () => {
+    return HttpResponse.json([]);
+  }),
+  http.get('https://TEST_APP.algolia.net/agent-studio/1/agents', () => {
     return HttpResponse.json([]);
   })
 );
 
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: 'bypass' });
+  server.listen({ onUnhandledRequest: 'error' });
 });
 afterEach(() => {
   server.resetHandlers();
   document.body.innerHTML = '';
 });
-afterAll(() => {
+afterAll(async () => {
+  // Give in-flight requests time to resolve against MSW before closing.
+  await new Promise((resolve) => {
+    return setTimeout(resolve, 50);
+  });
   server.close();
 });
 
@@ -71,14 +90,6 @@ describe('ais.autocomplete field behavior', () => {
       toggle.click();
 
       expect(onParameterChange).toHaveBeenCalledWith('showRecent', false);
-    });
-
-    it('handles legacy boolean true value', () => {
-      const { container } = render({ showRecent: true });
-
-      const toggle = getSwitch(container, 'Recent Searches');
-
-      expect(toggle.getAttribute('aria-checked')).toBe('true');
     });
   });
 

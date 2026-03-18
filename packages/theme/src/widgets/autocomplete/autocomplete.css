@@ -485,6 +485,12 @@
   width: var(--ais-autocomplete-icon-size);
 }
 
+/* --- Two-column panel layout --- */
+.ais-AutocompletePanelTwoColumns {
+  display: grid;
+  grid-template-columns: var(--ais-autocomplete-panel-columns, 1fr 1fr);
+}
+
 /* --- Detached mode --- */
 @keyframes ais-fadeIn {
   from {

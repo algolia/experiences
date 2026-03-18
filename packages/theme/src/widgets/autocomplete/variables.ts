@@ -329,6 +329,25 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     description: 'Inner padding of the panel.',
     constraints: { min: 0, max: 24, step: 1, unit: 'px' },
   },
+  {
+    key: 'autocomplete-panel-columns',
+    label: 'Panel column sizes',
+    type: 'text',
+    group: 'panel',
+    default: '1fr 1fr',
+    description:
+      'CSS grid column sizes for the two-column layout (e.g. "1fr 2fr", "300px 1fr").',
+  },
+  {
+    key: 'autocomplete-panel-columns-breakpoint',
+    label: 'Panel columns breakpoint',
+    type: 'number',
+    group: 'panel',
+    default: '680',
+    description:
+      'Viewport width in pixels below which the two-column layout collapses to a single column.',
+    constraints: { min: 0, max: 1920, step: 10, unit: 'px' },
+  },
 
   // --- Items ---
   {

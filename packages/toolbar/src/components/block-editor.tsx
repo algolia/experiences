@@ -393,7 +393,7 @@ export function BlockEditor({
                 value={
                   typeof value === 'object' && value !== null
                     ? (value as Record<string, unknown>)
-                    : Boolean(value)
+                    : false
                 }
                 onChange={(newValue) => {
                   return onParameterChange(key, newValue);

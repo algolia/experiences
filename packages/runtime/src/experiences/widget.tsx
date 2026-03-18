@@ -33,6 +33,7 @@ import {
   renderCarouselItem,
   renderListItem,
   renderSectionHeader,
+  renderTwoColumnsPanel,
   SKELETON_CSS,
 } from './templates';
 import type { ExperienceWidget } from './types';
@@ -137,9 +138,9 @@ export default (function experience(
       'ais.autocomplete': {
         widget: EXPERIMENTAL_autocomplete,
         async transformParams(params) {
-          const { showRecent, showSuggestions, indices, ...rest } =
+          const { showRecent, showSuggestions, indices, panelLayout, ...rest } =
             params as typeof params & {
-              showRecent?: boolean | { templates?: { header?: string } };
+              showRecent?: false | { templates: { header: string } };
               showSuggestions?: {
                 searchPageUrl?: string;
                 queryParam?: string;
@@ -157,21 +158,27 @@ export default (function experience(
                 };
                 searchParameters?: Record<string, unknown>;
               }>;
+              panelLayout?: 'one-column' | 'two-columns';
             };
-
-          const showRecentTransformed = showRecent
-            ? typeof showRecent === 'object' && showRecent.templates?.header
-              ? {
-                  templates: {
-                    header: renderSectionHeader(showRecent.templates.header),
-                  },
-                }
-              : {}
-            : undefined;
 
           return Promise.resolve({
             ...rest,
-            ...(showRecent ? { showRecent: showRecentTransformed } : {}),
+            ...(panelLayout === 'two-columns'
+              ? { templates: { panel: renderTwoColumnsPanel() } }
+              : {}),
+            ...(showRecent
+              ? {
+                  showRecent: showRecent.templates.header
+                    ? {
+                        templates: {
+                          header: renderSectionHeader(
+                            showRecent.templates.header
+                          ),
+                        },
+                      }
+                    : {},
+                }
+              : {}),
             ...(showSuggestions
               ? {
                   showSuggestions: {

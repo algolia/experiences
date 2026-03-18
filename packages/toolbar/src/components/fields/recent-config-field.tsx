@@ -13,7 +13,7 @@ type StoredRecentConfig = {
 type RecentConfigFieldProps = {
   label: string;
   description?: string;
-  value: Record<string, unknown> | boolean;
+  value: Record<string, unknown> | false;
   onChange: (value: StoredRecentConfig | false) => void;
 };
 
@@ -37,8 +37,7 @@ export function RecentConfigField({
   onChange,
 }: RecentConfigFieldProps) {
   const id = useId();
-  const enabled =
-    value === true || (typeof value === 'object' && value !== null);
+  const enabled = typeof value === 'object' && value !== null;
   const config =
     typeof value === 'object' && value !== null
       ? normalize(value as Record<string, unknown>)
