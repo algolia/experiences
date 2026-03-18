@@ -84,7 +84,7 @@ ul {
 .nav {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 102;
   background: #ffffff;
   border-bottom: 1px solid #e5e7eb;
 }

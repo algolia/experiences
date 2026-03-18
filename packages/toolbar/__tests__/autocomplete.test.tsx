@@ -94,8 +94,8 @@ describe('ais.autocomplete field behavior', () => {
   });
 
   describe('suggestions-config field', () => {
-    it('renders disabled state when showSuggestions is false', () => {
-      const { container } = render({ showSuggestions: false });
+    it('renders disabled state when showQuerySuggestions is false', () => {
+      const { container } = render({ showQuerySuggestions: false });
 
       const toggle = getSwitch(container, 'Suggestions');
 
@@ -104,7 +104,7 @@ describe('ais.autocomplete field behavior', () => {
 
     it('renders card with fields when enabled', () => {
       const { container } = render({
-        showSuggestions: {
+        showQuerySuggestions: {
           indexName: 'products_qs',
           searchPageUrl: '/search',
           queryParam: 'q',
@@ -123,13 +123,13 @@ describe('ais.autocomplete field behavior', () => {
 
     it('creates default config object when toggled on', () => {
       const { onParameterChange, container } = render({
-        showSuggestions: false,
+        showQuerySuggestions: false,
       });
 
       const toggle = getSwitch(container, 'Suggestions');
       toggle.click();
 
-      expect(onParameterChange).toHaveBeenCalledWith('showSuggestions', {
+      expect(onParameterChange).toHaveBeenCalledWith('showQuerySuggestions', {
         indexName: '',
         searchPageUrl: '',
         queryParam: 'q',
@@ -139,7 +139,7 @@ describe('ais.autocomplete field behavior', () => {
 
     it('sets value to false when toggled off', () => {
       const { onParameterChange, container } = render({
-        showSuggestions: {
+        showQuerySuggestions: {
           indexName: 'products_qs',
           searchPageUrl: '/search',
           queryParam: 'q',
@@ -150,7 +150,10 @@ describe('ais.autocomplete field behavior', () => {
       const toggle = getSwitch(container, 'Suggestions');
       toggle.click();
 
-      expect(onParameterChange).toHaveBeenCalledWith('showSuggestions', false);
+      expect(onParameterChange).toHaveBeenCalledWith(
+        'showQuerySuggestions',
+        false
+      );
     });
   });
 
