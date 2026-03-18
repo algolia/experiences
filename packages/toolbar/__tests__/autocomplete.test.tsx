@@ -94,8 +94,8 @@ describe('ais.autocomplete field behavior', () => {
   });
 
   describe('suggestions-config field', () => {
-    it('renders disabled state when showSuggestions is false', () => {
-      const { container } = render({ showSuggestions: false });
+    it('renders disabled state when showQuerySuggestions is false', () => {
+      const { container } = render({ showQuerySuggestions: false });
 
       const toggle = getSwitch(container, 'Suggestions');
 
@@ -104,7 +104,7 @@ describe('ais.autocomplete field behavior', () => {
 
     it('renders card with fields when enabled', () => {
       const { container } = render({
-        showSuggestions: {
+        showQuerySuggestions: {
           indexName: 'products_qs',
           searchPageUrl: '/search',
           queryParam: 'q',
@@ -117,29 +117,30 @@ describe('ais.autocomplete field behavior', () => {
       expect(toggle.getAttribute('aria-checked')).toBe('true');
       expect(container.textContent).toContain('Index Name');
       expect(container.textContent).toContain('Header');
+      expect(container.textContent).toContain('No Results');
       expect(container.textContent).toContain('Search Page URL');
       expect(container.textContent).toContain('Query Parameter');
     });
 
     it('creates default config object when toggled on', () => {
       const { onParameterChange, container } = render({
-        showSuggestions: false,
+        showQuerySuggestions: false,
       });
 
       const toggle = getSwitch(container, 'Suggestions');
       toggle.click();
 
-      expect(onParameterChange).toHaveBeenCalledWith('showSuggestions', {
+      expect(onParameterChange).toHaveBeenCalledWith('showQuerySuggestions', {
         indexName: '',
         searchPageUrl: '',
         queryParam: 'q',
-        templates: { header: '' },
+        templates: { header: '', noResults: '' },
       });
     });
 
     it('sets value to false when toggled off', () => {
       const { onParameterChange, container } = render({
-        showSuggestions: {
+        showQuerySuggestions: {
           indexName: 'products_qs',
           searchPageUrl: '/search',
           queryParam: 'q',
@@ -150,7 +151,10 @@ describe('ais.autocomplete field behavior', () => {
       const toggle = getSwitch(container, 'Suggestions');
       toggle.click();
 
-      expect(onParameterChange).toHaveBeenCalledWith('showSuggestions', false);
+      expect(onParameterChange).toHaveBeenCalledWith(
+        'showQuerySuggestions',
+        false
+      );
     });
   });
 

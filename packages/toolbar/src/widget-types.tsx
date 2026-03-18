@@ -395,7 +395,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         field: { type: 'recent-config' },
       },
       {
-        key: 'showSuggestions',
+        key: 'showQuerySuggestions',
         label: 'Suggestions',
         description:
           'When enabled, shows query suggestions from a dedicated suggestions index. Requires an indexName, a searchPageUrl, and a query parameter name.',
@@ -423,6 +423,39 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
             { value: 'two-columns', label: 'Two columns' },
           ],
           defaultValue: 'one-column',
+        },
+      },
+      {
+        key: 'noResults',
+        label: 'No Results',
+        description:
+          'Configuration for the empty state shown when all sources return no results.',
+        default: false,
+        field: {
+          type: 'object',
+          defaultValue: {
+            title: 'No results for "{{query}}"',
+            description: '',
+            clearLabel: 'Clear query',
+          },
+          disabledValue: false,
+          fields: [
+            {
+              key: 'title',
+              label: 'Title',
+              suggest: undefined,
+            },
+            {
+              key: 'description',
+              label: 'Description',
+              suggest: undefined,
+            },
+            {
+              key: 'clearLabel',
+              label: 'Clear Button Label',
+              suggest: undefined,
+            },
+          ],
         },
       },
     ],

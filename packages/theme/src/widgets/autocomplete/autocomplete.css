@@ -259,7 +259,7 @@
   transform: scale(1) translateY(0);
 }
 
-.ais-AutocompletePanel button {
+.ais-AutocompletePanel button:not(.ais-AutocompleteNoResults-clear) {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -483,6 +483,82 @@
   margin: var(--ais-autocomplete-item-padding);
   stroke-width: var(--ais-autocomplete-icon-stroke-width);
   width: var(--ais-autocomplete-icon-size);
+}
+
+/* --- Global no results --- */
+.ais-AutocompleteNoResults {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ais-autocomplete-no-results-padding-y)
+    var(--ais-autocomplete-no-results-padding-x);
+  text-align: center;
+  gap: var(--ais-autocomplete-no-results-gap);
+}
+
+.ais-AutocompleteNoResults-icon {
+  width: var(--ais-autocomplete-no-results-icon-size);
+  height: var(--ais-autocomplete-no-results-icon-size);
+  padding: var(--ais-autocomplete-no-results-icon-padding);
+  border-radius: 50%;
+  color: rgba(
+    var(--ais-autocomplete-no-results-icon-color),
+    var(--ais-autocomplete-no-results-icon-opacity)
+  );
+  box-sizing: content-box;
+}
+
+.ais-AutocompleteNoResults-title {
+  font-size: var(--ais-autocomplete-no-results-title-font-size);
+  font-weight: var(--ais-autocomplete-no-results-title-font-weight);
+  margin: 0;
+  color: rgb(var(--ais-autocomplete-no-results-title-color));
+}
+
+.ais-AutocompleteNoResults-description {
+  font-size: var(--ais-autocomplete-no-results-description-font-size);
+  color: rgba(
+    var(--ais-autocomplete-no-results-description-color),
+    var(--ais-autocomplete-no-results-description-opacity)
+  );
+  margin: 0;
+}
+
+.ais-AutocompleteNoResults-clear {
+  font-size: var(--ais-autocomplete-no-results-clear-font-size);
+  font-family: inherit;
+  font-weight: var(--ais-autocomplete-no-results-clear-font-weight);
+  padding: var(--ais-autocomplete-no-results-clear-padding-y)
+    var(--ais-autocomplete-no-results-clear-padding-x);
+  border-radius: var(--ais-autocomplete-no-results-clear-border-radius);
+  border: var(--ais-autocomplete-no-results-clear-border-width) solid
+    rgba(
+      var(--ais-autocomplete-no-results-clear-border-color),
+      var(--ais-autocomplete-no-results-clear-border-opacity)
+    );
+  background: rgba(
+    var(--ais-autocomplete-no-results-clear-background-color),
+    var(--ais-autocomplete-no-results-clear-background-opacity)
+  );
+  color: rgb(var(--ais-autocomplete-no-results-clear-color));
+  cursor: pointer;
+  transition:
+    background-color var(--ais-autocomplete-transition-duration)
+      var(--ais-autocomplete-transition-timing-function),
+    border-color var(--ais-autocomplete-transition-duration)
+      var(--ais-autocomplete-transition-timing-function);
+}
+
+.ais-AutocompleteNoResults-clear:hover {
+  border-color: rgba(
+    var(--ais-autocomplete-no-results-clear-border-color),
+    var(--ais-autocomplete-no-results-clear-hover-border-opacity)
+  );
+  background: rgba(
+    var(--ais-autocomplete-no-results-clear-background-color),
+    var(--ais-autocomplete-no-results-clear-hover-background-opacity)
+  );
 }
 
 /* --- Two-column panel layout --- */

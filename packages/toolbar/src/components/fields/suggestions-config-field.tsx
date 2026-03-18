@@ -12,7 +12,7 @@ type StoredSuggestionsConfig = {
   indexName: string;
   searchPageUrl: string;
   queryParam: string;
-  templates: { header: string };
+  templates: { header: string; noResults: string };
 };
 
 type SuggestionsConfigFieldProps = {
@@ -27,7 +27,7 @@ const DEFAULT_CONFIG: StoredSuggestionsConfig = {
   indexName: '',
   searchPageUrl: '',
   queryParam: 'q',
-  templates: { header: '' },
+  templates: { header: '', noResults: '' },
 };
 
 function normalize(value: Record<string, unknown>): StoredSuggestionsConfig {
@@ -38,6 +38,9 @@ function normalize(value: Record<string, unknown>): StoredSuggestionsConfig {
     templates: {
       header:
         (value.templates as { header?: string } | undefined)?.header ?? '',
+      noResults:
+        (value.templates as { noResults?: string } | undefined)?.noResults ??
+        '',
     },
   };
 }
@@ -118,6 +121,25 @@ export function SuggestionsConfigField({
                     templates: {
                       ...config.templates,
                       header: (event.target as HTMLInputElement).value,
+                    },
+                  });
+                }}
+              />
+            </div>
+
+            <div class="group space-y-1">
+              <Label>
+                No Results
+                <InfoTooltip content="Text to display when no suggestions are found." />
+              </Label>
+              <Input
+                value={config.templates.noResults}
+                placeholder="No suggestions found"
+                onInput={(event) => {
+                  update({
+                    templates: {
+                      ...config.templates,
+                      noResults: (event.target as HTMLInputElement).value,
                     },
                   });
                 }}

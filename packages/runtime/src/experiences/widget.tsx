@@ -32,8 +32,10 @@ import {
   renderAutocompleteItem,
   renderCarouselItem,
   renderListItem,
+  renderNoResults,
   renderSectionHeader,
   renderTwoColumnsPanel,
+  withGlobalNoResults,
   SKELETON_CSS,
 } from './templates';
 import type { ExperienceWidget } from './types';
@@ -138,34 +140,53 @@ export default (function experience(
       'ais.autocomplete': {
         widget: EXPERIMENTAL_autocomplete,
         async transformParams(params) {
-          const { showRecent, showSuggestions, indices, panelLayout, ...rest } =
-            params as typeof params & {
-              showRecent?: false | { templates: { header: string } };
-              showSuggestions?: {
-                searchPageUrl?: string;
-                queryParam?: string;
-                // oxlint-disable-next-line id-length -- backward compat for old configs
-                q?: string;
-                indexName?: string;
-                templates?: { header?: string };
-              };
-              indices?: Array<{
-                indexName: string;
-                hitsPerPage?: number;
-                templates?: {
-                  header?: string;
-                  item?: Record<string, string>;
-                };
-                searchParameters?: Record<string, unknown>;
-              }>;
-              panelLayout?: 'one-column' | 'two-columns';
+          const {
+            showRecent,
+            showQuerySuggestions,
+            indices,
+            panelLayout,
+            noResults: globalNoResults,
+            ...rest
+          } = params as typeof params & {
+            showRecent?: false | { templates: { header: string } };
+            showQuerySuggestions?: {
+              searchPageUrl?: string;
+              queryParam?: string;
+              // oxlint-disable-next-line id-length -- backward compat for old configs
+              q?: string;
+              indexName?: string;
+              templates?: { header?: string; noResults?: string };
             };
+            indices?: Array<{
+              indexName: string;
+              hitsPerPage?: number;
+              templates?: {
+                header?: string;
+                item?: Record<string, string>;
+                noResults?: string;
+              };
+              searchParameters?: Record<string, unknown>;
+            }>;
+            panelLayout?: 'one-column' | 'two-columns';
+            noResults?:
+              | false
+              | {
+                  title?: string;
+                  description?: string;
+                  clearLabel?: string;
+                };
+          };
+
+          const twoColumns =
+            panelLayout === 'two-columns' ? renderTwoColumnsPanel() : undefined;
+          const panelTemplate =
+            globalNoResults && typeof globalNoResults === 'object'
+              ? withGlobalNoResults(globalNoResults, twoColumns)
+              : twoColumns;
 
           return Promise.resolve({
             ...rest,
-            ...(panelLayout === 'two-columns'
-              ? { templates: { panel: renderTwoColumnsPanel() } }
-              : {}),
+            ...(panelTemplate ? { templates: { panel: panelTemplate } } : {}),
             ...(showRecent
               ? {
                   showRecent: showRecent.templates.header
@@ -179,29 +200,39 @@ export default (function experience(
                     : {},
                 }
               : {}),
-            ...(showSuggestions
+            ...(showQuerySuggestions
               ? {
-                  showSuggestions: {
-                    indexName: showSuggestions.indexName,
-                    ...(showSuggestions.templates?.header
-                      ? {
-                          templates: {
-                            header: renderSectionHeader(
-                              showSuggestions.templates.header
-                            ),
-                          },
-                        }
-                      : {}),
-                    ...(showSuggestions.searchPageUrl
+                  showQuerySuggestions: {
+                    indexName: showQuerySuggestions.indexName,
+                    ...((showQuerySuggestions.templates?.header ||
+                      showQuerySuggestions.templates?.noResults) && {
+                      templates: {
+                        ...(showQuerySuggestions.templates?.header
+                          ? {
+                              header: renderSectionHeader(
+                                showQuerySuggestions.templates.header
+                              ),
+                            }
+                          : {}),
+                        ...(showQuerySuggestions.templates?.noResults
+                          ? {
+                              noResults: renderNoResults(
+                                showQuerySuggestions.templates.noResults
+                              ),
+                            }
+                          : {}),
+                      },
+                    }),
+                    ...(showQuerySuggestions.searchPageUrl
                       ? {
                           getURL: (item: { query: string }) => {
                             const url = new URL(
-                              showSuggestions.searchPageUrl!,
+                              showQuerySuggestions.searchPageUrl!,
                               window.location.origin
                             );
                             url.searchParams.set(
-                              showSuggestions.queryParam ??
-                                showSuggestions.q ??
+                              showQuerySuggestions.queryParam ??
+                                showQuerySuggestions.q ??
                                 'q',
                               item.query
                             );
@@ -239,6 +270,13 @@ export default (function experience(
                             ? {
                                 item: renderAutocompleteItem(
                                   entryTemplates.item
+                                ),
+                              }
+                            : {}),
+                          ...(entryTemplates?.noResults
+                            ? {
+                                noResults: renderNoResults(
+                                  entryTemplates.noResults
                                 ),
                               }
                             : {}),
