@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 
 import type { ThemeOverrideValue } from '@experiences/theme';
-import { generateThemeCss } from '@experiences/theme';
+import { generateThemeCss, THEME_STYLE_ATTR } from '@experiences/theme';
 import { AUTOCOMPLETE_VARIABLES } from '@experiences/theme/autocomplete';
 
 import { saveExperience } from '../api';
@@ -558,12 +558,10 @@ export function App({ config, initialExperience }: AppProps) {
         cssOverrides,
         modeConfig
       );
-      let style = document.querySelector(
-        'style[data-algolia-experiences-theme]'
-      );
+      let style = document.querySelector(`style[${THEME_STYLE_ATTR}]`);
       if (!style) {
         style = document.createElement('style');
-        style.setAttribute('data-algolia-experiences-theme', '');
+        style.setAttribute(THEME_STYLE_ATTR, '');
         document.head.appendChild(style);
       }
       style.textContent = css;
