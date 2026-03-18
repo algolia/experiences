@@ -110,7 +110,7 @@ function useQuerySuggestionConfigs(enabled: boolean): QsConfig[] {
 }
 
 type UseIndicesOptions = {
-  type?: 'replicas' | 'querySuggestions';
+  type?: 'indices' | 'replicas' | 'querySuggestions';
   target?: string;
   enabled?: boolean;
 };
@@ -118,13 +118,29 @@ type UseIndicesOptions = {
 export function useIndices(options?: UseIndicesOptions): string[] {
   const indices = useAllIndices();
   const qsConfigs = useQuerySuggestionConfigs(
-    options?.type === 'querySuggestions' && options.enabled !== false
+    (options?.type === 'querySuggestions' || options?.type === 'indices') &&
+      options.enabled !== false
   );
 
   if (!options?.type) {
     return indices.map((index) => {
       return index.name;
     });
+  }
+
+  if (options.type === 'indices') {
+    const qsIndexNames = new Set(
+      qsConfigs.map((config) => {
+        return config.indexName;
+      })
+    );
+    return indices
+      .map((index) => {
+        return index.name;
+      })
+      .filter((name) => {
+        return !qsIndexNames.has(name);
+      });
   }
 
   if (options.type === 'replicas') {
