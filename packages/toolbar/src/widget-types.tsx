@@ -1,4 +1,23 @@
 import type { JSX } from 'preact';
+import {
+  ArrowDown,
+  ChevronLeft,
+  ChevronRight,
+  Database,
+  Hash,
+  LayoutGrid,
+  List,
+  MessageCircle,
+  Search,
+  Settings,
+  ShoppingCart,
+  SlidersHorizontal,
+  Star,
+  ToggleRight,
+  TrendingUp,
+  ArrowUpDown,
+  X,
+} from 'lucide-preact';
 
 export type IndexSuggestKind =
   | 'indices'
@@ -85,272 +104,25 @@ export type WidgetTypeConfig = {
   params: ParamConfig[];
 };
 
-const SEARCH_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <circle cx="11" cy="11" r="8" />
-    <path d="m21 21-4.3-4.3" />
-  </svg>
-);
+const ICON_CLASS = 'size-4 shrink-0';
 
-const CHAT_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
-  </svg>
-);
-
-const DATABASE_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <ellipse cx="12" cy="5" rx="9" ry="3" />
-    <path d="M3 5V19A9 3 0 0 0 21 19V5" />
-    <path d="M3 12A9 3 0 0 0 21 12" />
-  </svg>
-);
-
-const GRID_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <rect width="7" height="7" x="3" y="3" rx="1" />
-    <rect width="7" height="7" x="14" y="3" rx="1" />
-    <rect width="7" height="7" x="3" y="14" rx="1" />
-    <rect width="7" height="7" x="14" y="14" rx="1" />
-  </svg>
-);
-
-const LIST_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <line x1="8" x2="21" y1="6" y2="6" />
-    <line x1="8" x2="21" y1="12" y2="12" />
-    <line x1="8" x2="21" y1="18" y2="18" />
-    <line x1="3" x2="3.01" y1="6" y2="6" />
-    <line x1="3" x2="3.01" y1="12" y2="12" />
-    <line x1="3" x2="3.01" y1="18" y2="18" />
-  </svg>
-);
-
-const CHEVRON_LEFT_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="m15 18-6-6 6-6" />
-  </svg>
-);
-
-const CHEVRON_RIGHT_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="m9 18 6-6-6-6" />
-  </svg>
-);
-
-const ARROW_DOWN_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="M12 2v20" />
-    <path d="m17 17-5 5-5-5" />
-  </svg>
-);
-
-const SORT_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="m3 16 4 4 4-4" />
-    <path d="M7 20V4" />
-    <path d="m21 8-4-4-4 4" />
-    <path d="M17 4v16" />
-  </svg>
-);
-
-const HASH_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <line x1="4" x2="20" y1="9" y2="9" />
-    <line x1="4" x2="20" y1="15" y2="15" />
-    <line x1="10" x2="8" y1="3" y2="21" />
-    <line x1="16" x2="14" y1="3" y2="21" />
-  </svg>
-);
-
-const SLIDER_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="M21 12H9" />
-    <path d="M3 12h2" />
-    <circle cx="7" cy="12" r="2" />
-    <path d="M15 6H3" />
-    <path d="M21 6h-2" />
-    <circle cx="17" cy="6" r="2" />
-  </svg>
-);
-
-const TOGGLE_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <rect width="20" height="12" x="2" y="6" rx="6" />
-    <circle cx="16" cy="12" r="2" />
-  </svg>
-);
-
-const TRENDING_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-    <polyline points="16 7 22 7 22 13" />
-  </svg>
-);
-
-const CONFIGURE_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>
-);
-
-const STAR_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
-  </svg>
-);
-
-const CART_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <circle cx="8" cy="21" r="1" />
-    <circle cx="19" cy="21" r="1" />
-    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-  </svg>
-);
-
-const X_ICON = (
-  <svg
-    class="size-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="M18 6 6 18" />
-    <path d="m6 6 12 12" />
-  </svg>
-);
+const SEARCH_ICON = <Search class={ICON_CLASS} />;
+const CHAT_ICON = <MessageCircle class={ICON_CLASS} />;
+const DATABASE_ICON = <Database class={ICON_CLASS} />;
+const GRID_ICON = <LayoutGrid class={ICON_CLASS} />;
+const LIST_ICON = <List class={ICON_CLASS} />;
+const CHEVRON_LEFT_ICON = <ChevronLeft class={ICON_CLASS} />;
+const CHEVRON_RIGHT_ICON = <ChevronRight class={ICON_CLASS} />;
+const ARROW_DOWN_ICON = <ArrowDown class={ICON_CLASS} />;
+const SORT_ICON = <ArrowUpDown class={ICON_CLASS} />;
+const HASH_ICON = <Hash class={ICON_CLASS} />;
+const SLIDER_ICON = <SlidersHorizontal class={ICON_CLASS} />;
+const TOGGLE_ICON = <ToggleRight class={ICON_CLASS} />;
+const TRENDING_ICON = <TrendingUp class={ICON_CLASS} />;
+const CONFIGURE_ICON = <Settings class={ICON_CLASS} />;
+const STAR_ICON = <Star class={ICON_CLASS} />;
+const CART_ICON = <ShoppingCart class={ICON_CLASS} />;
+const X_ICON = <X class={ICON_CLASS} />;
 
 const ITEM_TEMPLATE_DEFAULT = {
   name: '',
@@ -409,6 +181,20 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
           'Additional indices to search, each rendered as a separate section in the dropdown.',
         default: [],
         field: { type: 'indices-config' },
+      },
+      {
+        key: 'detachedMediaQuery',
+        label: 'Display mode',
+        description:
+          'Dropdown shows results below the search input. Dialog opens a full overlay, always using detached mode.',
+        field: {
+          type: 'select',
+          options: [
+            { value: '', label: 'Dropdown' },
+            { value: '(min-width: 0)', label: 'Dialog' },
+          ],
+          defaultValue: '',
+        },
       },
       {
         key: 'panelLayout',

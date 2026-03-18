@@ -1,5 +1,7 @@
 import { useId, useState } from 'preact/hooks';
 
+import { ChevronDown } from 'lucide-preact';
+
 import { useIndexAttributes } from '../../hooks/use-indices';
 import { InfoTooltip } from './info-tooltip';
 import { CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
@@ -50,15 +52,9 @@ export function ItemTemplateField({
           {label}
           {description && <InfoTooltip content={description} class="mt-0.5" />}
         </span>
-        <svg
+        <ChevronDown
           class={`size-3.5 shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="m6 9 6 6 6-6" />
-        </svg>
+        />
       </CollapsibleTrigger>
       <CollapsibleContent open={open}>
         <div class="pr-1 pb-1">

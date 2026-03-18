@@ -7,6 +7,8 @@ import { Marked } from 'marked';
 import { Fragment } from 'preact';
 import { useEffect, useMemo, useRef } from 'preact/hooks';
 
+import { ArrowUp, ChevronRight, Trash2, Wrench } from 'lucide-preact';
+
 import type {
   AddBlockResult,
   BlockPath,
@@ -40,28 +42,8 @@ function ToolCallDetails({ toolName, input, output }: ToolCallDetailsProps) {
   return (
     <details class="text-muted-foreground border-border rounded-md border px-3 py-2 text-xs group">
       <summary class="flex cursor-pointer select-none list-none items-center gap-1.5">
-        <svg
-          class="size-3 shrink-0 transition-transform group-open:rotate-90"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="m9 18 6-6-6-6" />
-        </svg>
-        <svg
-          class="size-3 shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-        </svg>
+        <ChevronRight class="size-3 shrink-0 transition-transform group-open:rotate-90" />
+        <Wrench class="size-3 shrink-0" />
         {describeToolAction(toolName, input, output)}
       </summary>
       <pre class="mt-2 overflow-x-auto whitespace-pre-wrap border-t pt-2 text-[11px] opacity-70">
@@ -362,35 +344,12 @@ export function AiChat({
                     sessionStorage.removeItem(STORAGE_KEY);
                   }}
                 >
-                  <svg
-                    class="size-3"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path d="M3 6h18" />
-                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                  </svg>
+                  <Trash2 class="size-3" />
                 </button>
               )}
             </div>
             <Button type="submit" disabled={isStreaming} size="icon">
-              <svg
-                class="size-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="m5 12 7-7 7 7" />
-                <path d="M12 19V5" />
-              </svg>
+              <ArrowUp class="size-4" />
             </Button>
           </div>
         </form>

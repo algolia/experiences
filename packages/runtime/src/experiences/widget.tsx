@@ -144,6 +144,7 @@ export default (function experience(
             showRecent,
             showQuerySuggestions,
             indices,
+            detachedMediaQuery,
             panelLayout,
             noResults: globalNoResults,
             ...rest
@@ -167,6 +168,7 @@ export default (function experience(
               };
               searchParameters?: Record<string, unknown>;
             }>;
+            detachedMediaQuery?: string;
             panelLayout?: 'one-column' | 'two-columns';
             noResults?:
               | false
@@ -186,6 +188,7 @@ export default (function experience(
 
           return Promise.resolve({
             ...rest,
+            ...(detachedMediaQuery ? { detachedMediaQuery } : {}),
             ...(panelTemplate ? { templates: { panel: panelTemplate } } : {}),
             ...(showRecent
               ? {

@@ -3,6 +3,8 @@ import { useMemo, useState } from 'preact/hooks';
 import type { ThemeOverrideValue, ThemePreset } from '@experiences/theme';
 import { AUTOCOMPLETE_VARIABLES } from '@experiences/theme/autocomplete';
 
+import { ChevronDown, Moon, Settings, Sparkles, Sun } from 'lucide-preact';
+
 import { Button } from '../ui/button';
 import {
   Collapsible,
@@ -165,16 +167,7 @@ export function ThemeEditor({
                     return onThemeModeChange('light');
                   }}
                 >
-                  <svg
-                    class="size-3.5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <circle cx="12" cy="12" r="4" />
-                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-                  </svg>
+                  <Sun class="size-3.5" />
                 </button>
                 <button
                   type="button"
@@ -187,15 +180,7 @@ export function ThemeEditor({
                     return onThemeModeChange('dark');
                   }}
                 >
-                  <svg
-                    class="size-3.5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-                  </svg>
+                  <Moon class="size-3.5" />
                 </button>
               </div>
             )}
@@ -226,18 +211,7 @@ export function ThemeEditor({
               return setView('customize');
             }}
           >
-            <svg
-              class="size-3.5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
+            <Settings class="size-3.5" />
             Customize
           </button>
           <button
@@ -251,17 +225,7 @@ export function ThemeEditor({
               return setView('generate');
             }}
           >
-            <svg
-              class="size-3.5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
-            </svg>
+            <Sparkles class="size-3.5" />
             Generate
           </button>
         </div>
@@ -287,20 +251,14 @@ export function ThemeEditor({
               <h3 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Autocomplete
               </h3>
-              <svg
+              <ChevronDown
                 class="size-4 text-muted-foreground transition-transform"
                 style={{
                   transform: autocompleteOpen
                     ? 'rotate(180deg)'
                     : 'rotate(0deg)',
                 }}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
+              />
             </CollapsibleTrigger>
             <CollapsibleContent open={autocompleteOpen}>
               <div class="space-y-3 pt-2">
@@ -330,20 +288,14 @@ export function ThemeEditor({
                               {groupOverrideCount} changed
                             </span>
                           )}
-                          <svg
+                          <ChevronDown
                             class="size-4 text-muted-foreground transition-transform"
                             style={{
                               transform: isOpen
                                 ? 'rotate(180deg)'
                                 : 'rotate(0deg)',
                             }}
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                          >
-                            <path d="m6 9 6 6 6-6" />
-                          </svg>
+                          />
                         </div>
                       </CollapsibleTrigger>
                       <CollapsibleContent open={isOpen}>

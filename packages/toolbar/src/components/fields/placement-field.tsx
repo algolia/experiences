@@ -1,5 +1,7 @@
 import { useId } from 'preact/hooks';
 
+import { ChevronDown } from 'lucide-preact';
+
 import type { Placement } from '../../types';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -60,15 +62,7 @@ export function PlacementField({
               );
             })}
           </select>
-          <svg
-            class="text-muted-foreground pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="m6 9 6 6 6-6" />
-          </svg>
+          <ChevronDown class="text-muted-foreground pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2" />
         </div>
         {!isBody && (
           <>
