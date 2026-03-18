@@ -1,5 +1,7 @@
 import { useId, useState } from 'preact/hooks';
 
+import { ChevronDown } from 'lucide-preact';
+
 import { InfoTooltip } from './info-tooltip';
 import { CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
 import { Label } from '../ui/label';
@@ -61,15 +63,9 @@ export function ObjectField({
           aria-expanded={open}
         >
           <span class="text-muted-foreground text-xs">Configuration</span>
-          <svg
+          <ChevronDown
             class={`size-3.5 shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="m6 9 6 6 6-6" />
-          </svg>
+          />
         </CollapsibleTrigger>
         <CollapsibleContent open={open}>
           <div class="border-l-2 border-border mt-1.5 space-y-2 pl-3">
