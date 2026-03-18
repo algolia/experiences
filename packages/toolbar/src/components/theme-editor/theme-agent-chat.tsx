@@ -1,3 +1,5 @@
+import { ArrowUp, Sparkles } from 'lucide-preact';
+
 const THEME_SUGGESTIONS = [
   'Clean and minimal like Apple',
   'Bold with sharp edges like Nike',
@@ -10,19 +12,10 @@ export function ThemeAgentChat() {
       <div class="flex flex-1 flex-col items-center justify-center gap-5 px-4">
         <div class="text-center space-y-1.5">
           <div class="flex justify-center">
-            <svg
+            <Sparkles
               class="size-8 text-muted-foreground/40"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
-              <path d="M20 3v4" />
-              <path d="M22 5h-4" />
-            </svg>
+              strokeWidth={1.5}
+            />
           </div>
           <p class="text-sm font-medium">Describe your theme</p>
           <p class="text-xs text-muted-foreground">
@@ -60,18 +53,7 @@ export function ThemeAgentChat() {
             class="absolute right-2.5 bottom-2.5 text-muted-foreground/40"
             aria-hidden="true"
           >
-            <svg
-              class="size-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="m5 12 7-7 7 7" />
-              <path d="M12 19V5" />
-            </svg>
+            <ArrowUp class="size-4" />
           </div>
         </div>
       </div>

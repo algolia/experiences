@@ -9,6 +9,8 @@ import {
 import type { ThemeOverrideValue, ThemePreset } from '@experiences/theme';
 import { AUTOCOMPLETE_PRESETS } from '@experiences/theme/autocomplete-presets';
 
+import { Check, ChevronDown } from 'lucide-preact';
+
 import type { ThemeMode } from './constants';
 import { findMatchingPreset, getSwatchColors } from './constants';
 
@@ -148,16 +150,10 @@ export function PresetSelector({
         <span class="flex-1 text-left font-medium">
           {activePresetName ?? 'Custom'}
         </span>
-        <svg
+        <ChevronDown
           class="size-4 text-muted-foreground transition-transform"
           style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="m6 9 6 6 6-6" />
-        </svg>
+        />
       </button>
       {open && (
         <div
@@ -203,19 +199,7 @@ export function PresetSelector({
                 >
                   {preset.name}
                 </span>
-                {isActive && (
-                  <svg
-                    class="size-4 text-primary"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path d="M20 6 9 17l-5-5" />
-                  </svg>
-                )}
+                {isActive && <Check class="size-4 text-primary" />}
               </button>
             );
           })}

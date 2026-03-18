@@ -103,7 +103,7 @@ describe('toolbar authentication', () => {
     expect(sessionStorage.getItem('experiences.exp-123.key')).toBe('WRITE_KEY');
 
     // Panel should be open (no aria-hidden)
-    const panel = host.shadowRoot?.querySelector('[aria-hidden]');
+    const panel = host.shadowRoot?.querySelector('div[aria-hidden]');
     expect(panel).toBeNull();
   });
 

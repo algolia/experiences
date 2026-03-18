@@ -464,7 +464,7 @@ describe('toolbar', () => {
         const host = await openToolbar();
 
         // Panel should be open (not aria-hidden)
-        const panel = host.shadowRoot?.querySelector('[aria-hidden]');
+        const panel = host.shadowRoot?.querySelector('div[aria-hidden]');
         expect(panel).toBeNull();
 
         const closeButton = host.shadowRoot?.querySelector<HTMLButtonElement>(

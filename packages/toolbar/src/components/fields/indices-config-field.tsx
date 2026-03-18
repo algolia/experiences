@@ -1,5 +1,7 @@
 import { useRef, useState } from 'preact/hooks';
 
+import { ChevronDown, GripVertical, Plus, Trash2 } from 'lucide-preact';
+
 import { useIndices } from '../../hooks/use-indices';
 import { InfoTooltip } from './info-tooltip';
 import { ItemTemplateField } from './item-template-field';
@@ -180,22 +182,13 @@ export function IndicesConfigField({
               aria-expanded={isExpanded}
             >
               <span class="flex items-center gap-2 text-sm leading-none">
-                <svg
+                <GripVertical
                   class="size-3.5 shrink-0 text-muted-foreground cursor-grab"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
                   draggable
                   onDragStart={(event: DragEvent) => {
                     return onDragStart(index, event);
                   }}
-                >
-                  <circle cx="9" cy="5" r="1.5" />
-                  <circle cx="15" cy="5" r="1.5" />
-                  <circle cx="9" cy="12" r="1.5" />
-                  <circle cx="15" cy="12" r="1.5" />
-                  <circle cx="9" cy="19" r="1.5" />
-                  <circle cx="15" cy="19" r="1.5" />
-                </svg>
+                />
                 <span class="font-medium">
                   {truncate(
                     entry.templates?.header || entry.indexName || 'New index'
@@ -212,29 +205,11 @@ export function IndicesConfigField({
                     removeEntry(index);
                   }}
                 >
-                  <svg
-                    class="size-3.5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path d="M3 6h18" />
-                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                  </svg>
+                  <Trash2 class="size-3.5" />
                 </button>
-                <svg
+                <ChevronDown
                   class={`size-3.5 shrink-0 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
+                />
               </span>
             </CollapsibleTrigger>
 
@@ -341,18 +316,7 @@ export function IndicesConfigField({
       })}
 
       <Button variant="outline" size="sm" class="w-full" onClick={addEntry}>
-        <svg
-          class="size-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M5 12h14" />
-          <path d="M12 5v14" />
-        </svg>
+        <Plus class="size-4" />
         Add Index
       </Button>
     </div>
@@ -366,5 +330,5 @@ function truncate(text: string): string {
     return text;
   }
 
-  return text.slice(0, MAX_LABEL_LENGTH) + '…';
+  return text.slice(0, MAX_LABEL_LENGTH) + '\u2026';
 }

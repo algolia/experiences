@@ -1,5 +1,7 @@
 import { useState } from 'preact/hooks';
 
+import { Plus } from 'lucide-preact';
+
 import { WIDGET_TYPES } from '../widget-types';
 import { Badge } from './ui/badge';
 import { CollapsibleContent } from './ui/collapsible';
@@ -22,18 +24,7 @@ export function AddWidgetPopover({ onSelect, filter }: AddWidgetPopoverProps) {
         }}
         class="group flex w-full items-center justify-center gap-2 rounded-xl border border-dashed p-4 text-xs font-medium text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
       >
-        <svg
-          class="size-3.5 transition-transform group-hover:rotate-90"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M5 12h14" />
-          <path d="M12 5v14" />
-        </svg>
+        <Plus class="size-3.5 transition-transform group-hover:rotate-90" />
         Add Widget
       </button>
 
