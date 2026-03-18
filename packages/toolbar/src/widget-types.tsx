@@ -167,7 +167,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
         field: { type: 'recent-config' },
       },
       {
-        key: 'showSuggestions',
+        key: 'showQuerySuggestions',
         label: 'Suggestions',
         description:
           'When enabled, shows query suggestions from a dedicated suggestions index. Requires an indexName, a searchPageUrl, and a query parameter name.',
@@ -181,6 +181,20 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
           'Additional indices to search, each rendered as a separate section in the dropdown.',
         default: [],
         field: { type: 'indices-config' },
+      },
+      {
+        key: 'detachedMediaQuery',
+        label: 'Display mode',
+        description:
+          'Dropdown shows results below the search input. Dialog opens a full overlay, always using detached mode.',
+        field: {
+          type: 'select',
+          options: [
+            { value: '', label: 'Dropdown' },
+            { value: '(min-width: 0)', label: 'Dialog' },
+          ],
+          defaultValue: '',
+        },
       },
       {
         key: 'panelLayout',
