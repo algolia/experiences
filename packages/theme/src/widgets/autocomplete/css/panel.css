@@ -1,0 +1,105 @@
+/*
+ * Results panel.
+ *
+ * The dropdown container that appears below the form. Includes the open/close
+ * animation, scrollable layout area, scrollbar styling, and the two-column
+ * grid variant.
+ */
+
+/* --- Panel --- */
+.ais-AutocompletePanel {
+  background-color: rgba(
+    var(--ais-autocomplete-background-color),
+    var(--ais-autocomplete-background-color-alpha)
+  );
+  border: var(--ais-autocomplete-border-width) solid
+    rgba(
+      var(--ais-autocomplete-border-color),
+      var(--ais-autocomplete-panel-border-opacity)
+    );
+  border-radius: var(--ais-autocomplete-panel-border-radius);
+  box-shadow: var(--ais-autocomplete-panel-shadow);
+  margin: var(--ais-autocomplete-panel-margin-top) 0 0;
+  position: absolute;
+  width: 100%;
+  z-index: var(--ais-autocomplete-z-index);
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: top center;
+  transform: scale(0.95) translateY(-8px);
+  transition:
+    opacity var(--ais-autocomplete-transition-duration)
+      var(--ais-autocomplete-transition-timing-function),
+    transform var(--ais-autocomplete-transition-duration)
+      var(--ais-autocomplete-transition-timing-function);
+}
+
+.ais-AutocompletePanel--open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1) translateY(0);
+}
+
+.ais-AutocompletePanel button:not(.ais-AutocompleteNoResults-clear) {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* --- Panel layout (scrollable area) --- */
+.ais-AutocompletePanelLayout {
+  height: 100%;
+  margin: 0;
+  max-height: var(--ais-autocomplete-panel-max-height);
+  overflow-y: auto;
+  padding: var(--ais-autocomplete-panel-padding);
+  position: relative;
+  text-align: left;
+}
+
+/* --- Scrollbar --- */
+.ais-AutocompletePanelLayout {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(
+      in srgb,
+      rgba(
+          var(--ais-autocomplete-text-color),
+          var(--ais-autocomplete-text-color-alpha)
+        )
+        var(--ais-autocomplete-scrollbar-color-mix),
+      transparent
+    )
+    transparent;
+}
+
+.ais-AutocompletePanelLayout::-webkit-scrollbar {
+  width: var(--ais-autocomplete-scrollbar-width);
+}
+
+.ais-AutocompletePanelLayout::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ais-AutocompletePanelLayout::-webkit-scrollbar-thumb {
+  background: color-mix(
+    in srgb,
+    rgba(
+        var(--ais-autocomplete-text-color),
+        var(--ais-autocomplete-text-color-alpha)
+      )
+      var(--ais-autocomplete-scrollbar-color-mix),
+    transparent
+  );
+  border-radius: var(--ais-autocomplete-scrollbar-width);
+}
+
+/* --- Two-column panel layout --- */
+.ais-AutocompletePanelTwoColumns {
+  display: grid;
+  grid-template-columns: var(--ais-autocomplete-panel-columns, 1fr 1fr);
+}

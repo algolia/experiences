@@ -1,0 +1,23 @@
+/*
+ * Root element resets.
+ *
+ * Base styles shared by .ais-Autocomplete (inline mode) and
+ * .ais-AutocompletePanel (dropdown). Sets color, font, and positioning
+ * defaults so the widget inherits from the host page's font-family.
+ */
+
+.ais-AutocompletePanel,
+.ais-Autocomplete {
+  color: rgba(
+    var(--ais-autocomplete-text-color),
+    var(--ais-autocomplete-text-color-alpha)
+  );
+  font-family: inherit;
+  font-size: calc(var(--ais-autocomplete-base-unit) * 1px);
+  font-weight: normal;
+  line-height: 1em;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  position: relative;
+}

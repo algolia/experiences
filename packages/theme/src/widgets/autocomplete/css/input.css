@@ -1,0 +1,161 @@
+/*
+ * Input area.
+ *
+ * Everything inside the form: search icon, label, loading indicator,
+ * submit button, the text input itself, placeholder, prefix/suffix
+ * wrappers, and the clear button.
+ */
+
+/* --- Input wrapper prefix (search icon area) --- */
+.ais-AutocompleteInputWrapperPrefix {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  height: var(--ais-autocomplete-search-input-height);
+  order: 1;
+}
+
+/* --- Label / Loading indicator --- */
+.ais-AutocompleteLabel,
+.ais-AutocompleteLoadingIndicator {
+  cursor: initial;
+  flex-shrink: 0;
+  height: 100%;
+  padding: 0;
+  text-align: left;
+}
+
+.ais-AutocompleteLabel svg,
+.ais-AutocompleteLoadingIndicator svg {
+  color: rgba(
+    var(--ais-autocomplete-search-icon-color),
+    var(--ais-autocomplete-primary-color-alpha)
+  );
+  height: auto;
+  max-height: var(--ais-autocomplete-icon-size);
+  stroke-width: var(--ais-autocomplete-icon-stroke-width);
+  width: var(--ais-autocomplete-icon-size);
+}
+
+/* --- Submit button / Loading indicator sizing --- */
+.ais-AutocompleteSubmitButton,
+.ais-AutocompleteLoadingIndicator {
+  height: 100%;
+  padding-left: var(--ais-autocomplete-form-padding-left);
+  padding-right: var(--ais-autocomplete-form-padding-right);
+}
+
+.ais-AutocompleteSubmitButton {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: none;
+  border: 0;
+  margin: 0;
+}
+
+.ais-AutocompleteLoadingIndicator {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.ais-AutocompleteLoadingIndicator[hidden] {
+  display: none;
+}
+
+/* --- Input --- */
+.ais-AutocompleteInputWrapper {
+  order: 3;
+  position: relative;
+  width: 100%;
+}
+
+.ais-AutocompleteInput {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: none;
+  border: 0;
+  color: rgba(
+    var(--ais-autocomplete-text-color),
+    var(--ais-autocomplete-text-color-alpha)
+  );
+  font: inherit;
+  height: var(--ais-autocomplete-search-input-height);
+  padding: 0;
+  width: 100%;
+}
+
+.ais-AutocompleteInput::-moz-placeholder {
+  color: rgba(
+    var(--ais-autocomplete-placeholder-color),
+    var(--ais-autocomplete-muted-color-alpha)
+  );
+  opacity: 1;
+}
+
+.ais-AutocompleteInput::placeholder {
+  color: rgba(
+    var(--ais-autocomplete-placeholder-color),
+    var(--ais-autocomplete-muted-color-alpha)
+  );
+  opacity: 1;
+}
+
+.ais-AutocompleteInput:focus {
+  border-color: none;
+  box-shadow: none;
+  outline: none;
+}
+
+.ais-AutocompleteInput::-webkit-search-decoration,
+.ais-AutocompleteInput::-webkit-search-cancel-button,
+.ais-AutocompleteInput::-webkit-search-results-button,
+.ais-AutocompleteInput::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* --- Input wrapper suffix (clear button area) --- */
+.ais-AutocompleteInputWrapperSuffix {
+  align-items: center;
+  display: flex;
+  height: var(--ais-autocomplete-search-input-height);
+  order: 4;
+}
+
+/* --- Clear button --- */
+.ais-AutocompleteClearButton {
+  align-items: center;
+  background: none;
+  border: 0;
+  color: rgba(
+    var(--ais-autocomplete-clear-button-color),
+    var(--ais-autocomplete-muted-color-alpha)
+  );
+  cursor: pointer;
+  display: flex;
+  height: 100%;
+  margin: 0;
+  padding: 0 var(--ais-autocomplete-form-padding-right);
+  transition: color var(--ais-autocomplete-transition-duration)
+    var(--ais-autocomplete-transition-timing-function);
+}
+
+.ais-AutocompleteClearButton:hover,
+.ais-AutocompleteClearButton:focus {
+  color: rgba(
+    var(--ais-autocomplete-text-color),
+    var(--ais-autocomplete-text-color-alpha)
+  );
+}
+
+.ais-AutocompleteClearButton[hidden] {
+  display: none;
+}
+
+.ais-AutocompleteClearButton svg {
+  stroke-width: var(--ais-autocomplete-icon-stroke-width);
+  width: var(--ais-autocomplete-icon-size);
+}

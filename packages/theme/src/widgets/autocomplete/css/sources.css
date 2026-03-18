@@ -1,0 +1,53 @@
+/*
+ * Sources (index sections).
+ *
+ * Each source is an .ais-AutocompleteIndex that groups a header, a list of
+ * items, and an optional per-source "no results" message. This file covers
+ * the section-level containers and headers — individual items live in items.css.
+ */
+
+/* --- Index (source section) --- */
+.ais-AutocompleteIndex {
+  margin: 0;
+  padding: 0;
+  position: relative;
+  width: 100%;
+}
+
+.ais-AutocompleteIndex:empty {
+  display: none;
+}
+
+.ais-AutocompleteIndexNoResults {
+  font-size: 1em;
+  margin: 0;
+  padding: var(--ais-autocomplete-panel-padding);
+}
+
+.ais-AutocompleteIndexList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* --- Source header --- */
+.ais-AutocompleteIndexHeader {
+  color: rgba(
+    var(--ais-autocomplete-header-color),
+    var(--ais-autocomplete-header-color-alpha)
+  );
+  font-size: var(--ais-autocomplete-header-font-size);
+  font-weight: var(--ais-autocomplete-header-font-weight);
+  letter-spacing: var(--ais-autocomplete-header-letter-spacing);
+  margin: var(--ais-autocomplete-header-margin-top)
+    var(--ais-autocomplete-header-margin-right)
+    var(--ais-autocomplete-header-margin-bottom)
+    var(--ais-autocomplete-header-margin-left);
+  padding: 0;
+  text-transform: var(--ais-autocomplete-header-text-transform);
+}
+
+.ais-AutocompleteIndexHeader:empty {
+  display: none;
+}
