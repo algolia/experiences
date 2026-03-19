@@ -17,6 +17,7 @@ export const GROUP_LABELS: Record<string, string> = {
   headers: 'Headers',
   detached: 'Detached',
   scrollbar: 'Scrollbar',
+  noResults: 'No Results',
 };
 
 export const GROUP_ORDER = [
@@ -28,6 +29,7 @@ export const GROUP_ORDER = [
   'panel',
   'items',
   'headers',
+  'noResults',
   'detached',
   'scrollbar',
 ];

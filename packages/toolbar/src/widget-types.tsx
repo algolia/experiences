@@ -211,6 +211,39 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
           defaultValue: 'one-column',
         },
       },
+      {
+        key: 'noResults',
+        label: 'No Results',
+        description:
+          'Configuration for the empty state shown when all sources return no results.',
+        default: false,
+        field: {
+          type: 'object',
+          defaultValue: {
+            title: 'No results for "{{query}}"',
+            description: '',
+            clearLabel: 'Clear query',
+          },
+          disabledValue: false,
+          fields: [
+            {
+              key: 'title',
+              label: 'Title',
+              suggest: undefined,
+            },
+            {
+              key: 'description',
+              label: 'Description',
+              suggest: undefined,
+            },
+            {
+              key: 'clearLabel',
+              label: 'Clear Button Label',
+              suggest: undefined,
+            },
+          ],
+        },
+      },
     ],
   },
   'ais.chat': {

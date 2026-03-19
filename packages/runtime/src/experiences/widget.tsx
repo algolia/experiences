@@ -32,8 +32,10 @@ import {
   renderAutocompleteItem,
   renderCarouselItem,
   renderListItem,
+  renderNoResults,
   renderSectionHeader,
   renderTwoColumnsPanel,
+  withGlobalNoResults,
   SKELETON_CSS,
 } from './templates';
 import type { ExperienceWidget } from './types';
@@ -144,6 +146,7 @@ export default (function experience(
             indices,
             detachedMediaQuery,
             panelLayout,
+            noResults: globalNoResults,
             ...rest
           } = params as typeof params & {
             showRecent?: false | { templates: { header: string } };
@@ -153,7 +156,7 @@ export default (function experience(
               // oxlint-disable-next-line id-length -- backward compat for old configs
               q?: string;
               indexName?: string;
-              templates?: { header?: string };
+              templates?: { header?: string; noResults?: string };
             };
             indices?: Array<{
               indexName: string;
@@ -161,19 +164,32 @@ export default (function experience(
               templates?: {
                 header?: string;
                 item?: Record<string, string>;
+                noResults?: string;
               };
               searchParameters?: Record<string, unknown>;
             }>;
             detachedMediaQuery?: string;
             panelLayout?: 'one-column' | 'two-columns';
+            noResults?:
+              | false
+              | {
+                  title?: string;
+                  description?: string;
+                  clearLabel?: string;
+                };
           };
+
+          const twoColumns =
+            panelLayout === 'two-columns' ? renderTwoColumnsPanel() : undefined;
+          const panelTemplate =
+            globalNoResults && typeof globalNoResults === 'object'
+              ? withGlobalNoResults(globalNoResults, twoColumns)
+              : twoColumns;
 
           return Promise.resolve({
             ...rest,
             ...(detachedMediaQuery ? { detachedMediaQuery } : {}),
-            ...(panelLayout === 'two-columns'
-              ? { templates: { panel: renderTwoColumnsPanel() } }
-              : {}),
+            ...(panelTemplate ? { templates: { panel: panelTemplate } } : {}),
             ...(showRecent
               ? {
                   showRecent: showRecent.templates.header
@@ -191,15 +207,25 @@ export default (function experience(
               ? {
                   showQuerySuggestions: {
                     indexName: showQuerySuggestions.indexName,
-                    ...(showQuerySuggestions.templates?.header
-                      ? {
-                          templates: {
-                            header: renderSectionHeader(
-                              showQuerySuggestions.templates.header
-                            ),
-                          },
-                        }
-                      : {}),
+                    ...((showQuerySuggestions.templates?.header ||
+                      showQuerySuggestions.templates?.noResults) && {
+                      templates: {
+                        ...(showQuerySuggestions.templates?.header
+                          ? {
+                              header: renderSectionHeader(
+                                showQuerySuggestions.templates.header
+                              ),
+                            }
+                          : {}),
+                        ...(showQuerySuggestions.templates?.noResults
+                          ? {
+                              noResults: renderNoResults(
+                                showQuerySuggestions.templates.noResults
+                              ),
+                            }
+                          : {}),
+                      },
+                    }),
                     ...(showQuerySuggestions.searchPageUrl
                       ? {
                           getURL: (item: { query: string }) => {
@@ -247,6 +273,13 @@ export default (function experience(
                             ? {
                                 item: renderAutocompleteItem(
                                   entryTemplates.item
+                                ),
+                              }
+                            : {}),
+                          ...(entryTemplates?.noResults
+                            ? {
+                                noResults: renderNoResults(
+                                  entryTemplates.noResults
                                 ),
                               }
                             : {}),

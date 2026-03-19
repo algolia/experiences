@@ -18,6 +18,7 @@ type StoredIndexEntry = {
   templates?: {
     header?: string;
     item?: Record<string, string>;
+    noResults?: string;
   };
   searchParameters?: Record<string, unknown>;
 };
@@ -241,6 +242,25 @@ export function IndicesConfigField({
                         templates: {
                           ...entry.templates,
                           header: (event.target as HTMLInputElement).value,
+                        },
+                      });
+                    }}
+                  />
+                </div>
+
+                <div class="group space-y-1">
+                  <Label>
+                    No Results
+                    <InfoTooltip content="Text to display when no results are found for this index." />
+                  </Label>
+                  <Input
+                    value={entry.templates?.noResults ?? ''}
+                    placeholder="No results found"
+                    onInput={(event) => {
+                      updateEntry(index, {
+                        templates: {
+                          ...entry.templates,
+                          noResults: (event.target as HTMLInputElement).value,
                         },
                       });
                     }}

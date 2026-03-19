@@ -117,6 +117,7 @@ describe('ais.autocomplete field behavior', () => {
       expect(toggle.getAttribute('aria-checked')).toBe('true');
       expect(container.textContent).toContain('Index Name');
       expect(container.textContent).toContain('Header');
+      expect(container.textContent).toContain('No Results');
       expect(container.textContent).toContain('Search Page URL');
       expect(container.textContent).toContain('Query Parameter');
     });
@@ -133,7 +134,7 @@ describe('ais.autocomplete field behavior', () => {
         indexName: '',
         searchPageUrl: '',
         queryParam: 'q',
-        templates: { header: '' },
+        templates: { header: '', noResults: '' },
       });
     });
 
