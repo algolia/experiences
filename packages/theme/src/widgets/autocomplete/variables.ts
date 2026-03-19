@@ -152,8 +152,8 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
 
   // --- Input ---
   {
-    key: 'autocomplete-search-input-height',
-    label: 'Search input height',
+    key: 'autocomplete-form-input-height',
+    label: 'Form input height',
     type: 'number',
     group: 'input',
     default: '44',
@@ -215,28 +215,28 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     constraints: { min: 0, max: 8, step: 1, unit: 'px' },
   },
   {
-    key: 'autocomplete-search-icon-color',
-    label: 'Search icon color',
+    key: 'autocomplete-form-search-icon-color',
+    label: 'Form search icon color',
     type: 'color',
     group: 'colors',
     default: { light: '30, 89, 255', dark: '110, 160, 255' },
-    description: 'Color of the search icon in the input.',
+    description: 'Color of the search icon in the form.',
   },
   {
-    key: 'autocomplete-placeholder-color',
-    label: 'Placeholder color',
+    key: 'autocomplete-form-placeholder-color',
+    label: 'Form placeholder color',
     type: 'color',
     group: 'colors',
     default: { light: '82, 82, 82', dark: '170, 170, 170' },
-    description: 'Color of the placeholder text in the input.',
+    description: 'Color of the placeholder text in the form.',
   },
   {
-    key: 'autocomplete-clear-button-color',
-    label: 'Clear button color',
+    key: 'autocomplete-form-clear-button-color',
+    label: 'Form clear button color',
     type: 'color',
     group: 'colors',
     default: { light: '82, 82, 82', dark: '170, 170, 170' },
-    description: 'Color of the clear/reset button in the input.',
+    description: 'Color of the clear/reset button in the form.',
   },
 
   // --- Panel ---

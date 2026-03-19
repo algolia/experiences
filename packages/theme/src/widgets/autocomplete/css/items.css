@@ -70,7 +70,6 @@
 /* --- Item icons --- */
 .ais-AutocompleteItemIcon {
   align-items: center;
-  border-radius: var(--ais-autocomplete-item-border-radius);
   color: rgba(
     var(--ais-autocomplete-item-icon-color),
     var(--ais-autocomplete-muted-color-alpha)

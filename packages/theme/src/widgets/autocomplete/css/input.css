@@ -11,7 +11,7 @@
   align-items: center;
   display: flex;
   flex-shrink: 0;
-  height: var(--ais-autocomplete-search-input-height);
+  height: var(--ais-autocomplete-form-input-height);
   order: 1;
 }
 
@@ -28,7 +28,7 @@
 .ais-AutocompleteLabel svg,
 .ais-AutocompleteLoadingIndicator svg {
   color: rgba(
-    var(--ais-autocomplete-search-icon-color),
+    var(--ais-autocomplete-form-search-icon-color),
     var(--ais-autocomplete-primary-color-alpha)
   );
   height: auto;
@@ -82,14 +82,14 @@
     var(--ais-autocomplete-text-color-alpha)
   );
   font: inherit;
-  height: var(--ais-autocomplete-search-input-height);
+  height: var(--ais-autocomplete-form-input-height);
   padding: 0;
   width: 100%;
 }
 
 .ais-AutocompleteInput::-moz-placeholder {
   color: rgba(
-    var(--ais-autocomplete-placeholder-color),
+    var(--ais-autocomplete-form-placeholder-color),
     var(--ais-autocomplete-muted-color-alpha)
   );
   opacity: 1;
@@ -97,7 +97,7 @@
 
 .ais-AutocompleteInput::placeholder {
   color: rgba(
-    var(--ais-autocomplete-placeholder-color),
+    var(--ais-autocomplete-form-placeholder-color),
     var(--ais-autocomplete-muted-color-alpha)
   );
   opacity: 1;
@@ -121,7 +121,7 @@
 .ais-AutocompleteInputWrapperSuffix {
   align-items: center;
   display: flex;
-  height: var(--ais-autocomplete-search-input-height);
+  height: var(--ais-autocomplete-form-input-height);
   order: 4;
 }
 
@@ -131,7 +131,7 @@
   background: none;
   border: 0;
   color: rgba(
-    var(--ais-autocomplete-clear-button-color),
+    var(--ais-autocomplete-form-clear-button-color),
     var(--ais-autocomplete-muted-color-alpha)
   );
   cursor: pointer;
