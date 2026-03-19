@@ -123,7 +123,7 @@
 }
 
 .ais-AutocompleteItemActionButton svg {
-  margin: var(--ais-autocomplete-item-padding);
+  margin: var(--ais-autocomplete-item-action-icon-margin);
   stroke-width: var(--ais-autocomplete-icon-stroke-width);
   width: var(--ais-autocomplete-icon-size);
 }

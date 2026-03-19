@@ -78,7 +78,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     key: 'autocomplete-border-width',
     label: 'Border width',
     type: 'number',
-    group: 'colors',
+    group: 'borders',
     default: '1',
     description: 'Width of borders on the form and panel.',
     constraints: { min: 0, max: 4, step: 1, unit: 'px' },
@@ -219,7 +219,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     label: 'Search icon color',
     type: 'color',
     group: 'colors',
-    default: '30, 89, 255',
+    default: { light: '30, 89, 255', dark: '110, 160, 255' },
     description: 'Color of the search icon in the input.',
   },
   {
@@ -227,7 +227,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     label: 'Placeholder color',
     type: 'color',
     group: 'colors',
-    default: '82, 82, 82',
+    default: { light: '82, 82, 82', dark: '170, 170, 170' },
     description: 'Color of the placeholder text in the input.',
   },
   {
@@ -235,7 +235,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     label: 'Clear button color',
     type: 'color',
     group: 'colors',
-    default: '82, 82, 82',
+    default: { light: '82, 82, 82', dark: '170, 170, 170' },
     description: 'Color of the clear/reset button in the input.',
   },
 
@@ -320,6 +320,24 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
       'CSS grid column sizes for the two-column layout (e.g. "1fr 2fr", "300px 1fr").',
   },
   {
+    key: 'autocomplete-panel-open-scale',
+    label: 'Panel open scale',
+    type: 'number',
+    group: 'panel',
+    default: '0.95',
+    description: 'Initial scale of the panel before it animates open.',
+    constraints: { min: 0.5, max: 1, step: 0.01 },
+  },
+  {
+    key: 'autocomplete-panel-open-offset',
+    label: 'Panel open offset',
+    type: 'number',
+    group: 'panel',
+    default: '-8',
+    description: 'Vertical offset of the panel before it animates open.',
+    constraints: { min: -24, max: 0, step: 1, unit: 'px' },
+  },
+  {
     key: 'autocomplete-panel-columns-breakpoint',
     label: 'Panel columns breakpoint',
     type: 'number',
@@ -391,16 +409,16 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     label: 'Item line height',
     type: 'number',
     group: 'items',
-    default: '1.25',
+    default: '20',
     description: 'Line height of item text.',
-    constraints: { min: 1, max: 2.5, step: 0.05, unit: 'em' },
+    constraints: { min: 12, max: 40, step: 1, unit: 'px' },
   },
   {
     key: 'autocomplete-item-icon-color',
     label: 'Item icon color',
     type: 'color',
     group: 'colors',
-    default: '82, 82, 82',
+    default: { light: '82, 82, 82', dark: '170, 170, 170' },
     description: 'Color of icons inside result items.',
   },
   {
@@ -408,8 +426,17 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     label: 'Item action color',
     type: 'color',
     group: 'colors',
-    default: '82, 82, 82',
+    default: { light: '82, 82, 82', dark: '170, 170, 170' },
     description: 'Color of action buttons inside result items.',
+  },
+  {
+    key: 'autocomplete-item-action-icon-margin',
+    label: 'Item action icon margin',
+    type: 'number',
+    group: 'items',
+    default: '4',
+    description: 'Margin around icons inside item action buttons.',
+    constraints: { min: 0, max: 16, step: 1, unit: 'px' },
   },
   {
     key: 'autocomplete-highlight-weight',
@@ -444,9 +471,9 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     label: 'Header font size',
     type: 'number',
     group: 'headers',
-    default: '0.8',
+    default: '13',
     description: 'Font size of section headers.',
-    constraints: { min: 0.5, max: 2, step: 0.1, unit: 'em' },
+    constraints: { min: 8, max: 24, step: 1, unit: 'px' },
   },
   {
     key: 'autocomplete-header-font-weight',
@@ -508,9 +535,9 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     label: 'Header letter spacing',
     type: 'number',
     group: 'headers',
-    default: '0.05',
+    default: '1',
     description: 'Letter spacing for section headers.',
-    constraints: { min: -0.05, max: 0.3, step: 0.01, unit: 'em' },
+    constraints: { min: -1, max: 5, step: 0.5, unit: 'px' },
   },
 
   // --- No results ---
@@ -603,6 +630,15 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     constraints: { min: 100, max: 900, step: 100 },
   },
   {
+    key: 'autocomplete-no-results-title-opacity',
+    label: 'No results title opacity',
+    type: 'number',
+    group: 'noResults',
+    default: '1',
+    description: 'Opacity of the no results title text.',
+    constraints: { min: 0, max: 1 },
+  },
+  {
     key: 'autocomplete-no-results-description-color',
     label: 'No results description color',
     type: 'color',
@@ -635,6 +671,15 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     group: 'noResults',
     default: { light: '38, 38, 38', dark: '255, 255, 255' },
     description: 'Text color of the clear query button.',
+  },
+  {
+    key: 'autocomplete-no-results-clear-opacity',
+    label: 'No results clear button text opacity',
+    type: 'number',
+    group: 'noResults',
+    default: '1',
+    description: 'Text opacity of the clear query button.',
+    constraints: { min: 0, max: 1 },
   },
   {
     key: 'autocomplete-no-results-clear-background-color',
@@ -755,6 +800,17 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     constraints: { min: 1, max: 2147483647, step: 1 },
   },
 
+  {
+    key: 'autocomplete-overlay-z-index',
+    label: 'Overlay z-index',
+    type: 'number',
+    group: 'detached',
+    default: '9999',
+    description:
+      'Z-index of the backdrop overlay in detached mode. Should be below the main z-index.',
+    constraints: { min: 1, max: 2147483647, step: 1 },
+  },
+
   // --- Detached ---
   {
     key: 'autocomplete-detached-modal-max-width',
@@ -852,6 +908,26 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     default: '1',
     description: 'Width of the bottom border on the detached form container.',
     constraints: { min: 0, max: 4, step: 1, unit: 'px' },
+  },
+  {
+    key: 'autocomplete-detached-search-query-line-height',
+    label: 'Detached search query line height',
+    type: 'number',
+    group: 'detached',
+    default: '20',
+    description:
+      'Line height of the search query text in the detached trigger button.',
+    constraints: { min: 12, max: 32, step: 1, unit: 'px' },
+  },
+  {
+    key: 'autocomplete-detached-clear-button-padding',
+    label: 'Detached clear button padding',
+    type: 'number',
+    group: 'detached',
+    default: '6',
+    description:
+      'Horizontal padding of the clear button in the detached trigger.',
+    constraints: { min: 0, max: 24, step: 1, unit: 'px' },
   },
   {
     key: 'autocomplete-detached-form-padding',

@@ -27,7 +27,8 @@
   opacity: 0;
   pointer-events: none;
   transform-origin: top center;
-  transform: scale(0.95) translateY(-8px);
+  transform: scale(var(--ais-autocomplete-panel-open-scale))
+    translateY(var(--ais-autocomplete-panel-open-offset));
   transition:
     opacity var(--ais-autocomplete-transition-duration)
       var(--ais-autocomplete-transition-timing-function),

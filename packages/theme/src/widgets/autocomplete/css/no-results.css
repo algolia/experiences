@@ -32,7 +32,10 @@
   font-size: var(--ais-autocomplete-no-results-title-font-size);
   font-weight: var(--ais-autocomplete-no-results-title-font-weight);
   margin: 0;
-  color: rgb(var(--ais-autocomplete-no-results-title-color));
+  color: rgba(
+    var(--ais-autocomplete-no-results-title-color),
+    var(--ais-autocomplete-no-results-title-opacity)
+  );
 }
 
 .ais-AutocompleteNoResults-description {
@@ -60,7 +63,10 @@
     var(--ais-autocomplete-no-results-clear-background-color),
     var(--ais-autocomplete-no-results-clear-background-opacity)
   );
-  color: rgb(var(--ais-autocomplete-no-results-clear-color));
+  color: rgba(
+    var(--ais-autocomplete-no-results-clear-color),
+    var(--ais-autocomplete-no-results-clear-opacity)
+  );
   cursor: pointer;
   transition:
     background-color var(--ais-autocomplete-transition-duration)
