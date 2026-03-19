@@ -13,7 +13,25 @@ const autocompleteCssPath = resolve(
   __dirname,
   '../theme/src/widgets/autocomplete/autocomplete.css'
 );
-const autocompleteCss = readFileSync(autocompleteCssPath, 'utf-8');
+
+/**
+ * Read a CSS file and inline any `@import './…'` declarations by recursively
+ * reading the referenced files. Only handles relative paths (which is all we
+ * need for the autocomplete stylesheet split).
+ */
+function readCssWithImports(filePath: string): string {
+  const css = readFileSync(filePath, 'utf-8');
+  const dir = dirname(filePath);
+
+  return css.replace(
+    /@import\s+['"](.\/[^'"]+)['"]\s*;/g,
+    (_, importPath: string) => {
+      return readCssWithImports(resolve(dir, importPath));
+    }
+  );
+}
+
+const autocompleteCss = readCssWithImports(autocompleteCssPath);
 
 export default defineConfig({
   entry: { runtime: 'src/index.ts' },

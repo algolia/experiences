@@ -1,0 +1,129 @@
+/*
+ * Result items.
+ *
+ * Individual result rows: the item container, content grid, icon, highlighted
+ * text, and trailing action buttons (e.g. "fill query" arrow).
+ */
+
+/* --- Items --- */
+.ais-AutocompleteIndexItem {
+  align-items: center;
+  border-radius: var(--ais-autocomplete-item-border-radius);
+  cursor: pointer;
+  display: grid;
+  min-height: var(--ais-autocomplete-item-min-height);
+  padding: var(--ais-autocomplete-item-padding);
+  transition: background-color var(--ais-autocomplete-transition-duration)
+    var(--ais-autocomplete-transition-timing-function);
+}
+
+.ais-AutocompleteIndexItem:hover {
+  background-color: rgba(
+    var(--ais-autocomplete-primary-color),
+    var(--ais-autocomplete-item-selected-opacity)
+  );
+}
+
+.ais-AutocompleteIndexItem[aria-selected='true'] {
+  background-color: rgba(
+    var(--ais-autocomplete-primary-color),
+    var(--ais-autocomplete-item-selected-opacity)
+  );
+}
+
+/* --- Item wrapper --- */
+.ais-AutocompleteItemWrapper {
+  align-items: center;
+  color: inherit;
+  display: grid;
+  gap: var(--ais-autocomplete-item-gap);
+  grid-auto-flow: column;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* --- Item content --- */
+.ais-AutocompleteItemContent {
+  align-items: center;
+  cursor: pointer;
+  display: grid;
+  gap: var(--ais-autocomplete-item-gap);
+  grid-auto-flow: column;
+  line-height: var(--ais-autocomplete-item-line-height);
+  overflow: hidden;
+}
+
+.ais-AutocompleteItemContent:empty {
+  display: none;
+}
+
+.ais-AutocompleteItemContent mark {
+  background: none;
+  color: rgba(
+    var(--ais-autocomplete-text-color),
+    var(--ais-autocomplete-text-color-alpha)
+  );
+  font-style: normal;
+  font-weight: var(--ais-autocomplete-highlight-weight);
+}
+
+/* --- Item icons --- */
+.ais-AutocompleteItemIcon {
+  align-items: center;
+  border-radius: var(--ais-autocomplete-item-border-radius);
+  color: rgba(
+    var(--ais-autocomplete-item-icon-color),
+    var(--ais-autocomplete-muted-color-alpha)
+  );
+  display: flex;
+  flex-shrink: 0;
+  height: var(--ais-autocomplete-item-icon-box-size);
+  justify-content: center;
+  overflow: hidden;
+  stroke-width: var(--ais-autocomplete-icon-stroke-width);
+  text-align: center;
+  width: var(--ais-autocomplete-item-icon-box-size);
+}
+
+.ais-AutocompleteItemIcon svg {
+  height: var(--ais-autocomplete-icon-size);
+  width: var(--ais-autocomplete-icon-size);
+}
+
+/* --- Item actions --- */
+.ais-AutocompleteItemActions {
+  display: grid;
+  grid-auto-flow: column;
+  height: 100%;
+  justify-self: end;
+}
+
+.ais-AutocompleteItemActionButton {
+  align-items: center;
+  background: none;
+  border: 0;
+  color: rgba(
+    var(--ais-autocomplete-item-action-color),
+    var(--ais-autocomplete-muted-color-alpha)
+  );
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  padding: 0;
+  transition: color var(--ais-autocomplete-transition-duration)
+    var(--ais-autocomplete-transition-timing-function);
+}
+
+.ais-AutocompleteItemActionButton:hover svg,
+.ais-AutocompleteItemActionButton:focus svg {
+  color: rgba(
+    var(--ais-autocomplete-text-color),
+    var(--ais-autocomplete-text-color-alpha)
+  );
+}
+
+.ais-AutocompleteItemActionButton svg {
+  margin: var(--ais-autocomplete-item-padding);
+  stroke-width: var(--ais-autocomplete-icon-stroke-width);
+  width: var(--ais-autocomplete-icon-size);
+}

@@ -1,0 +1,51 @@
+/*
+ * Search form.
+ *
+ * The form wraps the input, search icon, and clear button. Handles border,
+ * background, and the focus-ring transition.
+ */
+
+.ais-AutocompleteForm {
+  align-items: center;
+  background-color: rgba(
+    var(--ais-autocomplete-background-color),
+    var(--ais-autocomplete-background-color-alpha)
+  );
+  border: var(--ais-autocomplete-border-width) solid
+    rgba(
+      var(--ais-autocomplete-border-color),
+      var(--ais-autocomplete-form-border-opacity)
+    );
+  border-radius: var(--ais-autocomplete-form-border-radius);
+  display: flex;
+  line-height: 1em;
+  margin: 0;
+  position: relative;
+  width: 100%;
+  transition:
+    border-color var(--ais-autocomplete-transition-duration)
+      var(--ais-autocomplete-transition-timing-function),
+    box-shadow var(--ais-autocomplete-transition-duration)
+      var(--ais-autocomplete-transition-timing-function),
+    outline-color var(--ais-autocomplete-transition-duration)
+      var(--ais-autocomplete-transition-timing-function);
+}
+
+.ais-AutocompleteForm:focus-within {
+  border-color: rgba(
+    var(--ais-autocomplete-primary-color),
+    var(--ais-autocomplete-primary-color-alpha)
+  );
+  box-shadow:
+    0 0 0 var(--ais-autocomplete-form-focus-ring-width)
+      rgba(
+        var(--ais-autocomplete-primary-color),
+        var(--ais-autocomplete-form-focus-ring-opacity)
+      ),
+    inset 0 0 0 var(--ais-autocomplete-form-focus-ring-width)
+      rgba(
+        var(--ais-autocomplete-primary-color),
+        var(--ais-autocomplete-form-focus-ring-opacity)
+      );
+  outline: currentColor none medium;
+}

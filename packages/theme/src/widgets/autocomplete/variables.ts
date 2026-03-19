@@ -111,16 +111,6 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     description: 'Base font size unit in pixels.',
     constraints: { min: 8, max: 32, step: 1, unit: 'px' },
   },
-  {
-    key: 'autocomplete-font-weight-medium',
-    label: 'Medium font weight',
-    type: 'number',
-    group: 'typography',
-    default: '500',
-    description: 'Font weight for item titles.',
-    constraints: { min: 100, max: 900, step: 100 },
-  },
-
   // --- Icons ---
   {
     key: 'autocomplete-icon-size',
@@ -310,15 +300,6 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     default: '0.2',
     description: 'Opacity of the panel border.',
     constraints: { min: 0, max: 1 },
-  },
-  {
-    key: 'autocomplete-panel-gap',
-    label: 'Panel gap',
-    type: 'number',
-    group: 'panel',
-    default: '8',
-    description: 'Gap between sections in the panel.',
-    constraints: { min: 0, max: 24, step: 1, unit: 'px' },
   },
   {
     key: 'autocomplete-panel-padding',
