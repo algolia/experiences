@@ -520,16 +520,6 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     constraints: { min: 0, max: 16, step: 1, unit: 'px' },
   },
   {
-    key: 'autocomplete-item-action-icon-margin',
-    label: 'Item action icon margin',
-    type: 'number',
-    group: 'items',
-    section: 'Suggestions',
-    default: '4',
-    description: 'Margin around icons inside item action buttons.',
-    constraints: { min: 0, max: 16, step: 1, unit: 'px' },
-  },
-  {
     key: 'autocomplete-highlight-weight',
     label: 'Highlight weight',
     type: 'number',
