@@ -249,7 +249,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   'ais.chat': {
     label: 'Chat',
     description:
-      'A conversational AI chat widget powered by an Algolia Agent Studio agent.',
+      'A conversational AI chat block powered by an Algolia Agent Studio agent.',
     enabled: true,
     indexIndependent: true,
     icon: CHAT_ICON,
@@ -287,7 +287,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   'ais.index': {
     label: 'Index',
     description:
-      'Scopes child widgets to a specific Algolia index. Required for search widgets.',
+      'Scopes child blocks to a specific Algolia index. Required for search blocks.',
     enabled: true,
     indexIndependent: true,
     icon: DATABASE_ICON,
@@ -313,7 +313,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   'ais.configure': {
     label: 'Configure',
     description:
-      'A headless widget that sets default Algolia search parameters without rendering any UI.',
+      'A headless block that sets default Algolia search parameters without rendering any UI.',
     enabled: true,
     icon: CONFIGURE_ICON,
     params: [
@@ -769,7 +769,7 @@ export const WIDGET_TYPES: Record<string, WidgetTypeConfig> = {
   'ais.pagination': {
     label: 'Pagination',
     description:
-      'A page navigation widget that lets users browse through paginated search results.',
+      'A page navigation block that lets users browse through paginated search results.',
     enabled: true,
     icon: CHEVRON_LEFT_ICON,
     params: [
