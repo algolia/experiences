@@ -83,7 +83,8 @@ function variableToZodField(variable: ThemeVariable) {
         .optional()
         .describe(description);
     }
-    case 'text': {
+    case 'text':
+    case 'select': {
       return z.string().optional().describe(description);
     }
   }
