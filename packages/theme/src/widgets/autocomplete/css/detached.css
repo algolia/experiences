@@ -27,7 +27,7 @@ body.ais-Autocomplete--detached {
   position: fixed;
   right: 0;
   top: 0;
-  z-index: calc(var(--ais-autocomplete-z-index) - 1);
+  z-index: var(--ais-autocomplete-overlay-z-index);
 }
 
 /* --- Container — full-screen by default (mobile) --- */
@@ -172,14 +172,14 @@ body.ais-Autocomplete--detached {
     );
   border-radius: var(--ais-autocomplete-form-border-radius);
   color: rgba(
-    var(--ais-autocomplete-placeholder-color),
+    var(--ais-autocomplete-form-placeholder-color),
     var(--ais-autocomplete-muted-color-alpha)
   );
   cursor: pointer;
   display: flex;
   font: inherit;
   font-size: calc(var(--ais-autocomplete-base-unit) * 1px);
-  height: var(--ais-autocomplete-search-input-height);
+  height: var(--ais-autocomplete-form-input-height);
   margin: 0;
   position: relative;
   text-align: left;
@@ -194,7 +194,7 @@ body.ais-Autocomplete--detached {
 .ais-AutocompleteDetachedSearchButtonIcon {
   align-items: center;
   color: rgba(
-    var(--ais-autocomplete-search-icon-color),
+    var(--ais-autocomplete-form-search-icon-color),
     var(--ais-autocomplete-primary-color-alpha)
   );
   cursor: initial;
@@ -221,7 +221,7 @@ body.ais-Autocomplete--detached {
     var(--ais-autocomplete-text-color),
     var(--ais-autocomplete-text-color-alpha)
   );
-  line-height: 1.25em;
+  line-height: var(--ais-autocomplete-detached-search-query-line-height);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -232,7 +232,7 @@ body.ais-Autocomplete--detached {
   background: none;
   border: 0;
   color: rgba(
-    var(--ais-autocomplete-clear-button-color),
+    var(--ais-autocomplete-form-clear-button-color),
     var(--ais-autocomplete-muted-color-alpha)
   );
   cursor: pointer;
@@ -242,7 +242,7 @@ body.ais-Autocomplete--detached {
   justify-content: center;
   margin: 0;
   margin-left: auto;
-  padding: 0 calc(var(--ais-autocomplete-form-padding-right) / 2);
+  padding: 0 var(--ais-autocomplete-detached-clear-button-padding);
   transition: color var(--ais-autocomplete-transition-duration)
     var(--ais-autocomplete-transition-timing-function);
 }
