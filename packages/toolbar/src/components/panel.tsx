@@ -209,7 +209,7 @@ export function Panel({
           <div>
             <h2 class="text-sm font-semibold">Algolia Experiences</h2>
             <p class="text-muted-foreground text-xs">
-              {widgetCount} widget
+              {widgetCount} block
               {widgetCount !== 1 ? 's' : ''} configured
             </p>
           </div>
@@ -334,7 +334,7 @@ export function Panel({
             <AddWidgetPopover
               onSelect={onAddBlock}
               filter={(widgetType) => {
-                return widgetType !== 'ais.index';
+                return widgetType === 'ais.autocomplete';
               }}
             />
           </div>
@@ -363,7 +363,7 @@ export function Panel({
         ) : (
           <div class="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
             <p class="text-sm text-muted-foreground">
-              Add an Autocomplete widget to start customizing the theme.
+              Add an Autocomplete block to start customizing the theme.
             </p>
             <Button
               variant="outline"
@@ -372,7 +372,7 @@ export function Panel({
                 return setTab('blocks');
               }}
             >
-              Go to widgets
+              Go to blocks
             </Button>
           </div>
         )}

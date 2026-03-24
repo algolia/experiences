@@ -199,7 +199,7 @@ export function BlockCard({
                 <Label>
                   Index
                   <InfoTooltip
-                    content="The Algolia index this widget queries."
+                    content="The Algolia index this block queries."
                     class="mt-0.5"
                   />
                 </Label>

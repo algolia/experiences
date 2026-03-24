@@ -217,7 +217,7 @@ export function AiChat({
         <div class="space-y-3">
           {messages.length === 0 && (
             <div class="text-muted-foreground text-center text-sm py-8">
-              Ask me to add, edit, or remove widgets from your experience.
+              Ask me to add, edit, or remove blocks from your experience.
             </div>
           )}
           {messages.map((message) => {
