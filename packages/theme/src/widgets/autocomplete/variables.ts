@@ -617,6 +617,30 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     constraints: { min: 100, max: 900, step: 100 },
   },
   {
+    key: 'autocomplete-item-name-line-clamp',
+    label: 'Title max lines',
+    shortLabel: 'Title lines',
+    type: 'select',
+    group: 'items',
+    section: 'Results',
+    default: '1',
+    description:
+      'Maximum number of lines for the result name before truncating.',
+    constraints: { options: ['none', '1', '2', '3', '4', '5'] },
+  },
+  {
+    key: 'autocomplete-item-description-line-clamp',
+    label: 'Description max lines',
+    shortLabel: 'Desc lines',
+    type: 'select',
+    group: 'items',
+    section: 'Results',
+    default: '2',
+    description:
+      'Maximum number of lines for the result description before truncating.',
+    constraints: { options: ['none', '1', '2', '3', '4', '5'] },
+  },
+  {
     key: 'autocomplete-item-secondary-font-size',
     label: 'Details font size',
     shortLabel: 'Details size',
