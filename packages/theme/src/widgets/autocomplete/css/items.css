@@ -48,7 +48,6 @@
   display: grid;
   gap: var(--ais-autocomplete-item-gap);
   grid-auto-flow: column;
-  line-height: 1;
   overflow: hidden;
 }
 
