@@ -1,7 +1,12 @@
 /**
  * Determines which editor control to render for a theme variable.
  */
-export type ThemeVariableType = 'color' | 'number' | 'shadow' | 'text';
+export type ThemeVariableType =
+  | 'color'
+  | 'number'
+  | 'select'
+  | 'shadow'
+  | 'text';
 
 /**
  * A single layer of a structured box-shadow value.
@@ -29,7 +34,17 @@ export type ThemeVariable = {
     | { light: string; dark: string }
     | { light: ShadowLayer[]; dark: ShadowLayer[] };
   description: string;
-  constraints?: { min?: number; max?: number; step?: number; unit?: string };
+  constraints?: {
+    min?: number;
+    max?: number;
+    step?: number;
+    unit?: string;
+    options?: string[];
+  };
+  section?: string;
+  shortLabel?: string;
+  /** Key of the companion alpha/opacity variable. Required for `type: 'color'`. */
+  alpha?: string;
 };
 
 export type ThemeOverrideValue = string | number | ShadowLayer[];

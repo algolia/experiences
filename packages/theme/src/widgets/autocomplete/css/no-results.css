@@ -10,8 +10,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--ais-autocomplete-no-results-padding-y)
-    var(--ais-autocomplete-no-results-padding-x);
+  padding: var(--ais-autocomplete-no-results-vertical-padding)
+    var(--ais-autocomplete-no-results-horizontal-padding);
   text-align: center;
   gap: var(--ais-autocomplete-no-results-gap);
 }
@@ -19,11 +19,10 @@
 .ais-AutocompleteNoResults-icon {
   width: var(--ais-autocomplete-no-results-icon-size);
   height: var(--ais-autocomplete-no-results-icon-size);
-  padding: var(--ais-autocomplete-no-results-icon-padding);
   border-radius: 50%;
   color: rgba(
     var(--ais-autocomplete-no-results-icon-color),
-    var(--ais-autocomplete-no-results-icon-opacity)
+    var(--ais-autocomplete-no-results-icon-color-alpha)
   );
   box-sizing: content-box;
 }
@@ -34,7 +33,7 @@
   margin: 0;
   color: rgba(
     var(--ais-autocomplete-no-results-title-color),
-    var(--ais-autocomplete-no-results-title-opacity)
+    var(--ais-autocomplete-no-results-title-color-alpha)
   );
 }
 
@@ -42,7 +41,7 @@
   font-size: var(--ais-autocomplete-no-results-description-font-size);
   color: rgba(
     var(--ais-autocomplete-no-results-description-color),
-    var(--ais-autocomplete-no-results-description-opacity)
+    var(--ais-autocomplete-no-results-description-color-alpha)
   );
   margin: 0;
 }
@@ -51,37 +50,35 @@
   font-size: var(--ais-autocomplete-no-results-clear-font-size);
   font-family: inherit;
   font-weight: var(--ais-autocomplete-no-results-clear-font-weight);
-  padding: var(--ais-autocomplete-no-results-clear-padding-y)
-    var(--ais-autocomplete-no-results-clear-padding-x);
+  padding: var(--ais-autocomplete-no-results-clear-vertical-padding)
+    var(--ais-autocomplete-no-results-clear-horizontal-padding);
   border-radius: var(--ais-autocomplete-no-results-clear-border-radius);
   border: var(--ais-autocomplete-no-results-clear-border-width) solid
     rgba(
       var(--ais-autocomplete-no-results-clear-border-color),
-      var(--ais-autocomplete-no-results-clear-border-opacity)
+      var(--ais-autocomplete-no-results-clear-border-color-alpha)
     );
   background: rgba(
     var(--ais-autocomplete-no-results-clear-background-color),
-    var(--ais-autocomplete-no-results-clear-background-opacity)
+    var(--ais-autocomplete-no-results-clear-background-color-alpha)
   );
   color: rgba(
     var(--ais-autocomplete-no-results-clear-color),
-    var(--ais-autocomplete-no-results-clear-opacity)
+    var(--ais-autocomplete-no-results-clear-color-alpha)
   );
   cursor: pointer;
   transition:
-    background-color var(--ais-autocomplete-transition-duration)
-      var(--ais-autocomplete-transition-timing-function),
-    border-color var(--ais-autocomplete-transition-duration)
-      var(--ais-autocomplete-transition-timing-function);
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .ais-AutocompleteNoResults-clear:hover {
   border-color: rgba(
     var(--ais-autocomplete-no-results-clear-border-color),
-    var(--ais-autocomplete-no-results-clear-hover-border-opacity)
+    0.3
   );
   background: rgba(
     var(--ais-autocomplete-no-results-clear-background-color),
-    var(--ais-autocomplete-no-results-clear-hover-background-opacity)
+    0.1
   );
 }

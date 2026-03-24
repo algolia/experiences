@@ -121,36 +121,25 @@ Variable reuse creates coupling. The default is to **not reuse** — every CSS d
 
 **Valid reasons to reuse:**
 
-1. **Brand consistency** — A single color, transition, or icon size should feel uniform across the widget (brand-level variables).
+1. **Brand consistency** — A color or transition that should feel uniform across the entire widget. These are brand-level variables (colors like `primary-color`, `text-color`, `background-color`, plus transitions and base sizing). Check `variables.ts` for the current set — they're the variables without an area prefix.
 2. **Spatial alignment** — Two elements must stay aligned with each other. E.g., `form-padding-left` is reused by the submit button and loading indicator because they must align with the form's left edge.
 3. **Visual rhythm** — Elements within a group should have uniform spacing to form a visual pattern. E.g., a gap variable shared between items in a list.
-4. **Same UI concept** — The variable describes a single concept that manifests in multiple places. E.g., `icon-size` applies to all SVGs because "how big are icons" is one decision.
 
 **Not a valid reason to reuse:**
 
 - **Same value today** — Two things being `4px` doesn't mean they should change together.
 - **Same CSS property** — Two elements both having `padding` doesn't mean they share a design decision.
 - **Same area** — Being in the same functional zone doesn't justify sharing. Item padding and item icon border-radius are unrelated decisions.
+- **Same UI concept** — "All icons should be the same size" sounds reasonable but prevents customers from sizing form icons differently from item icons. Prefer per-area variables.
 - **Convenience** — Fewer variables is not a goal. Clarity is.
 
 When reuse is justified, it falls into two tiers:
 
 **Tier 1 — Brand-level (shared across all areas):**
-Global design decisions. The exhaustive list:
-
-- `primary-color` + `primary-color-alpha`
-- `text-color` + `text-color-alpha`
-- `background-color` + `background-color-alpha`
-- `border-color`
-- `muted-color-alpha`
-- `icon-size`, `icon-stroke-width`
-- `transition-duration`, `transition-timing-function`
-- `base-unit`
+Global design decisions. These are the variables in `variables.ts` that have no area prefix (e.g., `primary-color`, `text-color`, `background-color`, `transition-duration`, `base-unit`). Always check the current file for the authoritative list.
 
 **Tier 2 — Scoped (within one functional area):**
-Prefixed by their area, only referenced within that area's CSS. Reuse within a scoped variable must still pass the "valid reasons" test above.
-
-- `form-*`, `panel-*`, `item-*`, `header-*`, `no-results-*`, `detached-*`, `scrollbar-*`
+Prefixed by their area, only referenced within that area's CSS. Reuse within a scoped variable must still pass the "valid reasons" test above. Areas are defined by the `group` field in `variables.ts`.
 
 **The test:** before reusing a variable, ask "if a customer changes this value, should both elements update?" If the answer isn't a clear yes, create a new variable. Coupling through reuse is harder to undo than duplication.
 
@@ -162,16 +151,16 @@ Colors are stored as RGB triplets (e.g., `"30, 89, 255"`) and composed with `rgb
 
 ```css
 /* WRONG: hardcoded alpha */
-border-color: rgba(var(--ais-autocomplete-border-color), 0.2);
+border-color: rgba(var(--ais-autocomplete-panel-border-color), 0.2);
 
 /* RIGHT: alpha controlled by its own variable */
 border-color: rgba(
-  var(--ais-autocomplete-border-color),
-  var(--ais-autocomplete-panel-border-opacity)
+  var(--ais-autocomplete-panel-border-color),
+  var(--ais-autocomplete-panel-border-color-alpha)
 );
 ```
 
-The color variable is brand-level (Tier 1), while the opacity variable is scoped to the area (Tier 2). This lets the customer set one border color for the whole widget but control border prominence per area.
+Each color variable has its own alpha companion in the same area. Never share a color or alpha across areas — if two areas happen to use the same color, they should each have their own variable so customers can change them independently.
 
 Always use `rgba()` with an opacity companion, even when the default opacity is `1`. This ensures the customer can always reduce opacity on any element. Never use `rgb()` — it removes the customer's ability to adjust transparency.
 
@@ -190,14 +179,14 @@ Hover, focus, and active states should modify opacity, not introduce new color v
 /* RIGHT: same color, different opacity */
 .element {
   border-color: rgba(
-    var(--ais-autocomplete-border-color),
-    var(--ais-autocomplete-element-border-opacity)
+    var(--ais-autocomplete-element-border-color),
+    var(--ais-autocomplete-element-border-color-alpha)
   );
 }
 .element:hover {
   border-color: rgba(
-    var(--ais-autocomplete-border-color),
-    var(--ais-autocomplete-element-hover-border-opacity)
+    var(--ais-autocomplete-element-border-color),
+    var(--ais-autocomplete-element-hover-border-color-alpha)
   );
 }
 ```
@@ -343,36 +332,27 @@ The `ais` prefix is a fixed namespace — every variable in every widget starts 
 
 Both represent 0-1 values but serve different roles.
 
-**`-alpha`:** the alpha channel of a color variable. Always paired with a `-color` variable. Brand-level.
+**`-alpha`:** the alpha channel of a color variable. Always paired with a specific `-color` variable and composed inside `rgba()`. Every color used in `rgba()` must have its own `-alpha` companion — never share an alpha across multiple colors.
 
 ```
-autocomplete-primary-color       → autocomplete-primary-color-alpha
-autocomplete-text-color          → autocomplete-text-color-alpha
-autocomplete-background-color    → autocomplete-background-color-alpha
+{widget}-{area}-{property}-color       → {widget}-{area}-{property}-color-alpha
+
+# Examples:
+autocomplete-primary-color             → autocomplete-primary-color-alpha
+autocomplete-form-border-color         → autocomplete-form-border-color-alpha
+autocomplete-item-icon-color           → autocomplete-item-icon-color-alpha
 ```
 
 ```css
-color: rgba(var(--ais-autocomplete-text-color), var(--ais-autocomplete-text-color-alpha));
+border-color: rgba(var(--ais-autocomplete-form-border-color), var(--ais-autocomplete-form-border-color-alpha));
 ```
 
-**`-opacity`:** a visual effect on a specific element. Scoped to an area.
+**`-opacity`:** a visual effect on a specific element, independent of which color it uses. Controls visual prominence, not a color channel.
 
 ```
-autocomplete-form-border-opacity
-autocomplete-panel-border-opacity
+# Examples:
 autocomplete-item-selected-opacity
 autocomplete-no-results-icon-opacity
-```
-
-```css
-border-color: rgba(var(--ais-autocomplete-border-color), var(--ais-autocomplete-panel-border-opacity));
-```
-
-**The shared alpha exception:** `muted-color-alpha` is a brand-level opacity for secondary elements. It doesn't have its own color — it's composed with different color variables:
-
-```css
-color: rgba(var(--ais-autocomplete-placeholder-color), var(--ais-autocomplete-muted-color-alpha));
-color: rgba(var(--ais-autocomplete-item-icon-color), var(--ais-autocomplete-muted-color-alpha));
 ```
 
 ---

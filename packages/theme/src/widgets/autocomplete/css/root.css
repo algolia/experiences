@@ -13,7 +13,7 @@
     var(--ais-autocomplete-text-color-alpha)
   );
   font-family: inherit;
-  font-size: calc(var(--ais-autocomplete-base-unit) * 1px);
+  font-size: var(--ais-autocomplete-base-unit);
   font-weight: normal;
   line-height: 1em;
   margin: 0;

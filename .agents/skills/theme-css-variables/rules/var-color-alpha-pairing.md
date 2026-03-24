@@ -12,7 +12,7 @@ Colors are stored as RGB triplets (e.g., `"30, 89, 255"`) and composed with `rgb
 
 ```css
 .ais-AutocompletePanel {
-  border-color: rgba(var(--ais-autocomplete-border-color), 0.2);
+  border-color: rgba(var(--ais-autocomplete-panel-border-color), 0.2);
 }
 ```
 
@@ -21,8 +21,8 @@ Colors are stored as RGB triplets (e.g., `"30, 89, 255"`) and composed with `rgb
 ```css
 .ais-AutocompletePanel {
   border-color: rgba(
-    var(--ais-autocomplete-border-color),
-    var(--ais-autocomplete-panel-border-opacity)
+    var(--ais-autocomplete-panel-border-color),
+    var(--ais-autocomplete-panel-border-color-alpha)
   );
 }
 ```
@@ -31,24 +31,24 @@ Colors are stored as RGB triplets (e.g., `"30, 89, 255"`) and composed with `rgb
 
 ```typescript
 {
-  key: 'autocomplete-border-color',
-  label: 'Border color',
+  key: 'autocomplete-panel-border-color',
+  label: 'Panel border color',
   type: 'color',
-  group: 'colors',
+  group: 'panel',
   default: { light: '150, 150, 150', dark: '100, 100, 100' },
-  description: 'Color for borders and dividers.',
+  description: 'Color of the results panel border.',
 },
 {
-  key: 'autocomplete-panel-border-opacity',
-  label: 'Panel border opacity',
+  key: 'autocomplete-panel-border-color-alpha',
+  label: 'Panel border color alpha',
   type: 'number',
   group: 'panel',
   default: '0.2',
-  description: 'Opacity of the panel border.',
+  description: 'Opacity of the results panel border.',
   constraints: { min: 0, max: 1 },
 },
 ```
 
-The color variable is brand-level (Tier 1 reuse), while the opacity variable is scoped to the area (Tier 2). This lets the customer set one border color for the whole widget but control how prominent borders are in each area.
+Each color variable has its own alpha companion in the same area. Never share a color or alpha across areas — if two areas happen to use the same color, they should each have their own variable so customers can change them independently.
 
-Always use `rgba()` with an opacity companion, even when the default opacity is `1`. This ensures the customer can always reduce opacity on any element. Never use `rgb()` — it removes the customer's ability to adjust transparency.
+Always use `rgba()` with an alpha companion, even when the default opacity is `1`. This ensures the customer can always reduce opacity on any element. Never use `rgb()` — it removes the customer's ability to adjust transparency.

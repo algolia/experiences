@@ -12,10 +12,10 @@
     var(--ais-autocomplete-background-color),
     var(--ais-autocomplete-background-color-alpha)
   );
-  border: var(--ais-autocomplete-border-width) solid
+  border: var(--ais-autocomplete-panel-border-width) solid
     rgba(
-      var(--ais-autocomplete-border-color),
-      var(--ais-autocomplete-panel-border-opacity)
+      var(--ais-autocomplete-panel-border-color),
+      var(--ais-autocomplete-panel-border-color-alpha)
     );
   border-radius: var(--ais-autocomplete-panel-border-radius);
   box-shadow: var(--ais-autocomplete-panel-shadow);
@@ -30,10 +30,8 @@
   transform: scale(var(--ais-autocomplete-panel-open-scale))
     translateY(var(--ais-autocomplete-panel-open-offset));
   transition:
-    opacity var(--ais-autocomplete-transition-duration)
-      var(--ais-autocomplete-transition-timing-function),
-    transform var(--ais-autocomplete-transition-duration)
-      var(--ais-autocomplete-transition-timing-function);
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .ais-AutocompletePanel--open {
@@ -72,14 +70,14 @@
           var(--ais-autocomplete-text-color),
           var(--ais-autocomplete-text-color-alpha)
         )
-        var(--ais-autocomplete-scrollbar-color-mix),
+        40%,
       transparent
     )
     transparent;
 }
 
 .ais-AutocompletePanelLayout::-webkit-scrollbar {
-  width: var(--ais-autocomplete-scrollbar-width);
+  width: 6px;
 }
 
 .ais-AutocompletePanelLayout::-webkit-scrollbar-track {
@@ -93,10 +91,10 @@
         var(--ais-autocomplete-text-color),
         var(--ais-autocomplete-text-color-alpha)
       )
-      var(--ais-autocomplete-scrollbar-color-mix),
+      40%,
     transparent
   );
-  border-radius: var(--ais-autocomplete-scrollbar-width);
+  border-radius: 6px;
 }
 
 /* --- Two-column panel layout --- */

@@ -6,11 +6,12 @@ export function renderListItem(template: Record<string, string>) {
   return function item(hit: Hit, { html, components }: TemplateParams) {
     if (!hasAttributes(template)) {
       return html`
-        <div style="display:flex;width:100%;align-items:center;gap:12px">
-          <div
-            class="algolia-experiences-skeleton"
-            style="width:80px;height:80px;border-radius:5px;flex-shrink:0"
-          ></div>
+        <div class="ais-AutocompleteListItem">
+          <div class="ais-AutocompleteListItemImageContainer">
+            <div
+              class="algolia-experiences-skeleton ais-AutocompleteListItemImage"
+            ></div>
+          </div>
           <div
             style="display:flex;flex-direction:column;justify-content:center;gap:8px;flex:1"
           >
@@ -26,11 +27,11 @@ export function renderListItem(template: Record<string, string>) {
               class="algolia-experiences-skeleton"
               style="width:80%;height:12px"
             ></div>
+            <div
+              class="algolia-experiences-skeleton"
+              style="width:48px;height:14px"
+            ></div>
           </div>
-          <div
-            class="algolia-experiences-skeleton"
-            style="width:48px;height:14px;flex-shrink:0"
-          ></div>
         </div>
       `;
     }
@@ -57,32 +58,29 @@ export function renderListItem(template: Record<string, string>) {
     };
 
     return html`
-      <div style="display:flex;width:100%;align-items:center;gap:12px">
+      <div class="ais-AutocompleteListItem">
         ${image &&
-        html`<img
-          src=${image}
-          style="width:80px;height:80px;object-fit:contain;border-radius:5px;flex-shrink:0"
-        />`}
-        <div style="display:flex;flex-direction:column;justify-content:center">
-          ${name &&
-          html`<span style="font-weight:bold"
-            >${highlight(template.name!)}</span
-          >`}
+        html`<div class="ais-AutocompleteListItemImageContainer">
+          <img class="ais-AutocompleteListItemImage" src=${image} />
+        </div>`}
+        <div class="ais-AutocompleteListItemInfo">
           ${category &&
-          html`<span style="color:#6b7280"
+          html`<span class="ais-AutocompleteListItemCategory"
             >${highlight(template.category!)}</span
           >`}
+          ${name &&
+          html`<span class="ais-AutocompleteListItemName"
+            >${highlight(template.name!)}</span
+          >`}
           ${description &&
-          html`<span
-            style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden"
+          html`<span class="ais-AutocompleteListItemDescription"
             >${highlight(template.description!)}</span
           >`}
+          ${price &&
+          html`<span class="ais-AutocompleteListItemPrice"
+            >${currency}${price}</span
+          >`}
         </div>
-        <div style="flex-grow:1"></div>
-        ${price &&
-        html`<span style="flex-shrink:0;font-weight:bold"
-          >${currency}${price}</span
-        >`}
       </div>
     `;
   };

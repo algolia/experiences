@@ -19,7 +19,6 @@
 }
 
 .ais-AutocompleteIndexNoResults {
-  font-size: 1em;
   margin: 0;
   padding: var(--ais-autocomplete-panel-padding);
 }
@@ -40,10 +39,8 @@
   font-size: var(--ais-autocomplete-header-font-size);
   font-weight: var(--ais-autocomplete-header-font-weight);
   letter-spacing: var(--ais-autocomplete-header-letter-spacing);
-  margin: var(--ais-autocomplete-header-margin-top)
-    var(--ais-autocomplete-header-margin-right)
-    var(--ais-autocomplete-header-margin-bottom)
-    var(--ais-autocomplete-header-margin-left);
+  margin: var(--ais-autocomplete-header-vertical-margin)
+    var(--ais-autocomplete-header-horizontal-margin);
   padding: 0;
   text-transform: var(--ais-autocomplete-header-text-transform);
 }

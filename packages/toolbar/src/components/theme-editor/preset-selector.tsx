@@ -158,7 +158,7 @@ export function PresetSelector({
       {open && (
         <div
           ref={listRef}
-          class="absolute left-0 right-0 top-full z-10 mt-1 max-h-80 overflow-y-auto rounded-md border bg-background shadow-lg"
+          class="absolute left-0 right-0 top-full z-30 mt-1 max-h-80 overflow-y-auto rounded-md border bg-background shadow-lg"
         >
           {AUTOCOMPLETE_PRESETS.map((preset, presetIndex) => {
             const swatches = getSwatchColors(

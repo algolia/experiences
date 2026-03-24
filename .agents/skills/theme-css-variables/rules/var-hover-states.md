@@ -40,8 +40,8 @@ Hover, focus, and active states should modify opacity, not introduce new color v
 /* Muted color by default */
 .ais-AutocompleteClearButton {
   color: rgba(
-    var(--ais-autocomplete-clear-button-color),
-    var(--ais-autocomplete-muted-color-alpha)
+    var(--ais-autocomplete-form-clear-button-color),
+    var(--ais-autocomplete-form-clear-button-color-alpha)
   );
 }
 

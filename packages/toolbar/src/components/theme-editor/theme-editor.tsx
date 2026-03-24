@@ -13,6 +13,8 @@ import {
 } from '../ui/collapsible';
 import type { ThemeMode } from './constants';
 import {
+  ADVANCED_GROUPS,
+  GLOBAL_GROUPS,
   GROUP_LABELS,
   GROUP_ORDER,
   getCurrentValue,
@@ -20,7 +22,7 @@ import {
 } from './constants';
 import { PresetSelector } from './preset-selector';
 import { ThemeAgentChat } from './theme-agent-chat';
-import { VariableField } from './variable-field';
+import { ColorAlphaField, VariableField } from './variable-field';
 
 type ThemeEditorProps = {
   themeOverrides: {
@@ -75,7 +77,7 @@ export function ThemeEditor({
     );
   }, [themeOverrides, baselineOverrides]);
 
-  const groups = useMemo(() => {
+  const { globalGroups, elementGroups, advancedGroups } = useMemo(() => {
     const hiddenKeys = new Set<string>();
     if (!hasTwoColumnLayout) {
       hiddenKeys.add('autocomplete-panel-columns');
@@ -92,7 +94,8 @@ export function ThemeEditor({
       existing.push(variable);
       grouped.set(variable.group, existing);
     }
-    return GROUP_ORDER.filter((key) => {
+
+    const allGroups = GROUP_ORDER.filter((key) => {
       return grouped.has(key);
     }).map((key) => {
       return {
@@ -101,6 +104,22 @@ export function ThemeEditor({
         variables: grouped.get(key)!,
       };
     });
+
+    const mainGroups = allGroups.filter((group) => {
+      return !ADVANCED_GROUPS.has(group.key);
+    });
+
+    return {
+      globalGroups: mainGroups.filter((group) => {
+        return GLOBAL_GROUPS.has(group.key);
+      }),
+      elementGroups: mainGroups.filter((group) => {
+        return !GLOBAL_GROUPS.has(group.key);
+      }),
+      advancedGroups: allGroups.filter((group) => {
+        return ADVANCED_GROUPS.has(group.key);
+      }),
+    };
   }, [hasTwoColumnLayout]);
 
   const toggleGroup = (key: string) => {
@@ -113,6 +132,187 @@ export function ThemeEditor({
       }
       return next;
     });
+  };
+
+  const renderGroup = (
+    key: string,
+    label: string,
+    variables: typeof AUTOCOMPLETE_VARIABLES
+  ) => {
+    const isOpen = expandedGroups.has(key);
+    const groupOverrideCount = variables.filter((variable) => {
+      return hasOverride(variable, currentOverrides, currentBaseline);
+    }).length;
+
+    // Pair color variables with their alpha companions so they render
+    // side by side instead of stacked.
+    const alphaKeys = new Set<string>();
+    const alphaByColor = new Map<string, (typeof AUTOCOMPLETE_VARIABLES)[0]>();
+    for (const variable of variables) {
+      if (variable.type === 'color' && variable.alpha) {
+        const alphaVar = variables.find((candidate) => {
+          return candidate.key === variable.alpha;
+        });
+        if (alphaVar) {
+          alphaKeys.add(alphaVar.key);
+          alphaByColor.set(variable.key, alphaVar);
+        }
+      }
+    }
+
+    return (
+      <Collapsible key={key} open={isOpen}>
+        <div class="sticky -top-4 z-20 -mx-4 bg-background">
+          <CollapsibleTrigger
+            aria-expanded={isOpen}
+            onClick={() => {
+              return toggleGroup(key);
+            }}
+            class="justify-between border-b p-4 hover:bg-accent"
+          >
+            <span class="text-sm font-medium">{label}</span>
+            <div class="flex items-center gap-2">
+              {groupOverrideCount > 0 && (
+                <span class="inline-flex items-center rounded-full bg-primary/10 px-2 text-[11px] font-medium text-primary leading-5">
+                  {groupOverrideCount} changed
+                </span>
+              )}
+              <ChevronDown
+                class="size-4 text-muted-foreground transition-transform"
+                style={{
+                  transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              />
+            </div>
+          </CollapsibleTrigger>
+        </div>
+        <CollapsibleContent open={isOpen}>
+          <div
+            class={
+              variables.some((variable) => {
+                return variable.section;
+              })
+                ? ''
+                : 'space-y-3 py-3'
+            }
+          >
+            {(() => {
+              const filtered = variables.filter((variable) => {
+                return !alphaKeys.has(variable.key);
+              });
+
+              // Group variables by section for sticky push behavior
+              const sections: {
+                section: string | undefined;
+                items: typeof filtered;
+              }[] = [];
+              for (const variable of filtered) {
+                const current = sections[sections.length - 1];
+                if (!current || current.section !== variable.section) {
+                  sections.push({
+                    section: variable.section,
+                    items: [variable],
+                  });
+                } else {
+                  current.items.push(variable);
+                }
+              }
+
+              const renderVariable = (variable: (typeof filtered)[0]) => {
+                const alphaVar = alphaByColor.get(variable.key);
+                if (alphaVar) {
+                  return (
+                    <ColorAlphaField
+                      key={variable.key}
+                      colorVariable={variable}
+                      colorValue={getCurrentValue(
+                        variable,
+                        currentOverrides,
+                        themeMode
+                      )}
+                      isColorOverridden={hasOverride(
+                        variable,
+                        currentOverrides,
+                        currentBaseline
+                      )}
+                      onColorChange={(value) => {
+                        return onThemeVariableChange(variable.key, value);
+                      }}
+                      onColorReset={() => {
+                        return onThemeVariableReset(variable.key);
+                      }}
+                      alphaVariable={alphaVar}
+                      alphaValue={getCurrentValue(
+                        alphaVar,
+                        currentOverrides,
+                        themeMode
+                      )}
+                      isAlphaOverridden={hasOverride(
+                        alphaVar,
+                        currentOverrides,
+                        currentBaseline
+                      )}
+                      onAlphaChange={(value) => {
+                        return onThemeVariableChange(alphaVar.key, value);
+                      }}
+                      onAlphaReset={() => {
+                        return onThemeVariableReset(alphaVar.key);
+                      }}
+                    />
+                  );
+                }
+
+                return (
+                  <VariableField
+                    key={variable.key}
+                    variable={variable}
+                    value={getCurrentValue(
+                      variable,
+                      currentOverrides,
+                      themeMode
+                    )}
+                    isOverridden={hasOverride(
+                      variable,
+                      currentOverrides,
+                      currentBaseline
+                    )}
+                    onChange={(value) => {
+                      return onThemeVariableChange(variable.key, value);
+                    }}
+                    onReset={() => {
+                      return onThemeVariableReset(variable.key);
+                    }}
+                  />
+                );
+              };
+
+              return sections.map((sectionGroup) => {
+                if (sectionGroup.section) {
+                  return (
+                    <div key={`section-${sectionGroup.section}`}>
+                      <div class="sticky top-9 z-10 -mx-4 flex items-center border-b bg-muted px-4 py-1.5">
+                        <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {sectionGroup.section}
+                        </span>
+                      </div>
+                      <div class="space-y-3 py-3">
+                        {sectionGroup.items.map(renderVariable)}
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key="no-section" class="space-y-3">
+                    {sectionGroup.items.map(renderVariable)}
+                  </div>
+                );
+              });
+            })()}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    );
   };
 
   return (
@@ -239,99 +439,65 @@ export function ThemeEditor({
         <div class="flex-1 overflow-y-auto p-4 pb-40 space-y-3">
           {/* Autocomplete variables */}
           <Collapsible open={autocompleteOpen}>
-            <CollapsibleTrigger
-              aria-expanded={autocompleteOpen}
-              onClick={() => {
-                return setAutocompleteOpen((prev) => {
-                  return !prev;
-                });
-              }}
-              class="justify-between px-1 py-1"
-            >
-              <h3 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Autocomplete
-              </h3>
-              <ChevronDown
-                class="size-4 text-muted-foreground transition-transform"
-                style={{
-                  transform: autocompleteOpen
-                    ? 'rotate(180deg)'
-                    : 'rotate(0deg)',
+            <div class="-mx-4">
+              <CollapsibleTrigger
+                aria-expanded={autocompleteOpen}
+                onClick={() => {
+                  return setAutocompleteOpen((prev) => {
+                    return !prev;
+                  });
                 }}
-              />
-            </CollapsibleTrigger>
+                class="justify-between px-4 py-3"
+              >
+                <h3 class="text-sm font-bold">Autocomplete</h3>
+                <ChevronDown
+                  class="size-4 text-muted-foreground transition-transform"
+                  style={{
+                    transform: autocompleteOpen
+                      ? 'rotate(180deg)'
+                      : 'rotate(0deg)',
+                  }}
+                />
+              </CollapsibleTrigger>
+            </div>
             <CollapsibleContent open={autocompleteOpen}>
-              <div class="space-y-3 pt-2">
-                {groups.map(({ key, label, variables }) => {
-                  const isOpen = expandedGroups.has(key);
-                  const groupOverrideCount = variables.filter((variable) => {
-                    return hasOverride(
-                      variable,
-                      currentOverrides,
-                      currentBaseline
-                    );
-                  }).length;
-
-                  return (
-                    <Collapsible key={key} open={isOpen}>
-                      <CollapsibleTrigger
-                        aria-expanded={isOpen}
-                        onClick={() => {
-                          return toggleGroup(key);
-                        }}
-                        class="justify-between rounded-md border px-3 py-2 hover:bg-accent"
-                      >
-                        <span class="text-sm font-medium">{label}</span>
-                        <div class="flex items-center gap-2">
-                          {groupOverrideCount > 0 && (
-                            <span class="inline-flex items-center rounded-full bg-primary/10 px-2 text-[11px] font-medium text-primary leading-5">
-                              {groupOverrideCount} changed
-                            </span>
-                          )}
-                          <ChevronDown
-                            class="size-4 text-muted-foreground transition-transform"
-                            style={{
-                              transform: isOpen
-                                ? 'rotate(180deg)'
-                                : 'rotate(0deg)',
-                            }}
-                          />
-                        </div>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent open={isOpen}>
-                        <div class="space-y-3 pt-2">
-                          {variables.map((variable) => {
-                            return (
-                              <VariableField
-                                key={variable.key}
-                                variable={variable}
-                                value={getCurrentValue(
-                                  variable,
-                                  currentOverrides,
-                                  themeMode
-                                )}
-                                isOverridden={hasOverride(
-                                  variable,
-                                  currentOverrides,
-                                  currentBaseline
-                                )}
-                                onChange={(value) => {
-                                  return onThemeVariableChange(
-                                    variable.key,
-                                    value
-                                  );
-                                }}
-                                onReset={() => {
-                                  return onThemeVariableReset(variable.key);
-                                }}
-                              />
-                            );
-                          })}
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  );
-                })}
+              <div>
+                {globalGroups.length > 0 && (
+                  <>
+                    <div class="-mx-4 border-b px-4 py-2">
+                      <span class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        Globals
+                      </span>
+                    </div>
+                    {globalGroups.map(({ key, label, variables }) => {
+                      return renderGroup(key, label, variables);
+                    })}
+                  </>
+                )}
+                {elementGroups.length > 0 && (
+                  <>
+                    <div class="-mx-4 border-b px-4 py-2">
+                      <span class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        Elements
+                      </span>
+                    </div>
+                    {elementGroups.map(({ key, label, variables }) => {
+                      return renderGroup(key, label, variables);
+                    })}
+                  </>
+                )}
+                {advancedGroups.length > 0 && (
+                  <>
+                    <div class="-mx-4 border-b px-4 py-2">
+                      <span class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        Advanced
+                      </span>
+                    </div>
+                    {advancedGroups.map(({ key, label, variables }) => {
+                      return renderGroup(key, label, variables);
+                    })}
+                  </>
+                )}
               </div>
             </CollapsibleContent>
           </Collapsible>

@@ -11,41 +11,37 @@
     var(--ais-autocomplete-background-color),
     var(--ais-autocomplete-background-color-alpha)
   );
-  border: var(--ais-autocomplete-border-width) solid
+  border: var(--ais-autocomplete-form-border-width) solid
     rgba(
-      var(--ais-autocomplete-border-color),
-      var(--ais-autocomplete-form-border-opacity)
+      var(--ais-autocomplete-form-border-color),
+      var(--ais-autocomplete-form-border-color-alpha)
     );
   border-radius: var(--ais-autocomplete-form-border-radius);
   display: flex;
   line-height: 1em;
   margin: 0;
+  padding-left: var(--ais-autocomplete-form-horizontal-padding);
+  padding-right: var(--ais-autocomplete-form-horizontal-padding);
   position: relative;
   width: 100%;
   transition:
-    border-color var(--ais-autocomplete-transition-duration)
-      var(--ais-autocomplete-transition-timing-function),
-    box-shadow var(--ais-autocomplete-transition-duration)
-      var(--ais-autocomplete-transition-timing-function),
-    outline-color var(--ais-autocomplete-transition-duration)
-      var(--ais-autocomplete-transition-timing-function);
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    outline-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .ais-AutocompleteForm:focus-within {
-  border-color: rgba(
-    var(--ais-autocomplete-primary-color),
-    var(--ais-autocomplete-primary-color-alpha)
-  );
+  border-color: rgb(var(--ais-autocomplete-form-focus-ring-color));
   box-shadow:
     0 0 0 var(--ais-autocomplete-form-focus-ring-width)
       rgba(
-        var(--ais-autocomplete-primary-color),
-        var(--ais-autocomplete-form-focus-ring-opacity)
+        var(--ais-autocomplete-form-focus-ring-color),
+        var(--ais-autocomplete-form-focus-ring-color-alpha)
       ),
     inset 0 0 0 var(--ais-autocomplete-form-focus-ring-width)
       rgba(
-        var(--ais-autocomplete-primary-color),
-        var(--ais-autocomplete-form-focus-ring-opacity)
+        var(--ais-autocomplete-form-focus-ring-color),
+        var(--ais-autocomplete-form-focus-ring-color-alpha)
       );
   outline: currentColor none medium;
 }

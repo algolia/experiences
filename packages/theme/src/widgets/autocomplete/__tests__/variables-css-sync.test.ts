@@ -32,6 +32,58 @@ describe('autocomplete CSS ↔ variables sync', () => {
   });
 });
 
+describe('autocomplete color alpha declarations', () => {
+  const declaredVars = extractDeclaredVariables();
+  const colorVarsWithoutAlpha = AUTOCOMPLETE_VARIABLES.filter((variable) => {
+    return variable.type === 'color' && !variable.alpha;
+  });
+  const colorVarsWithAlpha = AUTOCOMPLETE_VARIABLES.filter((variable) => {
+    return variable.type === 'color' && variable.alpha;
+  });
+
+  test('every color variable with an `alpha` points to an existing variable', () => {
+    const missing = colorVarsWithAlpha.filter((variable) => {
+      return !declaredVars.has(variable.alpha!);
+    });
+
+    expect(
+      missing.map((variable) => {
+        return `${variable.key} → ${variable.alpha}`;
+      })
+    ).toEqual([]);
+  });
+
+  test('every color variable with an `alpha` points to a number variable', () => {
+    const nonNumber = colorVarsWithAlpha.filter((variable) => {
+      const target = AUTOCOMPLETE_VARIABLES.find((candidate) => {
+        return candidate.key === variable.alpha;
+      });
+      return target && target.type !== 'number';
+    });
+
+    expect(
+      nonNumber.map((variable) => {
+        return `${variable.key} → ${variable.alpha}`;
+      })
+    ).toEqual([]);
+  });
+
+  test('color variables without `alpha` are intentional (allowlist)', () => {
+    // Variables in this set are brand tokens or otherwise don't need a companion.
+    const ALLOWED_NO_ALPHA = new Set<string>([]);
+
+    const unexpected = colorVarsWithoutAlpha.filter((variable) => {
+      return !ALLOWED_NO_ALPHA.has(variable.key);
+    });
+
+    expect(
+      unexpected.map((variable) => {
+        return variable.key;
+      })
+    ).toEqual([]);
+  });
+});
+
 describe('autocomplete presets ↔ variables sync', () => {
   const presetVars = extractPresetVariables();
   const declaredVars = extractDeclaredVariables();

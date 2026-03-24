@@ -9,36 +9,33 @@ export type ThemeMode = 'light' | 'dark';
 export const GROUP_LABELS: Record<string, string> = {
   colors: 'Colors',
   typography: 'Typography',
-  icons: 'Icons',
-  transitions: 'Transitions',
-  input: 'Input',
-  panel: 'Panel',
-  items: 'Items',
-  headers: 'Headers',
-  detached: 'Detached',
-  scrollbar: 'Scrollbar',
+  input: 'Search Input',
+  panel: 'Results Panel',
+  items: 'Result Items',
+  headers: 'Section Headers',
   noResults: 'No Results',
+  detached: 'Detached Mode',
 };
 
 export const GROUP_ORDER = [
   'colors',
   'typography',
-  'icons',
-  'transitions',
   'input',
   'panel',
   'items',
   'headers',
   'noResults',
   'detached',
-  'scrollbar',
 ];
 
+export const GLOBAL_GROUPS = new Set(['colors', 'typography']);
+export const ADVANCED_GROUPS = new Set(['noResults', 'detached']);
+
 export const SWATCH_KEYS = [
-  'autocomplete-primary-color',
+  'autocomplete-item-selected-color',
   'autocomplete-background-color',
   'autocomplete-text-color',
-  'autocomplete-border-color',
+  'autocomplete-form-border-color',
 ] as const;
 
 const CATALOG_DEFAULTS: Record<string, Record<ThemeMode, string>> = {};

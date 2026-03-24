@@ -29,20 +29,21 @@
 .ais-AutocompleteLoadingIndicator svg {
   color: rgba(
     var(--ais-autocomplete-form-search-icon-color),
-    var(--ais-autocomplete-primary-color-alpha)
+    var(--ais-autocomplete-form-search-icon-color-alpha)
   );
   height: auto;
-  max-height: var(--ais-autocomplete-icon-size);
-  stroke-width: var(--ais-autocomplete-icon-stroke-width);
-  width: var(--ais-autocomplete-icon-size);
+  max-height: var(--ais-autocomplete-form-submit-icon-size);
+  width: var(--ais-autocomplete-form-submit-icon-size);
 }
 
 /* --- Submit button / Loading indicator sizing --- */
 .ais-AutocompleteSubmitButton,
 .ais-AutocompleteLoadingIndicator {
+  display: flex;
+  align-items: center;
   height: 100%;
-  padding-left: var(--ais-autocomplete-form-padding-left);
-  padding-right: var(--ais-autocomplete-form-padding-right);
+  padding-left: var(--ais-autocomplete-form-button-horizontal-padding);
+  padding-right: var(--ais-autocomplete-form-button-horizontal-padding);
 }
 
 .ais-AutocompleteSubmitButton {
@@ -90,7 +91,7 @@
 .ais-AutocompleteInput::-moz-placeholder {
   color: rgba(
     var(--ais-autocomplete-form-placeholder-color),
-    var(--ais-autocomplete-muted-color-alpha)
+    var(--ais-autocomplete-form-placeholder-color-alpha)
   );
   opacity: 1;
 }
@@ -98,13 +99,13 @@
 .ais-AutocompleteInput::placeholder {
   color: rgba(
     var(--ais-autocomplete-form-placeholder-color),
-    var(--ais-autocomplete-muted-color-alpha)
+    var(--ais-autocomplete-form-placeholder-color-alpha)
   );
   opacity: 1;
 }
 
 .ais-AutocompleteInput:focus {
-  border-color: none;
+  border: none;
   box-shadow: none;
   outline: none;
 }
@@ -132,15 +133,14 @@
   border: 0;
   color: rgba(
     var(--ais-autocomplete-form-clear-button-color),
-    var(--ais-autocomplete-muted-color-alpha)
+    var(--ais-autocomplete-form-clear-button-color-alpha)
   );
   cursor: pointer;
   display: flex;
   height: 100%;
   margin: 0;
-  padding: 0 var(--ais-autocomplete-form-padding-right);
-  transition: color var(--ais-autocomplete-transition-duration)
-    var(--ais-autocomplete-transition-timing-function);
+  padding: 0 var(--ais-autocomplete-form-button-horizontal-padding);
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .ais-AutocompleteClearButton:hover,
@@ -156,6 +156,5 @@
 }
 
 .ais-AutocompleteClearButton svg {
-  stroke-width: var(--ais-autocomplete-icon-stroke-width);
-  width: var(--ais-autocomplete-icon-size);
+  width: var(--ais-autocomplete-form-clear-icon-size);
 }
