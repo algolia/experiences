@@ -18,14 +18,14 @@ export function AddWidgetPopover({ onSelect, filter }: AddWidgetPopoverProps) {
     <div class="space-y-3">
       <button
         type="button"
-        aria-label="Add widget"
+        aria-label="Add block"
         onClick={() => {
           return setOpen(!open);
         }}
         class="group flex w-full items-center justify-center gap-2 rounded-xl border border-dashed p-4 text-xs font-medium text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
       >
         <Plus class="size-3.5 transition-transform group-hover:rotate-90" />
-        Add Widget
+        Add Block
       </button>
 
       <CollapsibleContent open={open}>

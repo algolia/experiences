@@ -177,11 +177,11 @@ describe('toolbar', () => {
         return host!;
       }
 
-      it('shows a popover with widget options when clicking "Add widget"', async () => {
+      it('shows a popover with only Autocomplete when clicking "Add block"', async () => {
         const host = await openToolbar();
 
         const addButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
-          'button[aria-label="Add widget"]'
+          'button[aria-label="Add block"]'
         );
         expect(addButton).not.toBeNull();
         addButton!.click();
@@ -189,33 +189,24 @@ describe('toolbar', () => {
           return setTimeout(resolve, 50);
         });
 
-        const popoverText = host.shadowRoot?.innerHTML ?? '';
-        expect(popoverText).toContain('Autocomplete');
-        expect(popoverText).toContain('Chat');
-        expect(popoverText).toContain('Search Box');
-        expect(popoverText).toContain('Configure');
-        expect(popoverText).toContain('Pagination');
-        expect(popoverText).toContain('Sort By');
-        expect(popoverText).toContain('Menu');
-        expect(popoverText).toContain('Toggle Refinement');
-        expect(popoverText).toContain('Hits Per Page');
-        expect(popoverText).toContain('Rating Menu');
-        expect(popoverText).toContain('Range Slider');
-        expect(popoverText).toContain('Trending Items');
-        expect(popoverText).toContain('Numeric Menu');
-        expect(popoverText).toContain('Current Refinements');
-        expect(popoverText).toContain('Range Input');
-        expect(popoverText).toContain('Breadcrumb');
-        expect(popoverText).toContain('Hits');
-        expect(popoverText).toContain('Infinite Hits');
-        expect(popoverText).toContain('Coming Soon');
+        // Find the popover container (the collapsible list inside add-block)
+        const popoverButtons = Array.from(
+          host.shadowRoot?.querySelectorAll('button') ?? []
+        ).filter((btn) => {
+          return btn !== addButton && btn.closest('.rounded-xl.border.p-1');
+        });
+        const popoverLabels = popoverButtons.map((btn) => {
+          return btn.textContent?.trim();
+        });
+        expect(popoverLabels).toContain('Autocomplete');
+        expect(popoverLabels).toHaveLength(1);
       });
 
       it('adds a new block when selecting "Autocomplete"', async () => {
         const host = await openToolbar();
 
         const addButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
-          'button[aria-label="Add widget"]'
+          'button[aria-label="Add block"]'
         );
         addButton!.click();
         await new Promise((resolve) => {
@@ -248,33 +239,21 @@ describe('toolbar', () => {
         expect(cards.length).toBe(3);
       });
 
-      it('does not allow clicking disabled options', async () => {
+      it('does not show disabled options in the filtered dropdown', async () => {
         const host = await openToolbar();
 
         const addButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
-          'button[aria-label="Add widget"]'
+          'button[aria-label="Add block"]'
         );
         addButton!.click();
         await new Promise((resolve) => {
           return setTimeout(resolve, 50);
         });
 
-        // Disabled items are rendered as <div> elements, not <button>
-        // Check that "Frequently Bought Together" is not a button
-        const buttons = Array.from(
-          host.shadowRoot?.querySelectorAll('button') ?? []
-        );
-        const disabledButton = buttons.find((btn) => {
-          return (
-            btn.textContent?.includes('Frequently Bought Together') &&
-            btn !== addButton
-          );
-        });
-        expect(disabledButton).toBeUndefined();
-
-        // Verify the text is still rendered (as a div)
+        // Only Autocomplete should be visible; disabled items like
+        // "Frequently Bought Together" are filtered out entirely.
         const popoverText = host.shadowRoot?.innerHTML ?? '';
-        expect(popoverText).toContain('Frequently Bought Together');
+        expect(popoverText).not.toContain('Frequently Bought Together');
       });
     });
 
@@ -308,7 +287,7 @@ describe('toolbar', () => {
       it('shows the correct widget count', async () => {
         const host = await openToolbar();
         const text = host.shadowRoot?.innerHTML ?? '';
-        expect(text).toContain('2 widgets configured');
+        expect(text).toContain('2 blocks configured');
       });
 
       it('uses singular "widget" for a single block', async () => {
@@ -325,7 +304,7 @@ describe('toolbar', () => {
 
         const host = await openToolbar();
         const text = host.shadowRoot?.innerHTML ?? '';
-        expect(text).toContain('1 widget configured');
+        expect(text).toContain('1 block configured');
         expect(text).not.toContain('1 widgets');
       });
 
@@ -429,7 +408,7 @@ describe('toolbar', () => {
         });
 
         const text = host.shadowRoot?.innerHTML ?? '';
-        expect(text).toContain('1 widget configured');
+        expect(text).toContain('1 block configured');
       });
     });
 
@@ -773,14 +752,14 @@ describe('toolbar', () => {
       it('counts only child widgets, not index blocks', async () => {
         const host = await openToolbar();
         const html = host.shadowRoot?.innerHTML ?? '';
-        expect(html).toContain('3 widgets configured');
+        expect(html).toContain('3 blocks configured');
       });
 
       it('does not show index in the add widget popover', async () => {
         const host = await openToolbar();
 
         const addButton = host.shadowRoot?.querySelector<HTMLButtonElement>(
-          'button[aria-label="Add widget"]'
+          'button[aria-label="Add block"]'
         );
         addButton!.click();
         await new Promise((resolve) => {
@@ -868,7 +847,7 @@ describe('toolbar', () => {
         expect(html).not.toContain('articles');
         // products index should remain
         expect(html).toContain('products');
-        expect(html).toContain('2 widgets configured');
+        expect(html).toContain('2 blocks configured');
       });
 
       it('hides widget fields when index has no name', async () => {
