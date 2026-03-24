@@ -176,7 +176,7 @@ export function IndicesConfigField({
             onDragEnd={onDragEnd}
           >
             <CollapsibleTrigger
-              class="w-full justify-between px-2.5 py-2"
+              class="group/trigger w-full justify-between rounded-md px-2.5 py-2 transition-colors hover:bg-accent/50"
               onClick={() => {
                 return setExpandedIndex(isExpanded ? null : index);
               }}
@@ -199,7 +199,7 @@ export function IndicesConfigField({
               <span class="flex items-center gap-1.5">
                 <button
                   type="button"
-                  class="inline-flex size-6 items-center justify-center rounded hover:bg-accent"
+                  class="inline-flex size-6 items-center justify-center rounded text-muted-foreground hover:text-destructive hover:bg-accent transition-colors"
                   aria-label="Remove index"
                   onClick={(event) => {
                     event.stopPropagation();
@@ -208,9 +208,11 @@ export function IndicesConfigField({
                 >
                   <Trash2 class="size-3.5" />
                 </button>
-                <ChevronDown
-                  class={`size-3.5 shrink-0 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                />
+                <div class="flex size-6 items-center justify-center rounded-full transition-colors group-hover/trigger:bg-accent">
+                  <ChevronDown
+                    class={`size-3.5 shrink-0 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                  />
+                </div>
               </span>
             </CollapsibleTrigger>
 
