@@ -65,62 +65,7 @@ export function ShadowField({ layers, onInput }: ShadowFieldProps) {
                 </button>
               )}
             </div>
-            <div class="grid grid-cols-4 gap-1.5">
-              <div>
-                <span class="text-[10px] text-muted-foreground">X</span>
-                <Input
-                  type="number"
-                  value={layer.offsetX}
-                  onInput={(event) => {
-                    return updateLayer(index, {
-                      offsetX: Number((event.target as HTMLInputElement).value),
-                    });
-                  }}
-                  class="h-7 text-xs font-mono px-1.5"
-                />
-              </div>
-              <div>
-                <span class="text-[10px] text-muted-foreground">Y</span>
-                <Input
-                  type="number"
-                  value={layer.offsetY}
-                  onInput={(event) => {
-                    return updateLayer(index, {
-                      offsetY: Number((event.target as HTMLInputElement).value),
-                    });
-                  }}
-                  class="h-7 text-xs font-mono px-1.5"
-                />
-              </div>
-              <div>
-                <span class="text-[10px] text-muted-foreground">Blur</span>
-                <Input
-                  type="number"
-                  min={0}
-                  value={layer.blur}
-                  onInput={(event) => {
-                    return updateLayer(index, {
-                      blur: Number((event.target as HTMLInputElement).value),
-                    });
-                  }}
-                  class="h-7 text-xs font-mono px-1.5"
-                />
-              </div>
-              <div>
-                <span class="text-[10px] text-muted-foreground">Spread</span>
-                <Input
-                  type="number"
-                  value={layer.spread}
-                  onInput={(event) => {
-                    return updateLayer(index, {
-                      spread: Number((event.target as HTMLInputElement).value),
-                    });
-                  }}
-                  class="h-7 text-xs font-mono px-1.5"
-                />
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5">
               <input
                 type="color"
                 value={rgbTripletToHex(layer.color)}
@@ -133,22 +78,66 @@ export function ShadowField({ layers, onInput }: ShadowFieldProps) {
                 }}
                 class="size-7 shrink-0 cursor-pointer rounded border border-input p-0.5"
               />
-              <div class="flex-1">
-                <span class="text-[10px] text-muted-foreground">Opacity</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={layer.opacity}
-                  onInput={(event) => {
-                    return updateLayer(index, {
-                      opacity: Number((event.target as HTMLInputElement).value),
-                    });
-                  }}
-                  class="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
-                />
-              </div>
+              <Input
+                type="number"
+                value={layer.offsetX}
+                placeholder="X"
+                onInput={(event) => {
+                  return updateLayer(index, {
+                    offsetX: Number((event.target as HTMLInputElement).value),
+                  });
+                }}
+                class="h-7 text-xs font-mono px-1.5 min-w-0"
+              />
+              <Input
+                type="number"
+                value={layer.offsetY}
+                placeholder="Y"
+                onInput={(event) => {
+                  return updateLayer(index, {
+                    offsetY: Number((event.target as HTMLInputElement).value),
+                  });
+                }}
+                class="h-7 text-xs font-mono px-1.5 min-w-0"
+              />
+              <Input
+                type="number"
+                min={0}
+                value={layer.blur}
+                placeholder="Blur"
+                onInput={(event) => {
+                  return updateLayer(index, {
+                    blur: Number((event.target as HTMLInputElement).value),
+                  });
+                }}
+                class="h-7 text-xs font-mono px-1.5 min-w-0"
+              />
+              <Input
+                type="number"
+                value={layer.spread}
+                placeholder="Spread"
+                onInput={(event) => {
+                  return updateLayer(index, {
+                    spread: Number((event.target as HTMLInputElement).value),
+                  });
+                }}
+                class="h-7 text-xs font-mono px-1.5 min-w-0"
+              />
+            </div>
+            <div class="flex items-center gap-2">
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={layer.opacity}
+                onInput={(event) => {
+                  return updateLayer(index, {
+                    opacity: Number((event.target as HTMLInputElement).value),
+                  });
+                }}
+                class="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
+              />
               <span class="text-xs text-muted-foreground font-mono w-8 text-right">
                 {layer.opacity}
               </span>

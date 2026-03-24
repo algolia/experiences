@@ -55,8 +55,8 @@ body.ais-Autocomplete--detached {
 .ais-AutocompleteDetachedContainer--modal {
   border: var(--ais-autocomplete-detached-modal-border-width) solid
     rgba(
-      var(--ais-autocomplete-border-color),
-      var(--ais-autocomplete-detached-modal-border-opacity)
+      var(--ais-autocomplete-detached-modal-border-color),
+      var(--ais-autocomplete-detached-modal-border-color-alpha)
     );
   border-radius: var(--ais-autocomplete-detached-modal-border-radius);
   bottom: inherit;
@@ -113,8 +113,8 @@ body.ais-Autocomplete--detached {
 .ais-AutocompleteDetachedFormContainer {
   border-bottom: solid var(--ais-autocomplete-detached-form-border-width)
     rgba(
-      var(--ais-autocomplete-border-color),
-      var(--ais-autocomplete-detached-form-border-opacity)
+      var(--ais-autocomplete-detached-form-border-color),
+      var(--ais-autocomplete-detached-form-border-color-alpha)
     );
   color: rgba(
     var(--ais-autocomplete-text-color),
@@ -123,7 +123,7 @@ body.ais-Autocomplete--detached {
   display: flex;
   flex-direction: row;
   font-family: inherit;
-  font-size: calc(var(--ais-autocomplete-base-unit) * 1px);
+  font-size: var(--ais-autocomplete-base-unit);
   font-weight: normal;
   justify-content: space-between;
   line-height: 1em;
@@ -137,6 +137,7 @@ body.ais-Autocomplete--detached {
   border-radius: 0;
   border: 0;
   flex: 1;
+  padding: 0;
 }
 
 .ais-AutocompleteDetachedFormContainer .ais-AutocompleteForm:focus-within {
@@ -155,7 +156,7 @@ body.ais-Autocomplete--detached {
   cursor: pointer;
   display: flex;
   font: inherit;
-  padding: 0 var(--ais-autocomplete-form-padding-right);
+  padding: 0 var(--ais-autocomplete-form-button-horizontal-padding);
 }
 
 /* --- Detached search button (trigger) --- */
@@ -165,51 +166,50 @@ body.ais-Autocomplete--detached {
     var(--ais-autocomplete-background-color),
     var(--ais-autocomplete-background-color-alpha)
   );
-  border: var(--ais-autocomplete-border-width) solid
+  border: var(--ais-autocomplete-form-border-width) solid
     rgba(
-      var(--ais-autocomplete-border-color),
-      var(--ais-autocomplete-form-border-opacity)
+      var(--ais-autocomplete-form-border-color),
+      var(--ais-autocomplete-form-border-color-alpha)
     );
   border-radius: var(--ais-autocomplete-form-border-radius);
   color: rgba(
     var(--ais-autocomplete-form-placeholder-color),
-    var(--ais-autocomplete-muted-color-alpha)
+    var(--ais-autocomplete-form-placeholder-color-alpha)
   );
   cursor: pointer;
   display: flex;
   font: inherit;
-  font-size: calc(var(--ais-autocomplete-base-unit) * 1px);
+  font-size: var(--ais-autocomplete-base-unit);
   height: var(--ais-autocomplete-form-input-height);
   margin: 0;
+  padding-left: var(--ais-autocomplete-form-horizontal-padding);
+  padding-right: var(--ais-autocomplete-form-horizontal-padding);
   position: relative;
   text-align: left;
   width: 100%;
   transition:
-    border-color var(--ais-autocomplete-transition-duration)
-      var(--ais-autocomplete-transition-timing-function),
-    box-shadow var(--ais-autocomplete-transition-duration)
-      var(--ais-autocomplete-transition-timing-function);
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .ais-AutocompleteDetachedSearchButtonIcon {
   align-items: center;
   color: rgba(
     var(--ais-autocomplete-form-search-icon-color),
-    var(--ais-autocomplete-primary-color-alpha)
+    var(--ais-autocomplete-form-search-icon-color-alpha)
   );
   cursor: initial;
   display: flex;
   flex-shrink: 0;
   height: 100%;
   justify-content: center;
-  padding-left: var(--ais-autocomplete-form-padding-left);
-  padding-right: var(--ais-autocomplete-form-padding-right);
+  padding-left: var(--ais-autocomplete-form-button-horizontal-padding);
+  padding-right: var(--ais-autocomplete-form-button-horizontal-padding);
 }
 
 .ais-AutocompleteDetachedSearchButtonIcon svg {
-  height: var(--ais-autocomplete-icon-size);
-  stroke-width: var(--ais-autocomplete-icon-stroke-width);
-  width: var(--ais-autocomplete-icon-size);
+  height: var(--ais-autocomplete-form-submit-icon-size);
+  width: var(--ais-autocomplete-form-submit-icon-size);
 }
 
 .ais-AutocompleteDetachedSearchButtonPlaceholder[hidden] {
@@ -221,7 +221,7 @@ body.ais-Autocomplete--detached {
     var(--ais-autocomplete-text-color),
     var(--ais-autocomplete-text-color-alpha)
   );
-  line-height: var(--ais-autocomplete-detached-search-query-line-height);
+  line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -233,7 +233,7 @@ body.ais-Autocomplete--detached {
   border: 0;
   color: rgba(
     var(--ais-autocomplete-form-clear-button-color),
-    var(--ais-autocomplete-muted-color-alpha)
+    var(--ais-autocomplete-form-clear-button-color-alpha)
   );
   cursor: pointer;
   display: flex;
@@ -242,9 +242,8 @@ body.ais-Autocomplete--detached {
   justify-content: center;
   margin: 0;
   margin-left: auto;
-  padding: 0 var(--ais-autocomplete-detached-clear-button-padding);
-  transition: color var(--ais-autocomplete-transition-duration)
-    var(--ais-autocomplete-transition-timing-function);
+  padding: 0 var(--ais-autocomplete-form-button-horizontal-padding);
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .ais-AutocompleteDetachedSearchButtonClear:hover,
@@ -256,7 +255,6 @@ body.ais-Autocomplete--detached {
 }
 
 .ais-AutocompleteDetachedSearchButtonClear svg {
-  height: var(--ais-autocomplete-icon-size);
-  stroke-width: var(--ais-autocomplete-icon-stroke-width);
-  width: var(--ais-autocomplete-icon-size);
+  height: var(--ais-autocomplete-form-clear-icon-size);
+  width: var(--ais-autocomplete-form-clear-icon-size);
 }
