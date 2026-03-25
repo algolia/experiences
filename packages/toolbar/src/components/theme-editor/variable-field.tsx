@@ -25,7 +25,7 @@ function ResetButton({
     <button
       type="button"
       onClick={onClick}
-      class="text-muted-foreground hover:text-foreground ml-1 shrink-0"
+      class="text-muted-foreground hover:text-foreground hover:bg-muted ml-1 shrink-0 rounded-sm p-0.5 transition-colors"
       aria-label={`Reset ${label}`}
       title="Reset to default"
     >
