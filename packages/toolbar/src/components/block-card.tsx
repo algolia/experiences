@@ -115,7 +115,7 @@ export function BlockCard({
           onClick={onToggle}
           aria-expanded={open}
         >
-          <CardHeader class="group w-full justify-between rounded-t-xl px-4 py-3">
+          <CardHeader class="group w-full justify-between rounded-t-xl px-4 py-3 hover:bg-accent/50 transition-colors">
             <div class="flex min-w-0 items-center gap-2.5">
               {icon && (
                 <div
@@ -186,9 +186,13 @@ export function BlockCard({
                   <Trash2 class="size-4" />
                 </Button>
               </div>
-              <ChevronDown
-                class={`size-4 shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
-              />
+              <div
+                class={`flex size-6 items-center justify-center rounded-full transition-colors group-hover:bg-accent`}
+              >
+                <ChevronDown
+                  class={`size-4 shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
+                />
+              </div>
             </div>
           </CardHeader>
         </CollapsibleTrigger>

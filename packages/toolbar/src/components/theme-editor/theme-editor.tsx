@@ -326,13 +326,13 @@ export function ThemeEditor({
         />
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <div class="bg-muted inline-flex h-8 rounded-lg p-1">
+            <div class="bg-muted inline-flex h-8 gap-0.5 rounded-lg p-1">
               <button
                 type="button"
                 class={`inline-flex items-center rounded-md px-3 text-xs font-medium transition-all ${
                   themeModeConfig === 'adaptive'
                     ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-background/70'
                 }`}
                 onClick={() => {
                   return onThemeModeConfigChange('adaptive');
@@ -345,7 +345,7 @@ export function ThemeEditor({
                 class={`inline-flex items-center rounded-md px-3 text-xs font-medium transition-all ${
                   themeModeConfig === 'fixed'
                     ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-background/70'
                 }`}
                 onClick={() => {
                   return onThemeModeConfigChange('fixed');
@@ -355,13 +355,13 @@ export function ThemeEditor({
               </button>
             </div>
             {themeModeConfig === 'adaptive' && (
-              <div class="bg-muted inline-flex h-8 rounded-lg p-1">
+              <div class="bg-muted inline-flex h-8 gap-0.5 rounded-lg p-1">
                 <button
                   type="button"
                   class={`inline-flex items-center rounded-md px-3 text-xs font-medium transition-all ${
                     themeMode === 'light'
                       ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-background/70'
                   }`}
                   onClick={() => {
                     return onThemeModeChange('light');
@@ -374,7 +374,7 @@ export function ThemeEditor({
                   class={`inline-flex items-center rounded-md px-3 text-xs font-medium transition-all ${
                     themeMode === 'dark'
                       ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-background/70'
                   }`}
                   onClick={() => {
                     return onThemeModeChange('dark');
@@ -399,13 +399,13 @@ export function ThemeEditor({
 
       {/* View switcher */}
       <div class="shrink-0 px-4 pt-3">
-        <div class="bg-muted inline-flex h-9 w-full rounded-lg p-1">
+        <div class="bg-muted inline-flex h-9 w-full gap-0.5 rounded-lg p-1">
           <button
             type="button"
             class={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all ${
               view === 'customize'
                 ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-background/70'
             }`}
             onClick={() => {
               return setView('customize');
@@ -419,7 +419,7 @@ export function ThemeEditor({
             class={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all ${
               view === 'generate'
                 ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-background/70'
             }`}
             onClick={() => {
               return setView('generate');

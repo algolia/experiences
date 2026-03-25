@@ -56,7 +56,7 @@ export function ObjectField({
       </div>
       <CollapsibleContent open={enabled}>
         <CollapsibleTrigger
-          class="mt-2 w-full justify-between py-1"
+          class="mt-2 w-full justify-between rounded-md py-1 px-1 hover:bg-accent hover:text-foreground transition-colors"
           onClick={() => {
             return setOpen(!open);
           }}

@@ -4,6 +4,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:local": "DASHBOARD_BASE=http://localhost:8181 turbo run dev",
     "lint": "oxlint",
     "format": "prettier --write \"**/*.{ts,tsx,md,html}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,md,html}\"",
