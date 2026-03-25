@@ -16,6 +16,11 @@ const BASE = import.meta.env.DEV ? LOCAL_PREFIX : CANARY_URL;
 const LOADER_SRC = `${BASE}experiences.js`;
 const PREVIEW_LOADER_SRC = `${BASE}experiences.preview.js`;
 
+const DEFAULT_EXPERIENCE_ID = '11e02c95-34ef-45c6-89c0-8e3cd5538a23';
+const experienceId =
+  new URLSearchParams(window.location.search).get('experienceId') ||
+  DEFAULT_EXPERIENCE_ID;
+
 const pages = (
   <>
     <Route index element={<HomePage />} />
@@ -29,7 +34,7 @@ function Layout({ preview = false }: { preview?: boolean }) {
     src: preview ? PREVIEW_LOADER_SRC : LOADER_SRC,
     appId: 'F4T6CUV2AH',
     apiKey: '95d23095918f4e5c35e11d5e5e57b92d',
-    experienceId: '11e02c95-34ef-45c6-89c0-8e3cd5538a23',
+    experienceId,
     env: 'beta',
   });
 
