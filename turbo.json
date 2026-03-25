@@ -14,8 +14,8 @@
     "test": {},
     "dev": {
       "cache": false,
-      "persistent": true
-    },
-    "test": {}
+      "persistent": true,
+      "env": ["DASHBOARD_BASE"]
+    }
   }
 }

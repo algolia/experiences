@@ -26,10 +26,15 @@ type AppProps = {
   initialExperience: ExperienceApiResponse;
 };
 
-const DASHBOARD_BASE: Record<Environment, string> = {
+const DASHBOARD_BASE_URLS: Record<Environment, string> = {
   beta: 'https://beta-dashboard.algolia.com',
   prod: 'https://dashboard.algolia.com',
 };
+
+function getDashboardBase(env: Environment): string {
+  const override = process.env.DASHBOARD_BASE;
+  return override || DASHBOARD_BASE_URLS[env];
+}
 
 // oxlint-disable-next-line id-length
 function findLastIndex<T>(arr: T[], predicate: (item: T) => boolean): number {
@@ -231,7 +236,7 @@ export function App({ config, initialExperience }: AppProps) {
     if (writeApiKey) {
       setIsExpanded(true);
     } else {
-      location.href = `${DASHBOARD_BASE[config.env || 'prod']}/apps/${config.appId}/experiences/${initialExperience.indexName}/authenticate/${config.experienceId}?previewUrl=${encodeURIComponent(location.href)}`;
+      location.href = `${getDashboardBase(config.env || 'prod')}/apps/${config.appId}/experiences/${initialExperience.indexName}/authenticate/${config.experienceId}?previewUrl=${encodeURIComponent(location.href)}`;
     }
   };
 
