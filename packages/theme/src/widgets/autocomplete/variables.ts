@@ -948,7 +948,7 @@ export const AUTOCOMPLETE_VARIABLES: ThemeVariable[] = [
     type: 'number',
     group: 'noResults',
     section: 'Description',
-    default: '0.5',
+    default: '0.65',
     description: 'Opacity of the no results description text.',
     constraints: { min: 0, max: 1, step: 0.05 },
   },

@@ -8,7 +8,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md,html}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,md,html}\"",
     "check-types": "turbo run check-types",
-    "test": "turbo run test",
+    "test": "turbo run test --filter='!@experiences/a11y-tests'",
     "prepare": "husky"
   },
   "lint-staged": {
