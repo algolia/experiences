@@ -99,5 +99,5 @@
 /* --- Two-column panel layout --- */
 .ais-AutocompletePanelTwoColumns {
   display: grid;
-  grid-template-columns: var(--ais-autocomplete-panel-columns, 1fr 1fr);
+  grid-template-columns: var(--ais-autocomplete-panel-columns, 2fr 3fr);
 }

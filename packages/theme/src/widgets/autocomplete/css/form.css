@@ -18,7 +18,6 @@
     );
   border-radius: var(--ais-autocomplete-form-border-radius);
   display: flex;
-  line-height: 1em;
   margin: 0;
   padding-left: var(--ais-autocomplete-form-horizontal-padding);
   padding-right: var(--ais-autocomplete-form-horizontal-padding);
