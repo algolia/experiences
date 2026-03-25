@@ -36,6 +36,17 @@
   width: var(--ais-autocomplete-form-submit-icon-size);
 }
 
+/*
+ * Workaround: Preact doesn't convert camelCase SVG attributes to kebab-case
+ * in setAttribute(), so strokeWidth and strokeDasharray set by
+ * instantsearch-ui-components are silently ignored by the browser.
+ * We re-apply them via CSS until this is fixed upstream in Preact.
+ */
+.ais-AutocompleteLoadingIndicator circle {
+  stroke-dasharray: 164.93361431346415 56.97787143782138;
+  stroke-width: 6;
+}
+
 /* --- Submit button / Loading indicator sizing --- */
 .ais-AutocompleteSubmitButton,
 .ais-AutocompleteLoadingIndicator {
@@ -62,6 +73,19 @@
 }
 
 .ais-AutocompleteLoadingIndicator[hidden] {
+  display: none;
+}
+
+/*
+ * Workaround: instantsearch-ui-components renders the submit button and
+ * loading indicator as siblings inside the same prefix wrapper, but doesn't
+ * hide the submit button when loading. Without this, both are visible and
+ * the input gets pushed to the right during stalled searches.
+ */
+.ais-AutocompleteInputWrapperPrefix:has(
+    .ais-AutocompleteLoadingIndicator:not([hidden])
+  )
+  .ais-AutocompleteLabel {
   display: none;
 }
 
