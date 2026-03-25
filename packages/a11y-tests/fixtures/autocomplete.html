@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autocomplete A11y Test Harness</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="autocomplete"></div>
+
+    <script>
+      // The runtime bundle is injected by Playwright via `addScriptTag`.
+      // Configuration is driven by window.__TEST_CONFIG__, set before the
+      // runtime loads.
+
+      async function boot() {
+        const config = window.__TEST_CONFIG__;
+        if (!config) return;
+
+        await window.AlgoliaExperiences.run({
+          appId: config.appId || 'TEST_APP',
+          apiKey: config.apiKey || 'TEST_KEY',
+          experienceId: config.experienceId || 'test-experience',
+          config: config.experienceConfig,
+        });
+      }
+
+      // Called from Playwright after setup is complete.
+      window.__boot = boot;
+    </script>
+  </body>
+</html>

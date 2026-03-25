@@ -1,0 +1,12 @@
+{
+  "name": "@experiences/a11y-tests",
+  "private": true,
+  "scripts": {
+    "test": "npx playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@experiences/theme": "*",
+    "@playwright/test": "^1.52.0"
+  }
+}

@@ -61,7 +61,7 @@ export function renderListItem(template: Record<string, string>) {
       <div class="ais-AutocompleteListItem">
         ${image &&
         html`<div class="ais-AutocompleteListItemImageContainer">
-          <img class="ais-AutocompleteListItemImage" src=${image} />
+          <img class="ais-AutocompleteListItemImage" src=${image} alt="" />
         </div>`}
         <div class="ais-AutocompleteListItemInfo">
           ${category &&
