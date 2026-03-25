@@ -278,6 +278,8 @@ async function openPanel(page: import('@playwright/test').Page) {
 
   await page.waitForSelector('.ais-AutocompletePanel', { timeout: 10000 });
   await page.waitForSelector('[aria-expanded="true"]', { timeout: 5000 });
+  // Allow time for theme CSS variables to fully apply
+  await page.waitForTimeout(500);
 }
 
 async function openDetachedPanel(page: import('@playwright/test').Page) {
@@ -295,6 +297,8 @@ async function openDetachedPanel(page: import('@playwright/test').Page) {
 
   await page.waitForSelector('.ais-AutocompletePanel', { timeout: 10000 });
   await page.waitForSelector('[aria-expanded="true"]', { timeout: 5000 });
+  // Allow time for theme CSS variables to fully apply
+  await page.waitForTimeout(500);
 }
 
 async function runAxe(
