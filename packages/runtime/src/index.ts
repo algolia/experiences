@@ -9,7 +9,6 @@ import {
   type Environment,
   type ExperienceApiResponse,
 } from './experiences';
-import { version } from '../package.json';
 
 export { createExperienceMiddleware, experience };
 
@@ -60,7 +59,6 @@ export async function run(options?: RunOptions | ExperienceApiResponse) {
   }
 
   const searchClient = algoliasearch(appId, apiKey);
-  searchClient.addAlgoliaAgent('Experiences', version);
 
   search = instantsearch({
     indexName,

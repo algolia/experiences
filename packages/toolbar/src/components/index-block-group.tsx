@@ -64,7 +64,7 @@ export function IndexBlockGroup({
   return (
     <div class="space-y-3">
       {/* Lightweight section header */}
-      <div class="group flex items-center gap-2 rounded-md px-1 transition-colors hover:bg-accent/50">
+      <div class="group flex items-center gap-2 px-1">
         <span class="text-muted-foreground text-xs font-medium uppercase tracking-wide">
           Index
         </span>
