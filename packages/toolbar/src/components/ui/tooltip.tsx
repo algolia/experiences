@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact';
-import { useCallback, useId, useRef, useState } from 'preact/hooks';
+import { useEffect, useId, useRef, useState } from 'preact/hooks';
 
 import { cn } from '../../lib/utils';
 
@@ -9,57 +9,83 @@ type TooltipProps = {
   class?: string;
 };
 
-type Position = { top: number; left: number };
+function findBoundary(element: HTMLElement): HTMLElement | null {
+  let current = element.parentElement;
+  while (current) {
+    const pos = getComputedStyle(current).position;
+    if (pos === 'fixed' || pos === 'absolute') return current;
+    current = current.parentElement;
+  }
+  return null;
+}
 
 function Tooltip({ content, children, class: className }: TooltipProps) {
   const id = useId();
   const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState<Position | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const tooltipRef = useRef<HTMLSpanElement>(null);
+  const boundaryRef = useRef<HTMLElement | null>(null);
 
-  const reposition = useCallback(() => {
+  function reposition() {
     const trigger = triggerRef.current;
     const tooltip = tooltipRef.current;
     if (!trigger || !tooltip) return;
 
-    // Use the Shadow DOM host as the boundary for clamping. Falls back to
-    // the viewport width if rendered outside a Shadow DOM (e.g., in tests).
-    const root = trigger.getRootNode();
-    const host = root instanceof ShadowRoot ? (root.host as HTMLElement) : null;
-    const hostRect = host?.getBoundingClientRect();
+    if (!boundaryRef.current) {
+      boundaryRef.current = findBoundary(trigger);
+    }
+
+    const boundaryRect = boundaryRef.current?.getBoundingClientRect();
     const triggerRect = trigger.getBoundingClientRect();
-    const tooltipWidth = tooltip.offsetWidth;
     const tooltipHeight = tooltip.offsetHeight;
 
     const gap = 6;
     const padding = 8;
-    const minLeft = (hostRect?.left ?? 0) + padding;
-    const maxRight = (hostRect?.right ?? window.innerWidth) - padding;
+    const minTop = (boundaryRect?.top ?? 0) + padding;
+    const maxBottom = (boundaryRect?.bottom ?? window.innerHeight) - padding;
 
-    // Center horizontally on trigger, clamp within host
-    const idealLeft =
-      triggerRect.left + triggerRect.width / 2 - tooltipWidth / 2;
-    const clampedLeft = Math.max(
-      minLeft,
-      Math.min(idealLeft, maxRight - tooltipWidth)
+    // Position to the right of the trigger, vertically centered
+    const left = triggerRect.right + gap;
+    const top = triggerRect.top + triggerRect.height / 2 - tooltipHeight / 2;
+
+    // Clamp vertically within boundary
+    const clampedTop = Math.max(
+      minTop,
+      Math.min(top, maxBottom - tooltipHeight)
     );
 
-    setPosition({
-      top: triggerRect.top - tooltipHeight - gap,
-      left: clampedLeft,
-    });
-  }, []);
+    tooltip.style.top = `${clampedTop}px`;
+    tooltip.style.left = `${left}px`;
+  }
 
-  const show = useCallback(() => {
+  // Hide tooltip when the nearest scrollable ancestor scrolls
+  useEffect(() => {
+    if (!open || !triggerRef.current) return;
+
+    let scrollable: HTMLElement | null = triggerRef.current.parentElement;
+    while (scrollable) {
+      if (getComputedStyle(scrollable).overflowY === 'auto') break;
+      scrollable = scrollable.parentElement;
+    }
+    if (!scrollable) return;
+
+    const onScroll = () => {
+      setOpen(false);
+    };
+    scrollable.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      scrollable.removeEventListener('scroll', onScroll);
+    };
+  }, [open]);
+
+  function show() {
     setOpen(true);
     requestAnimationFrame(reposition);
-  }, [reposition]);
+  }
 
-  const hide = useCallback(() => {
+  function hide() {
     setOpen(false);
-    setPosition(null);
-  }, []);
+  }
 
   return (
     <span class={cn('inline-flex', className)}>
@@ -80,12 +106,7 @@ function Tooltip({ content, children, class: className }: TooltipProps) {
           id={id}
           ref={tooltipRef}
           role="tooltip"
-          class="bg-background text-foreground border-border fixed z-50 w-max max-w-56 rounded-md border px-2.5 py-1.5 text-xs shadow-md"
-          style={
-            position
-              ? { top: `${position.top}px`, left: `${position.left}px` }
-              : { visibility: 'hidden' }
-          }
+          class="bg-background text-foreground border-border fixed z-50 w-max max-w-56 rounded-md border px-2.5 py-1.5 text-xs font-normal shadow-md"
         >
           {content}
         </span>
