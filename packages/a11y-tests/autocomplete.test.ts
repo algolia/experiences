@@ -18,7 +18,7 @@ import {
   AUTOCOMPLETE_NO_RESULTS,
 } from './fixtures/experience-configs';
 
-import { AUTOCOMPLETE_PRESETS } from '../theme/src/widgets/autocomplete/presets';
+import { AUTOCOMPLETE_PRESETS } from '@experiences/theme/autocomplete-presets';
 
 const RUNTIME_BUNDLE = resolve(__dirname, '../runtime/dist/runtime.js');
 const HARNESS_PATH = resolve(__dirname, 'fixtures/autocomplete.html');
@@ -277,7 +277,7 @@ async function openPanel(page: import('@playwright/test').Page) {
   await input.fill('test');
 
   await page.waitForSelector('.ais-AutocompletePanel', { timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForSelector('[aria-expanded="true"]', { timeout: 5000 });
 }
 
 async function openDetachedPanel(page: import('@playwright/test').Page) {
@@ -294,7 +294,7 @@ async function openDetachedPanel(page: import('@playwright/test').Page) {
   await input.fill('test');
 
   await page.waitForSelector('.ais-AutocompletePanel', { timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForSelector('[aria-expanded="true"]', { timeout: 5000 });
 }
 
 async function runAxe(
