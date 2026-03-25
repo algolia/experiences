@@ -64,6 +64,9 @@ export default defineConfig({
     'process.env.AGENT_STUDIO_PROD_SEARCH_API_KEY': JSON.stringify(
       env.AGENT_STUDIO_PROD_SEARCH_API_KEY ?? ''
     ),
+    'process.env.DASHBOARD_BASE': JSON.stringify(
+      process.env.DASHBOARD_BASE ?? ''
+    ),
   },
   alias: {
     react: 'preact/compat',

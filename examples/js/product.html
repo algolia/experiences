@@ -243,6 +243,23 @@
       </div>
     </div>
 
-    <script src="https://github.com/algolia/experiences/releases/download/canary/experiences.js?appId=F4T6CUV2AH&apiKey=95d23095918f4e5c35e11d5e5e57b92d&experienceId=11e02c95-34ef-45c6-89c0-8e3cd5538a23&env=beta"></script>
+    <script>
+      (function () {
+        var experienceId =
+          new URLSearchParams(window.location.search).get('experienceId') ||
+          '11e02c95-34ef-45c6-89c0-8e3cd5538a23';
+        var src = new URL(
+          'https://github.com/algolia/experiences/releases/download/canary/experiences.js',
+          window.location.origin
+        );
+        src.searchParams.set('appId', 'F4T6CUV2AH');
+        src.searchParams.set('apiKey', '95d23095918f4e5c35e11d5e5e57b92d');
+        src.searchParams.set('experienceId', experienceId);
+        src.searchParams.set('env', 'beta');
+        var script = document.createElement('script');
+        script.src = src.toString();
+        document.body.appendChild(script);
+      })();
+    </script>
   </body>
 </html>
