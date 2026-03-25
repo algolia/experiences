@@ -9,11 +9,21 @@
 .ais-AutocompleteIndexItem {
   align-items: center;
   border-radius: var(--ais-autocomplete-item-border-radius);
-  cursor: pointer;
   display: grid;
   padding: var(--ais-autocomplete-item-vertical-padding)
     var(--ais-autocomplete-item-horizontal-padding);
   transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ais-AutocompleteIndexItem:has(
+    .ais-AutocompleteIndexItemLink
+  ) {
+    padding: 0;
+  }
+
+.ais-AutocompleteIndexItemLink {
+  padding: var(--ais-autocomplete-item-vertical-padding)
+    var(--ais-autocomplete-item-horizontal-padding);
 }
 
 .ais-AutocompleteIndexItem:hover {

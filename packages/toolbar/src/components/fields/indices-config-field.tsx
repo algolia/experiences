@@ -2,7 +2,7 @@ import { useRef, useState } from 'preact/hooks';
 
 import { ChevronDown, GripVertical, Plus, Trash2 } from 'lucide-preact';
 
-import { useIndices } from '../../hooks/use-indices';
+import { useIndexAttributes, useIndices } from '../../hooks/use-indices';
 import { InfoTooltip } from './info-tooltip';
 import { ItemTemplateField } from './item-template-field';
 import { JsonField } from './json-field';
@@ -15,6 +15,7 @@ import { Label } from '../ui/label';
 type StoredIndexEntry = {
   indexName: string;
   hitsPerPage?: number;
+  urlAttribute?: string;
   templates?: {
     header?: string;
     item?: Record<string, string>;
@@ -314,6 +315,13 @@ export function IndicesConfigField({
                   indexName={entry.indexName || undefined}
                 />
 
+                <UrlAttributeField
+                  entry={entry}
+                  onChange={(patch) => {
+                    return updateEntry(index, patch);
+                  }}
+                />
+
                 <JsonField
                   label="Search Parameters"
                   description="Additional Algolia search parameters as JSON."
@@ -341,6 +349,34 @@ export function IndicesConfigField({
         <Plus class="size-4" />
         Add Index
       </Button>
+    </div>
+  );
+}
+
+function UrlAttributeField({
+  entry,
+  onChange,
+}: {
+  entry: StoredIndexEntry;
+  onChange: (patch: Partial<StoredIndexEntry>) => void;
+}) {
+  const attributes = useIndexAttributes(entry.indexName || undefined);
+
+  return (
+    <div class="group space-y-1">
+      <Label>
+        URL Attribute
+        <InfoTooltip content="Record attribute containing the URL to navigate to when an item is clicked." />
+      </Label>
+      <Combobox
+        value={entry.urlAttribute ?? ''}
+        suggestions={attributes}
+        label="URL Attribute"
+        placeholder="url"
+        onInput={(value) => {
+          onChange({ urlAttribute: value || undefined });
+        }}
+      />
     </div>
   );
 }
