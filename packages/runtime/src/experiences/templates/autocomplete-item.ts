@@ -1,16 +1,28 @@
 import type { Hit, TemplateParams } from 'instantsearch.js/es/types';
 
 import { renderListItem } from './list-item';
+import { getByPath } from './utils';
 
-export function renderAutocompleteItem(template: Record<string, string>) {
+export function renderAutocompleteItem(
+  template: Record<string, string>,
+  { urlAttribute }: { urlAttribute?: string } = {}
+) {
   const listItem = renderListItem(template);
 
-  // `onSelect` is provided by autocomplete.js but selection is handled by the
-  // autocomplete widget itself, so we only need the `item` for rendering.
   return function item(
     data: { item: Hit; onSelect: () => void },
     params: TemplateParams
   ) {
-    return listItem(data.item, params);
+    const content = listItem(data.item, params);
+
+    if (urlAttribute) {
+      const href = getByPath(data.item, urlAttribute);
+
+      if (typeof href === 'string' && href) {
+        return params.html`<a class="ais-AutocompleteIndexItemLink" href=${href}>${content}</a>`;
+      }
+    }
+
+    return content;
   };
 }

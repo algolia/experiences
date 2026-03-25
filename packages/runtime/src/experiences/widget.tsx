@@ -37,6 +37,7 @@ import {
   renderTwoColumnsPanel,
   withGlobalNoResults,
   SKELETON_CSS,
+  getByPath,
 } from './templates';
 import type { ExperienceWidget } from './types';
 
@@ -161,6 +162,7 @@ export default (function experience(
             indices?: Array<{
               indexName: string;
               hitsPerPage?: number;
+              urlAttribute?: string;
               templates?: {
                 header?: string;
                 item?: Record<string, string>;
@@ -252,6 +254,7 @@ export default (function experience(
                     ({
                       indexName,
                       hitsPerPage,
+                      urlAttribute,
                       templates: entryTemplates,
                       searchParameters,
                     }) => {
@@ -261,6 +264,17 @@ export default (function experience(
                           ...searchParameters,
                           ...(hitsPerPage != null ? { hitsPerPage } : {}),
                         },
+                        ...(urlAttribute
+                          ? {
+                              getURL: (item: Record<string, unknown>) => {
+                                const value = getByPath(
+                                  item as Parameters<typeof getByPath>[0],
+                                  urlAttribute
+                                );
+                                return typeof value === 'string' ? value : '';
+                              },
+                            }
+                          : {}),
                         templates: {
                           ...(entryTemplates?.header
                             ? {
@@ -272,7 +286,8 @@ export default (function experience(
                           ...(entryTemplates?.item
                             ? {
                                 item: renderAutocompleteItem(
-                                  entryTemplates.item
+                                  entryTemplates.item,
+                                  { urlAttribute }
                                 ),
                               }
                             : {}),
