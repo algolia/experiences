@@ -9,7 +9,7 @@ function TabsList({ class: className, ...props }: DivProps) {
     <div
       data-slot="tabs-list"
       class={cn(
-        'bg-muted text-muted-foreground inline-flex h-9 w-full items-center justify-center rounded-lg p-1',
+        'bg-muted text-muted-foreground inline-flex h-9 w-full items-center justify-center gap-0.5 rounded-lg p-1',
         className
       )}
       role="tablist"
@@ -33,7 +33,7 @@ function TabsTrigger({
         "inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         active
           ? 'bg-background text-foreground shadow-sm'
-          : 'hover:text-foreground/80',
+          : 'hover:text-foreground hover:bg-background/70',
         className
       )}
       {...props}
