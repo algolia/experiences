@@ -126,7 +126,6 @@ body.ais-Autocomplete--detached {
   font-size: var(--ais-autocomplete-base-unit);
   font-weight: normal;
   justify-content: space-between;
-  line-height: 1em;
   margin: 0;
   padding: var(--ais-autocomplete-detached-form-padding);
   position: relative;
@@ -221,7 +220,6 @@ body.ais-Autocomplete--detached {
     var(--ais-autocomplete-text-color),
     var(--ais-autocomplete-text-color-alpha)
   );
-  line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
